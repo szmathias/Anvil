@@ -5,6 +5,13 @@
 #ifndef ANVIL_BENCHMARKS_H
 #define ANVIL_BENCHMARKS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
-#endif //ANVIL_BENCHMARKS_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif // ANVIL_BENCHMARKS_H

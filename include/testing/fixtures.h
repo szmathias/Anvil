@@ -7,6 +7,10 @@
 
 #include "common/common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Forward declarations
 typedef struct ANVFixture ANVFixture;
 typedef struct ANVTestCase ANVTestCase;
@@ -19,15 +23,19 @@ typedef struct ANVTestCase ANVTestCase;
  */
 struct ANVFixture
 {
-    void* data_state;              // Implementation-specific state data (just like iterator)
-    const ANVAllocator* alloc;     // Allocator for memory management
+        void* data_state;          // Implementation-specific state data (just like iterator)
+        const ANVAllocator* alloc; // Allocator for memory management
 
-    // Lifecycle operations
-    int (*setup)(ANVFixture* fixture, ANVTestCase* test);     // Initialize test environment
-    void (*teardown)(ANVFixture* fixture, ANVTestCase* test); // Clean up test environment
+        // Lifecycle operations
+        int (*setup)(ANVFixture* fixture, ANVTestCase* test);     // Initialize test environment
+        void (*teardown)(ANVFixture* fixture, ANVTestCase* test); // Clean up test environment
 
-    // Resource management
-    void (*destroy)(ANVFixture* fixture);          // Free fixture resources
+        // Resource management
+        void (*destroy)(ANVFixture* fixture); // Free fixture resources
 };
 
-#endif //ANVIL_FIXTURES_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif // ANVIL_FIXTURES_H

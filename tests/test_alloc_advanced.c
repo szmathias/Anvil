@@ -3,14 +3,14 @@
 // Advanced allocator integration tests
 //
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "TestAssert.h"
+#include "TestHelpers.h"
 #include "common/common.h"
 #include "containers/arraylist.h"
 #include "containers/singlylinkedlist.h"
-#include "TestAssert.h"
-#include "TestHelpers.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 //==============================================================================
 // Pool Allocator Implementation

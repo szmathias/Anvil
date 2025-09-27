@@ -8,8 +8,8 @@
 #ifndef ANVIL_BINARYSEARCHTREE_H
 #define ANVIL_BINARYSEARCHTREE_H
 
-#include "iterator.h"
 #include "common/common.h"
+#include "iterator.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,19 +22,19 @@ extern "C" {
 // Node of binary search tree
 typedef struct ANVBinarySearchTreeNode
 {
-    void* data;                            // Pointer to user data
-    struct ANVBinarySearchTreeNode* left;  // Pointer to left child
-    struct ANVBinarySearchTreeNode* right; // Pointer to right child
-    struct ANVBinarySearchTreeNode* parent; // Pointer to parent node
+        void* data;                             // Pointer to user data
+        struct ANVBinarySearchTreeNode* left;   // Pointer to left child
+        struct ANVBinarySearchTreeNode* right;  // Pointer to right child
+        struct ANVBinarySearchTreeNode* parent; // Pointer to parent node
 } ANVBinarySearchTreeNode;
 
 // Binary search tree structure with custom allocator support
 typedef struct ANVBinarySearchTree
 {
-    ANVBinarySearchTreeNode* root; // Pointer to root node
-    size_t size;                   // Number of nodes in tree
-    anv_compare_func compare;              // Comparison function for ordering
-    ANVAllocator* alloc;           // Custom allocator
+        ANVBinarySearchTreeNode* root; // Pointer to root node
+        size_t size;                   // Number of nodes in tree
+        anv_compare_func compare;      // Comparison function for ordering
+        ANVAllocator* alloc;           // Custom allocator
 } ANVBinarySearchTree;
 
 //==============================================================================
@@ -220,4 +220,4 @@ ANV_API ANVBinarySearchTree* anv_bst_from_iterator(ANVIterator* it, ANVAllocator
 }
 #endif
 
-#endif //ANVIL_BINARYSEARCHTREE_H
+#endif // ANVIL_BINARYSEARCHTREE_H

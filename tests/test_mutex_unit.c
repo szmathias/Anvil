@@ -1,6 +1,6 @@
 #include "TestAssert.h"
 #include "system/mutex.h"
-#include "system/threads.h"
+#include "system/thread.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -86,7 +86,7 @@ typedef struct
 
 int main(void)
 {
-    TestCase tests[] = {
+    const TestCase tests[] = {
         {test_mutex_init_destroy, "test_mutex_init_destroy"},
         {test_mutex_trylock_behavior, "test_mutex_trylock_behavior"},
         {test_mutex_threaded_increment, "test_mutex_threaded_increment"},

@@ -5,9 +5,15 @@
 #ifndef ANVIL_TYPES_H
 #define ANVIL_TYPES_H
 
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <limits.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define ANV_DEFAULT_CAPACITY 16
 
 /**
  * Memory allocation function compatible with malloc.
@@ -59,11 +65,11 @@ typedef void* (*anv_transform_func)(const void* src);
 typedef void (*anv_action_func)(void* data);
 
 /**
-* Filter predicate function tests if elements should be included.
-*
-* @param element The element to test
-* @return Non-zero to include element, 0 to exclude
-*/
+ * Filter predicate function tests if elements should be included.
+ *
+ * @param element The element to test
+ * @return Non-zero to include element, 0 to exclude
+ */
 typedef bool (*anv_filter_func)(const void* element);
 
 /**
@@ -74,14 +80,6 @@ typedef bool (*anv_filter_func)(const void* element);
  * @return true if elements are equal, false otherwise
  */
 typedef bool (*anv_equals_func)(const void* a, const void* b);
-
-/**
- * Generic hash function type
- *
- * @param data Data to hash
- * @return Hash value
- */
-typedef size_t (*anv_hash_func)(const void* data);
 
 /**
  * Comparison function for list elements.
@@ -98,7 +96,8 @@ typedef size_t (*anv_hash_func)(const void* data);
  */
 typedef int (*anv_compare_func)(const void* a, const void* b);
 
+#ifdef __cplusplus
+}
+#endif
 
-#define ANV_DEFAULT_CAPACITY 16
-
-#endif //ANVIL_TYPES_H
+#endif // ANVIL_TYPES_H

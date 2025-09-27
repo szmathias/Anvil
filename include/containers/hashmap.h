@@ -5,10 +5,10 @@
 #ifndef ANVIL_HASHMAP_H
 #define ANVIL_HASHMAP_H
 
-#include "iterator.h"
-#include "common/common.h"
 #include "algorithms/hash.h"
+#include "common/common.h"
 #include "containers/pair.h"
+#include "iterator.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,9 +32,9 @@ typedef int (*key_equals_func)(const void* key1, const void* key2);
  */
 typedef struct ANVHashMapNode
 {
-    void* key;                   // Pointer to key data
-    void* value;                 // Pointer to value data
-    struct ANVHashMapNode* next; // Next node in chain
+        void* key;                   // Pointer to key data
+        void* value;                 // Pointer to value data
+        struct ANVHashMapNode* next; // Next node in chain
 } ANVHashMapNode;
 
 /**
@@ -44,13 +44,13 @@ typedef struct ANVHashMapNode
  */
 typedef struct ANVHashMap
 {
-    ANVHashMapNode** buckets;   // Array of bucket heads
-    size_t bucket_count;        // Number of buckets
-    size_t size;                // Number of key-value pairs
-    double max_load_factor;     // Maximum load factor before resize
-    anv_hash_func hash;             // Hash function for keys
-    key_equals_func key_equals; // Key equality function
-    ANVAllocator* alloc;        // Custom allocator
+        ANVHashMapNode** buckets;   // Array of bucket heads
+        size_t bucket_count;        // Number of buckets
+        size_t size;                // Number of key-value pairs
+        double max_load_factor;     // Maximum load factor before resize
+        anv_hash_func hash;         // Hash function for keys
+        key_equals_func key_equals; // Key equality function
+        ANVAllocator* alloc;        // Custom allocator
 } ANVHashMap;
 
 //==============================================================================
@@ -273,10 +273,10 @@ ANV_API ANVIterator anv_hashmap_iterator(const ANVHashMap* map);
  * @param alloc The custom allocator to use
  * @param hash Hash function for keys
  * @param key_equals Key equality function
-* @param should_copy If true, creates deep copies of all keys and values using alloc->anv_copy_func.
-*                    If false, uses keys and values directly from iterator.
-*                    When true, alloc->anv_copy_func must not be NULL and must accept a ANVPair*
-*                    as input to handle copying both key and value appropriately.
+ * @param should_copy If true, creates deep copies of all keys and values using alloc->anv_copy_func.
+ *                    If false, uses keys and values directly from iterator.
+ *                    When true, alloc->anv_copy_func must not be NULL and must accept a ANVPair*
+ *                    as input to handle copying both key and value appropriately.
  * @return A new hash map with elements from iterator, or NULL on error
  *
  * @note NULL elements from the iterator are always filtered out as they indicate
@@ -287,8 +287,7 @@ ANV_API ANVIterator anv_hashmap_iterator(const ANVHashMap* map);
  *       cleans up and returns NULL.
  */
 ANV_API ANVHashMap* anv_hashmap_from_iterator(ANVIterator* it, ANVAllocator* alloc,
-                                      anv_hash_func hash, key_equals_func key_equals, bool should_copy);
-
+                                              anv_hash_func hash, key_equals_func key_equals, bool should_copy);
 
 //==============================================================================
 // Utility equality functions
@@ -325,4 +324,4 @@ ANV_API int anv_key_equals_pointer(const void* key1, const void* key2);
 }
 #endif
 
-#endif //ANVIL_HASHMAP_H
+#endif // ANVIL_HASHMAP_H

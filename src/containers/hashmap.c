@@ -158,7 +158,7 @@ static int check_and_resize(ANVHashMap* map)
 //==============================================================================
 
 ANV_API ANVHashMap* anv_hashmap_create(ANVAllocator* alloc, const anv_hash_func hash,
-                               const key_equals_func key_equals, const size_t initial_capacity)
+                                       const key_equals_func key_equals, const size_t initial_capacity)
 {
     if (!alloc || !hash || !key_equals)
     {
@@ -409,7 +409,7 @@ ANV_API void* anv_hashmap_get(const ANVHashMap* map, const void* key)
 }
 
 ANV_API int anv_hashmap_remove(ANVHashMap* map, const void* key,
-                       const bool should_free_key, const bool should_free_value)
+                               const bool should_free_key, const bool should_free_value)
 {
     if (!map || !key)
     {
@@ -615,7 +615,7 @@ ANV_API ANVHashMap* anv_hashmap_copy(const ANVHashMap* map)
 }
 
 ANV_API ANVHashMap* anv_hashmap_copy_deep(const ANVHashMap* map,
-                                  const anv_copy_func key_copy, const anv_copy_func value_copy)
+                                          const anv_copy_func key_copy, const anv_copy_func value_copy)
 {
     if (!map)
     {
@@ -683,10 +683,10 @@ ANV_API ANVHashMap* anv_hashmap_copy_deep(const ANVHashMap* map,
 
 typedef struct HashMapIteratorState
 {
-    const ANVHashMap* map;
-    size_t current_bucket;
-    ANVHashMapNode* current_node;
-    ANVPair current_pair;
+        const ANVHashMap* map;
+        size_t current_bucket;
+        ANVHashMapNode* current_node;
+        ANVPair current_pair;
 } HashMapIteratorState;
 
 static void* hashmap_iterator_get(const ANVIterator* it)
@@ -697,11 +697,10 @@ static void* hashmap_iterator_get(const ANVIterator* it)
         return NULL;
     }
 
-    state->current_pair = (ANVPair) {
+    state->current_pair = (ANVPair){
         .first = state->current_node->key,
         .second = state->current_node->value,
-        .alloc = state->map->alloc
-    };
+        .alloc = state->map->alloc};
 
     return &state->current_pair;
 }
@@ -843,7 +842,7 @@ ANV_API ANVIterator anv_hashmap_iterator(const ANVHashMap* map)
 }
 
 ANV_API ANVHashMap* anv_hashmap_from_iterator(ANVIterator* it, ANVAllocator* alloc,
-                                      const anv_hash_func hash, const key_equals_func key_equals, const bool should_copy)
+                                              const anv_hash_func hash, const key_equals_func key_equals, const bool should_copy)
 {
     if (!it || !alloc || !hash || !key_equals)
     {

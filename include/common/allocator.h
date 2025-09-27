@@ -5,14 +5,22 @@
 #ifndef ANVIL_ALLOC_H
 #define ANVIL_ALLOC_H
 
-#include "common/common.h"
+#include "platform.h"
+#include "types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * Struct containing Allocator function types for memory management.
+ */
 typedef struct ANVAllocator
 {
-    void* (*allocate)(size_t size);
-    void (*deallocate)(void* ptr);
-    void (*data_free)(void* ptr);
-    void* (*copy)(const void* data);
+        void* (*allocate)(size_t size);
+        void (*deallocate)(void* ptr);
+        void (*data_free)(void* ptr);
+        void* (*copy)(const void* data);
 } ANVAllocator;
 
 //==============================================================================
@@ -76,4 +84,8 @@ ANV_API void anv_alloc_data_free(const ANVAllocator* alloc, void* ptr);
  */
 ANV_API void* anv_alloc_copy(const ANVAllocator* alloc, const void* data);
 
-#endif //ANVIL_ALLOC_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif // ANVIL_ALLOC_H

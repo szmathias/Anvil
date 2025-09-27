@@ -9,7 +9,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-
 #endif
 
 //==============================================================================
@@ -23,9 +22,9 @@ extern "C" {
  */
 typedef struct ANVPair
 {
-    void* first;         // Pointer to first element data
-    void* second;        // Pointer to second element data
-    ANVAllocator* alloc; // Custom allocator
+        void* first;         // Pointer to first element data
+        void* second;        // Pointer to second element data
+        ANVAllocator* alloc; // Custom allocator
 } ANVPair;
 
 /**
@@ -57,16 +56,16 @@ typedef int (*pair_compare_func)(const void* a, const void* b);
 ANV_API ANVPair* anv_pair_create(ANVAllocator* alloc, void* first, void* second);
 
 /**
-* Initialize a ANVPair structure with the given elements (no allocation).
-* The pair takes ownership of the provided pointers but is not itself allocated.
-* Use this when you have a stack-allocated ANVPair structure.
-*
-* @param pair Pointer to existing ANVPair structure
-* @param alloc Custom allocator (can be NULL for simple cases)
-* @param first Pointer to first element data
-* @param second Pointer to second element data
-* @return 0 on success, -1 if pair is NULL
-*/
+ * Initialize a ANVPair structure with the given elements (no allocation).
+ * The pair takes ownership of the provided pointers but is not itself allocated.
+ * Use this when you have a stack-allocated ANVPair structure.
+ *
+ * @param pair Pointer to existing ANVPair structure
+ * @param alloc Custom allocator (can be NULL for simple cases)
+ * @param first Pointer to first element data
+ * @param second Pointer to second element data
+ * @return 0 on success, -1 if pair is NULL
+ */
 ANV_API int anv_pair_init(ANVPair* pair, ANVAllocator* alloc, void* first, void* second);
 
 /**
@@ -218,4 +217,4 @@ ANV_API void* anv_pair_copy_int_int(const void* pair_data);
 }
 #endif
 
-#endif //ANVIL_PAIR_H
+#endif // ANVIL_PAIR_H

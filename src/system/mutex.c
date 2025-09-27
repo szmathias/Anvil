@@ -12,7 +12,7 @@
 #include "mutex.h"
 
 #ifdef ANVIL_PLATFORM_WINDOWS
-#include <windows.h>
+    #include <windows.h>
 
 /**
  * Initialize a ANVMutex (CRITICAL_SECTION) instance.
@@ -131,7 +131,7 @@ ANV_API int anv_mutex_destroy(ANVMutex* mtx)
 }
 
 #else
-#include <pthread.h>
+    #include <pthread.h>
 
 /**
  * Initialize a ANVMutex (pthread_mutex_t) instance.

@@ -134,7 +134,7 @@ static void anv_bst_transplant(ANVBinarySearchTree* tree, const ANVBinarySearchT
  * Helper function to remove a node from the tree.
  */
 static void anv_bst_node_remove_with_parent(ANVBinarySearchTree* tree, ANVBinarySearchTreeNode* node,
-                                           const bool should_free_data)
+                                            const bool should_free_data)
 {
     if (!node->left)
     {
@@ -472,7 +472,8 @@ ANV_API void anv_bst_postorder(const ANVBinarySearchTree* tree, const anv_action
 /**
  * Traversal types for BST iterators
  */
-typedef enum {
+typedef enum
+{
     BST_TRAVERSAL_INORDER,
     BST_TRAVERSAL_PREORDER,
     BST_TRAVERSAL_POSTORDER
@@ -481,12 +482,13 @@ typedef enum {
 /**
  * State structure for BST iterator.
  */
-typedef struct BSTIteratorState {
-    const ANVBinarySearchTree* tree;        // Source tree
-    ANVStack* stack;                        // Stack for iterative traversal
-    ANVBinarySearchTreeNode* current;       // Current node
-    BSTTraversalType traversal_type;        // Type of traversal
-    bool finished;                          // Has iteration finished
+typedef struct BSTIteratorState
+{
+        const ANVBinarySearchTree* tree;  // Source tree
+        ANVStack* stack;                  // Stack for iterative traversal
+        ANVBinarySearchTreeNode* current; // Current node
+        BSTTraversalType traversal_type;  // Type of traversal
+        bool finished;                    // Has iteration finished
 } BSTIteratorState;
 
 /**
@@ -504,7 +506,7 @@ static void bst_setup_inorder(BSTIteratorState* state)
 
     if (!anv_stack_is_empty(state->stack))
     {
-        state->current = (ANVBinarySearchTreeNode*)anv_stack_peek(state->stack);
+        state->current = anv_stack_peek(state->stack);
         anv_stack_pop(state->stack, false); // Don't free the node data
     }
     else
@@ -521,7 +523,7 @@ static void bst_setup_preorder(BSTIteratorState* state)
     if (state->tree->root)
     {
         anv_stack_push(state->stack, state->tree->root);
-        state->current = (ANVBinarySearchTreeNode*)anv_stack_peek(state->stack);
+        state->current = anv_stack_peek(state->stack);
         anv_stack_pop(state->stack, false); // Don't free the node data
     }
     else
@@ -612,115 +614,116 @@ static int bst_iterator_next(const ANVIterator* it)
     switch (state->traversal_type)
     {
         case BST_TRAVERSAL_INORDER:
-        {
-            if (!state->current)
             {
-                state->finished = true;
-                return 0;
-            }
+                if (!state->current)
+                {
+                    state->finished = true;
+                    return 0;
+                }
 
-            // Push all left children of right subtree
-            ANVBinarySearchTreeNode* node = state->current->right;
-            while (node)
-            {
-                anv_stack_push(state->stack, node);
-                node = node->left;
-            }
-
-            if (!anv_stack_is_empty(state->stack))
-            {
-                state->current = (ANVBinarySearchTreeNode*)anv_stack_peek(state->stack);
-                anv_stack_pop(state->stack, false);
-            }
-            else
-            {
-                state->current = NULL;
-                state->finished = true;
-                return 0;
-            }
-            break;
-        }
-
-        case BST_TRAVERSAL_PREORDER:
-        {
-            if (!state->current)
-            {
-                state->finished = true;
-                return 0;
-            }
-
-            // Push right child first, then left (so left is processed first)
-            if (state->current->right)
-            {
-                anv_stack_push(state->stack, state->current->right);
-            }
-            if (state->current->left)
-            {
-                anv_stack_push(state->stack, state->current->left);
-            }
-
-            if (!anv_stack_is_empty(state->stack))
-            {
-                state->current = (ANVBinarySearchTreeNode*)anv_stack_peek(state->stack);
-                anv_stack_pop(state->stack, false);
-            }
-            else
-            {
-                state->current = NULL;
-                state->finished = true;
-                return 0;
-            }
-            break;
-        }
-
-        case BST_TRAVERSAL_POSTORDER:
-        {
-            if (!state->current)
-            {
-                state->finished = true;
-                return 0;
-            }
-
-            // Post-order traversal is complex - need to find next node
-            if (anv_stack_is_empty(state->stack))
-            {
-                state->current = NULL;
-                state->finished = true;
-                return 0;
-            }
-
-            const ANVBinarySearchTreeNode* top = anv_stack_peek(state->stack);
-
-            // If current node is left child of top, process right subtree
-            if (top->left == state->current && top->right)
-            {
-                ANVBinarySearchTreeNode* node = top->right;
+                // Push all left children of right subtree
+                ANVBinarySearchTreeNode* node = state->current->right;
                 while (node)
                 {
                     anv_stack_push(state->stack, node);
-                    if (node->left)
-                    {
-                        node = node->left;
-                    }
-                    else if (node->right)
-                    {
-                        node = node->right;
-                    }
-                    else
-                    {
-                        state->current = (ANVBinarySearchTreeNode*)anv_stack_peek(state->stack);
-                        anv_stack_pop(state->stack, false);
-                        return 0;
-                    }
+                    node = node->left;
                 }
+
+                if (!anv_stack_is_empty(state->stack))
+                {
+                    state->current = anv_stack_peek(state->stack);
+                    anv_stack_pop(state->stack, false);
+                }
+                else
+                {
+                    state->current = NULL;
+                    state->finished = true;
+                    return 0;
+                }
+                break;
             }
 
-            // Otherwise, pop and return parent
-            state->current = (ANVBinarySearchTreeNode*)anv_stack_peek(state->stack);
-            anv_stack_pop(state->stack, false);
-            break;
-        }
-        default: return -1; // Unknown traversal type
+        case BST_TRAVERSAL_PREORDER:
+            {
+                if (!state->current)
+                {
+                    state->finished = true;
+                    return 0;
+                }
+
+                // Push right child first, then left (so left is processed first)
+                if (state->current->right)
+                {
+                    anv_stack_push(state->stack, state->current->right);
+                }
+                if (state->current->left)
+                {
+                    anv_stack_push(state->stack, state->current->left);
+                }
+
+                if (!anv_stack_is_empty(state->stack))
+                {
+                    state->current = anv_stack_peek(state->stack);
+                    anv_stack_pop(state->stack, false);
+                }
+                else
+                {
+                    state->current = NULL;
+                    state->finished = true;
+                    return 0;
+                }
+                break;
+            }
+
+        case BST_TRAVERSAL_POSTORDER:
+            {
+                if (!state->current)
+                {
+                    state->finished = true;
+                    return 0;
+                }
+
+                // Post-order traversal is complex - need to find next node
+                if (anv_stack_is_empty(state->stack))
+                {
+                    state->current = NULL;
+                    state->finished = true;
+                    return 0;
+                }
+
+                const ANVBinarySearchTreeNode* top = anv_stack_peek(state->stack);
+
+                // If current node is left child of top, process right subtree
+                if (top->left == state->current && top->right)
+                {
+                    ANVBinarySearchTreeNode* node = top->right;
+                    while (node)
+                    {
+                        anv_stack_push(state->stack, node);
+                        if (node->left)
+                        {
+                            node = node->left;
+                        }
+                        else if (node->right)
+                        {
+                            node = node->right;
+                        }
+                        else
+                        {
+                            state->current = anv_stack_peek(state->stack);
+                            anv_stack_pop(state->stack, false);
+                            return 0;
+                        }
+                    }
+                }
+
+                // Otherwise, pop and return parent
+                state->current = anv_stack_peek(state->stack);
+                anv_stack_pop(state->stack, false);
+                break;
+            }
+        default:
+            return -1; // Unknown traversal type
     }
 
     return 0;
@@ -771,7 +774,8 @@ static void bst_iterator_reset(const ANVIterator* it)
             bst_setup_postorder(state);
             break;
 
-        default : break;
+        default:
+            break;
     }
 }
 
@@ -859,8 +863,9 @@ static ANVIterator bst_create_iterator(const ANVBinarySearchTree* tree, const BS
             break;
         case BST_TRAVERSAL_POSTORDER:
             bst_setup_postorder(state);
+            // Intentional fallthrough
+        default:
             break;
-        default: break;
     }
 
     if (state->tree->size == 0)
@@ -905,10 +910,10 @@ ANV_API ANVBinarySearchTree* anv_bst_from_iterator(ANVIterator* it, ANVAllocator
     // Iterate through all elements and insert them into the tree
     while (it->has_next && it->has_next(it))
     {
-        void *data = it->get ? it->get(it) : NULL;
+        void* data = it->get ? it->get(it) : NULL;
         if (data)
         {
-            void *insert_data = data;
+            void* insert_data = data;
             if (should_copy && alloc->copy)
             {
                 insert_data = anv_alloc_copy(alloc, data);

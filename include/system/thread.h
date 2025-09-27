@@ -21,10 +21,10 @@ extern "C" {
 #endif
 
 #ifdef ANVIL_PLATFORM_WINDOWS
-#include <windows.h>
+    #include <windows.h>
 typedef HANDLE ANVThread;
 #else
-#include <pthread.h>
+    #include <pthread.h>
 typedef pthread_t ANVThread;
 #endif
 

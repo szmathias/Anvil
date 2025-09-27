@@ -1031,9 +1031,9 @@ ANV_API ANVDoublyLinkedList* anv_dll_from_iterator(ANVIterator* it, ANVAllocator
 
 typedef struct ListIteratorState
 {
-    ANVDoublyLinkedNode* current;    // Current node
-    ANVDoublyLinkedNode* start;      // Starting position (head or tail)
-    const ANVDoublyLinkedList* list; // The list being iterated (const for safety)
+        ANVDoublyLinkedNode* current;    // Current node
+        ANVDoublyLinkedNode* start;      // Starting position (head or tail)
+        const ANVDoublyLinkedList* list; // The list being iterated (const for safety)
 } ListIteratorState;
 
 /**

@@ -5,8 +5,8 @@
 #ifndef ANVIL_QUEUE_H
 #define ANVIL_QUEUE_H
 
-#include "iterator.h"
 #include "common/common.h"
+#include "iterator.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,8 +21,8 @@ extern "C" {
  */
 typedef struct ANVQueueNode
 {
-    void* data;                // Pointer to user data
-    struct ANVQueueNode* next; // Pointer to next node (towards back)
+        void* data;                // Pointer to user data
+        struct ANVQueueNode* next; // Pointer to next node (towards back)
 } ANVQueueNode;
 
 /**
@@ -32,10 +32,10 @@ typedef struct ANVQueueNode
  */
 typedef struct ANVQueue
 {
-    ANVQueueNode* front; // Pointer to front node (first to be dequeued)
-    ANVQueueNode* back;  // Pointer to back node (last enqueued)
-    size_t size;         // Number of elements in queue
-    ANVAllocator* alloc; // Custom allocator
+        ANVQueueNode* front; // Pointer to front node (first to be dequeued)
+        ANVQueueNode* back;  // Pointer to back node (last enqueued)
+        size_t size;         // Number of elements in queue
+        ANVAllocator* alloc; // Custom allocator
 } ANVQueue;
 
 /**
@@ -56,7 +56,7 @@ typedef void (*anv_action_func)(void* data);
  * @param alloc Custom allocator (required)
  * @return Pointer to new Queue, or NULL on failure
  */
-ANV_API ANVQueue* anv_queue_create(ANVAllocator * alloc);
+ANV_API ANVQueue* anv_queue_create(ANVAllocator* alloc);
 
 /**
  * Destroy the queue and free all nodes.
@@ -228,4 +228,4 @@ ANV_API ANVQueue* anv_queue_from_iterator(ANVIterator* it, ANVAllocator* alloc, 
 }
 #endif
 
-#endif //ANVIL_QUEUE_H
+#endif // ANVIL_QUEUE_H

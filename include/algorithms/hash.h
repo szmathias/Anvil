@@ -12,6 +12,14 @@ extern "C" {
 #endif
 
 /**
+ * Generic hash function type
+ *
+ * @param data Data to hash
+ * @return Hash value
+ */
+typedef size_t (*anv_hash_func)(const void* data);
+
+/**
  * Hash function for string keys.
  *
  * @param key Pointer to null-terminated string
@@ -35,9 +43,8 @@ ANV_API size_t anv_hash_int(const void* key);
  */
 ANV_API size_t anv_hash_pointer(const void* key);
 
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif //ANVIL_HASH_H
+#endif // ANVIL_HASH_H

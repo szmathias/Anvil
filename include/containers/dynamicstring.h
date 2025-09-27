@@ -21,14 +21,14 @@ extern "C" {
 
 typedef struct ANVString
 {
-    size_t capacity;
-    size_t size;
+        size_t capacity;
+        size_t size;
 
-    union
-    {
-        char* data;
-        char small_data[STR_MIN_INIT_CAP];
-    };
+        union
+        {
+                char* data;
+                char small_data[STR_MIN_INIT_CAP];
+        };
 } ANVString;
 
 // Convenience macros to hopefully save some typing
@@ -162,67 +162,67 @@ ANV_API int anv_str_getline_cstring(FILE* stream, ANVString* line, const char* d
 ANV_API int anv_str_getline_string(FILE* stream, ANVString* line, const ANVString* delim);
 
 // The generic macro implementations for convenience
-#define anv_str_create_impl(value)\
-    _Generic(value,\
-        char *: anv_str_create_from_cstring,\
-        const char *: anv_str_create_from_cstring,\
-        String *: anv_str_create_from_string,\
+#define anv_str_create_impl(value)                \
+    _Generic(value,                               \
+        char*: anv_str_create_from_cstring,       \
+        const char*: anv_str_create_from_cstring, \
+        String*: anv_str_create_from_string,      \
         default: anv_str_create_empty)(value)
 
-#define anv_str_assign_impl(str, value)\
-    _Generic(value,\
-        char *: anv_str_assign_cstring,\
-        const char *: anv_str_assign_cstring,\
-        String *: anv_str_assign_string,\
+#define anv_str_assign_impl(str, value)      \
+    _Generic(value,                          \
+        char*: anv_str_assign_cstring,       \
+        const char*: anv_str_assign_cstring, \
+        String*: anv_str_assign_string,      \
         default: anv_str_assign_char)(str, value)
 
-#define anv_str_append_impl(str, value)\
-    _Generic(value,\
-        char *: anv_str_append_cstring,\
-        const char *: anv_str_append_cstring,\
-        String *: anv_str_append_string,\
+#define anv_str_append_impl(str, value)      \
+    _Generic(value,                          \
+        char*: anv_str_append_cstring,       \
+        const char*: anv_str_append_cstring, \
+        String*: anv_str_append_string,      \
         default: anv_str_append_char)(str, value)
 
-#define anv_str_insert_impl(str, pos, value)\
-    _Generic(value,\
-        char *: anv_str_insert_cstring,\
-        const char *: anv_str_insert_cstring,\
-        String *: anv_str_insert_string,\
+#define anv_str_insert_impl(str, pos, value) \
+    _Generic(value,                          \
+        char*: anv_str_insert_cstring,       \
+        const char*: anv_str_insert_cstring, \
+        String*: anv_str_insert_string,      \
         default: anv_str_insert_char)(str, pos, value)
 
-#define anv_str_find_str_impl(str, find)\
-    _Generic(find,\
-            char *: anv_str_find_cstring,\
-            const char *: anv_str_find_cstring,\
-            default: anv_str_find_string)(str, find)
+#define anv_str_find_str_impl(str, find)   \
+    _Generic(find,                         \
+        char*: anv_str_find_cstring,       \
+        const char*: anv_str_find_cstring, \
+        default: anv_str_find_string)(str, find)
 
-#define anv_str_substr_create_impl(str, pos, count)\
-    _Generic(str,\
-        char *: anv_str_substr_create_cstring,\
-        const char *: anv_str_substr_create_cstring,\
+#define anv_str_substr_create_impl(str, pos, count) \
+    _Generic(str,                                   \
+        char*: anv_str_substr_create_cstring,       \
+        const char*: anv_str_substr_create_cstring, \
         default: anv_str_substr_create_string)(str, pos, count)
 
-#define anv_str_substr_impl(str, pos, count, buffer)\
-    _Generic(str,\
-        char *: anv_str_substr_cstring,\
-        const char *: anv_str_substr_cstring,\
+#define anv_str_substr_impl(str, pos, count, buffer) \
+    _Generic(str,                                    \
+        char*: anv_str_substr_cstring,               \
+        const char*: anv_str_substr_cstring,         \
         default: anv_str_substr_string)(str, pos, count, buffer)
 
-#define anv_str_compare_impl(lhs, rhs)\
-    _Generic(rhs,\
-            char *: anv_str_compare_cstring,\
-            const char *: anv_str_compare_cstring,\
-            default: anv_str_compare_string)(lhs, rhs)
+#define anv_str_compare_impl(lhs, rhs)        \
+    _Generic(rhs,                             \
+        char*: anv_str_compare_cstring,       \
+        const char*: anv_str_compare_cstring, \
+        default: anv_str_compare_string)(lhs, rhs)
 
-#define anv_str_getline_impl(stream, line, delim)\
-    _Generic(delim,\
-        char *: anv_str_getline_cstring,\
-        const char *: anv_str_getline_cstring,\
-        String *: anv_str_getline_string,\
+#define anv_str_getline_impl(stream, line, delim) \
+    _Generic(delim,                               \
+        char*: anv_str_getline_cstring,           \
+        const char*: anv_str_getline_cstring,     \
+        String*: anv_str_getline_string,          \
         default: anv_str_getline_ch)(stream, line, delim)
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //ANVIL_DYNAMICSTRING_H
+#endif // ANVIL_DYNAMICSTRING_H

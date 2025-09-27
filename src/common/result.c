@@ -17,9 +17,10 @@ static const char* anv_result_strings[] = {
     [ANV_RESULT_NOT_IMPLEMENTED] = "Not implemented"
 };
 
-const char* anv_result_to_string(const ANVResult result)
+ANV_API const char* anv_result_to_string(const ANVResult result)
 {
-    if (result < 0 || result >= ANV_RESULT_COUNT) {
+    if (result < 0 || result >= ANV_RESULT_COUNT)
+    {
         return "Unknown result code";
     }
     return anv_result_strings[result];

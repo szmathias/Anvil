@@ -12,8 +12,8 @@
 #ifndef ANVIL_SINGLYLINKEDLIST_H
 #define ANVIL_SINGLYLINKEDLIST_H
 
-#include "iterator.h"
 #include "common/common.h"
+#include "iterator.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,8 +28,8 @@ extern "C" {
  */
 typedef struct ANVSinglyLinkedNode
 {
-    void* data;                       // Pointer to user data
-    struct ANVSinglyLinkedNode* next; // Pointer to next node
+        void* data;                       // Pointer to user data
+        struct ANVSinglyLinkedNode* next; // Pointer to next node
 } ANVSinglyLinkedNode;
 
 /**
@@ -41,11 +41,11 @@ typedef struct ANVSinglyLinkedNode
  */
 typedef struct ANVSinglyLinkedList
 {
-    ANVSinglyLinkedNode* head; // Pointer to first node
-    ANVSinglyLinkedNode* tail; // Pointer to last node
-    size_t size;               // Number of nodes in list
+        ANVSinglyLinkedNode* head; // Pointer to first node
+        ANVSinglyLinkedNode* tail; // Pointer to last node
+        size_t size;               // Number of nodes in list
 
-    ANVAllocator* alloc; // Custom allocator
+        ANVAllocator* alloc; // Custom allocator
 } ANVSinglyLinkedList;
 
 //==============================================================================
@@ -58,7 +58,7 @@ typedef struct ANVSinglyLinkedList
  * @param alloc Allocator to use (alloc->alloc_func/ dealloc_func must be valid)
  * @return Pointer to new list, or NULL on failure
  */
-ANV_API ANVSinglyLinkedList* anv_sll_create(ANVAllocator * alloc);
+ANV_API ANVSinglyLinkedList* anv_sll_create(ANVAllocator* alloc);
 
 /**
  * Destroy the list and free all nodes.
@@ -339,5 +339,4 @@ ANV_API ANVSinglyLinkedList* anv_sll_from_iterator(ANVIterator* it, ANVAllocator
 }
 #endif
 
-#endif //ANVIL_SINGLYLINKEDLIST_H
-
+#endif // ANVIL_SINGLYLINKEDLIST_H

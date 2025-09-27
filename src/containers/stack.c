@@ -379,9 +379,9 @@ ANV_API ANVStack* anv_stack_copy_deep(const ANVStack* stack, const bool should_f
 
 typedef struct StackIteratorState
 {
-    const ANVStack* stack;
-    ANVStackNode* current;
-    ANVStackNode* start;
+        const ANVStack* stack;
+        ANVStackNode* current;
+        ANVStackNode* start;
 } StackIteratorState;
 
 static void* stack_iterator_get(const ANVIterator* it)

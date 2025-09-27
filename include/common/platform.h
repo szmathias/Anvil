@@ -7,7 +7,7 @@ extern "C" {
 
 /* Require C11 or higher */
 #if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 201112L
-#error "C11 or higher required"
+    #error "C11 or higher required"
 #endif
 
 /* Platform detection - use CMake definitions if available, otherwise auto-detect */
@@ -30,10 +30,10 @@ extern "C" {
     #else
         #define ANV_API __declspec(dllimport)
     #endif
-    #elif defined(__GNUC__) || defined(__clang__)
-        #define ANV_API __attribute__((visibility("default")))
-    #else
-        #define ANV_API
+#elif defined(__GNUC__) || defined(__clang__)
+    #define ANV_API __attribute__((visibility("default")))
+#else
+    #define ANV_API
 #endif
 
 /* Detect C23 for standard attributes */

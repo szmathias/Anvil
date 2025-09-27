@@ -5,9 +5,10 @@
 #ifndef ANVIL_COMMON_H
 #define ANVIL_COMMON_H
 
+#include "allocator.h"
 #include "platform.h"
 #include "result.h"
 #include "types.h"
-#include "allocator.h"
+#include "version.h"
 
-#endif //ANVIL_COMMON_H
+#endif // ANVIL_COMMON_H

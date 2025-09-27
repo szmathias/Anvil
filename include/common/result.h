@@ -5,7 +5,19 @@
 #ifndef ANVIL_RESULT_H
 #define ANVIL_RESULT_H
 
-typedef enum
+#include "platform.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define ANV_SUCCEEDED(result) ((result) == ANV_RESULT_SUCCESS)
+#define ANV_FAILED(result) ((result) != ANV_RESULT_SUCCESS)
+
+/**
+ * ANVResult - Result codes for Anvil functions.
+ */
+typedef enum ANVResult
 {
     ANV_RESULT_SUCCESS = 0,
 
@@ -28,9 +40,16 @@ typedef enum
     ANV_RESULT_COUNT // Not a result code. Keep this last to get the number of result codes.
 } ANVResult;
 
-const char* anv_result_to_string(ANVResult result);
+/**
+ * Convert an ANVResult code to a human-readable string.
+ *
+ * @param result The ANVResult code to convert.
+ * @return A string representation of the result code.
+ */
+ANV_API const char* anv_result_to_string(ANVResult result);
 
-#define ANV_SUCCEEDED(result) ((result) == ANV_RESULT_SUCCESS)
-#define ANV_FAILED(result) ((result) != ANV_RESULT_SUCCESS)
+#ifdef __cplusplus
+}
+#endif
 
-#endif //ANVIL_RESULT_H
+#endif // ANVIL_RESULT_H

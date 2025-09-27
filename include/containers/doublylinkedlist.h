@@ -8,8 +8,8 @@
 #ifndef ANVIL_DOUBLYLINKEDLIST_H
 #define ANVIL_DOUBLYLINKEDLIST_H
 
-#include "iterator.h"
 #include "common/common.h"
+#include "iterator.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,19 +22,19 @@ extern "C" {
 // Node of doubly linked list
 typedef struct ANVDoublyLinkedNode
 {
-    void* data;                       // Pointer to user data
-    struct ANVDoublyLinkedNode* next; // Pointer to next node
-    struct ANVDoublyLinkedNode* prev; // Pointer to previous node
+        void* data;                       // Pointer to user data
+        struct ANVDoublyLinkedNode* next; // Pointer to next node
+        struct ANVDoublyLinkedNode* prev; // Pointer to previous node
 } ANVDoublyLinkedNode;
 
 // Doubly linked list structure with custom allocator support
 typedef struct ANVDoublyLinkedList
 {
-    ANVDoublyLinkedNode* head; // Pointer to first node
-    ANVDoublyLinkedNode* tail; // Pointer to last node
-    size_t size;               // Number of nodes in list
+        ANVDoublyLinkedNode* head; // Pointer to first node
+        ANVDoublyLinkedNode* tail; // Pointer to last node
+        size_t size;               // Number of nodes in list
 
-    ANVAllocator* alloc;
+        ANVAllocator* alloc;
 } ANVDoublyLinkedList;
 
 //==============================================================================
@@ -46,7 +46,7 @@ typedef struct ANVDoublyLinkedList
  *
  * @return Pointer to new DoublyLinkedList, or NULL on failure.
  */
-ANV_API ANVDoublyLinkedList* anv_dll_create(ANVAllocator * alloc);
+ANV_API ANVDoublyLinkedList* anv_dll_create(ANVAllocator* alloc);
 
 /**
  * Destroy the list and free all nodes.
@@ -250,7 +250,7 @@ ANV_API ANVDoublyLinkedList* anv_dll_filter_deep(const ANVDoublyLinkedList* list
  *
  * @param list The source list
  * @param transform Function that returns a new element based on the original
-* @param should_free_data Whether to free the data returned after
+ * @param should_free_data Whether to free the data returned after
  * transformation if an error occurred
  * @return A new list with transformed elements, or NULL on error
  */
@@ -333,5 +333,4 @@ ANV_API ANVDoublyLinkedList* anv_dll_from_iterator(ANVIterator* it, ANVAllocator
 }
 #endif
 
-#endif //ANVIL_DOUBLYLINKEDLIST_H
-
+#endif // ANVIL_DOUBLYLINKEDLIST_H

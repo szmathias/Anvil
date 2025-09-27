@@ -7,6 +7,10 @@
 
 #include "suite.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Internal assertion function - don't call directly
 void _anv_assert_impl(ANVTestCase* test, bool condition, const char* expression,
                       const char* message, const char* file, int line);
@@ -122,4 +126,8 @@ void _anv_assert_equal_float_impl(ANVTestCase* test, double expected, double act
 void _anv_assert_not_equal_float_impl(ANVTestCase* test, double expected, double actual, double epsilon,
                                       const char* message, const char* file, int line);
 
-#endif //ANVIL_ASSERTIONS_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif // ANVIL_ASSERTIONS_H

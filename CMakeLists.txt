@@ -81,8 +81,20 @@ set(ANV_HEADERS "")
 set(ANV_INCLUDE_DIRS "")
 
 # Always include common module (required foundation)
-file(GLOB_RECURSE COMMON_SOURCES "src/common/*.c")
-file(GLOB_RECURSE COMMON_HEADERS "include/common/*.h")
+set(COMMON_SOURCES
+        "src/common/allocator.c"
+        "src/common/result.c"
+        "src/common/version.c"
+)
+
+set(COMMON_HEADERS
+        "include/common/allocator.h"
+        "include/common/common.h"
+        "include/common/platform.h"
+        "include/common/result.h"
+        "include/common/types.h"
+        "include/common/version.h"
+)
 list(APPEND ANV_SOURCES ${COMMON_SOURCES})
 list(APPEND ANV_HEADERS ${COMMON_HEADERS})
 list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/common")
@@ -90,8 +102,13 @@ message(STATUS "Including common module (foundation)")
 
 # Algorithms module
 if(ANV_WITH_ALGORITHMS)
-    file(GLOB_RECURSE ALGORITHM_SOURCES "src/algorithms/*.c")
-    file(GLOB_RECURSE ALGORITHM_HEADERS "include/algorithms/*.h")
+    set(ALGORITHM_SOURCES
+            "src/algorithms/hash.c"
+    )
+
+    set(ALGORITHM_HEADERS
+            "include/algorithms/hash.h"
+    )
     list(APPEND ANV_SOURCES ${ALGORITHM_SOURCES})
     list(APPEND ANV_HEADERS ${ALGORITHM_HEADERS})
     list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms")
@@ -100,8 +117,33 @@ endif()
 
 # Containers module (core data structures)
 if(ANV_WITH_CONTAINERS)
-    file(GLOB_RECURSE CONTAINER_SOURCES "src/containers/*.c")
-    file(GLOB_RECURSE CONTAINER_HEADERS "include/containers/*.h")
+    set(CONTAINER_SOURCES
+            "src/containers/arraylist.c"
+            "src/containers/binarysearchtree.c"
+            "src/containers/doublylinkedlist.c"
+            "src/containers/dynamicstring.c"
+            "src/containers/hashmap.c"
+            "src/containers/hashset.c"
+            "src/containers/iterator.c"
+            "src/containers/pair.c"
+            "src/containers/queue.c"
+            "src/containers/singlylinkedlist.c"
+            "src/containers/stack.c"
+    )
+
+    set(CONTAINER_HEADERS
+            "include/containers/arraylist.h"
+            "include/containers/binarysearchtree.h"
+            "include/containers/doublylinkedlist.h"
+            "include/containers/dynamicstring.h"
+            "include/containers/hashmap.h"
+            "include/containers/hashset.h"
+            "include/containers/iterator.h"
+            "include/containers/pair.h"
+            "include/containers/queue.h"
+            "include/containers/singlylinkedlist.h"
+            "include/containers/stack.h"
+    )
     list(APPEND ANV_SOURCES ${CONTAINER_SOURCES})
     list(APPEND ANV_HEADERS ${CONTAINER_HEADERS})
     list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/containers")
@@ -110,8 +152,13 @@ endif()
 
 # I/O utilities module
 if(ANV_WITH_IO)
-    file(GLOB_RECURSE IO_SOURCES "src/io/*.c")
-    file(GLOB_RECURSE IO_HEADERS "include/io/*.h")
+    set (IO_SOURCES
+            ""
+    )
+
+    set(IO_HEADERS
+            ""
+    )
     list(APPEND ANV_SOURCES ${IO_SOURCES})
     list(APPEND ANV_HEADERS ${IO_HEADERS})
     list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/io")
@@ -120,8 +167,13 @@ endif()
 
 # Math utilities module
 if(ANV_WITH_MATH)
-    file(GLOB_RECURSE MATH_SOURCES "src/math/*.c")
-    file(GLOB_RECURSE MATH_HEADERS "include/math/*.h")
+    set(MATH_SOURCES
+            ""
+    )
+
+    set(MATH_HEADERS
+            ""
+    )
     list(APPEND ANV_SOURCES ${MATH_SOURCES})
     list(APPEND ANV_HEADERS ${MATH_HEADERS})
     list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/math")
@@ -130,8 +182,13 @@ endif()
 
 # Memory utilities module
 if(ANV_WITH_MEMORY)
-    file(GLOB_RECURSE MEMORY_SOURCES "src/memory/*.c")
-    file(GLOB_RECURSE MEMORY_HEADERS "include/memory/*.h")
+    set(MEMORY_SOURCES
+            ""
+    )
+
+    set(MEMORY_HEADERS
+            ""
+    )
     list(APPEND ANV_SOURCES ${MEMORY_SOURCES})
     list(APPEND ANV_HEADERS ${MEMORY_HEADERS})
     list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/memory")
@@ -140,8 +197,13 @@ endif()
 
 # String utilities module
 if(ANV_WITH_STRINGS)
-    file(GLOB_RECURSE STRING_SOURCES "src/strings/*.c")
-    file(GLOB_RECURSE STRING_HEADERS "include/strings/*.h")
+    set(STRING_SOURCES
+            ""
+    )
+
+    set(STRING_HEADERS
+            ""
+    )
     list(APPEND ANV_SOURCES ${STRING_SOURCES})
     list(APPEND ANV_HEADERS ${STRING_HEADERS})
     list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/strings")
@@ -150,8 +212,16 @@ endif()
 
 # System utilities module
 if(ANV_WITH_SYSTEM)
-    file(GLOB_RECURSE SYSTEM_SOURCES "src/system/*.c")
-    file(GLOB_RECURSE SYSTEM_HEADERS "include/system/*.h")
+    set(SYSTEM_SOURCES
+            "src/system/mutex.c"
+            "src/system/thread.c"
+    )
+
+    set(SYSTEM_HEADERS
+            "include/system/mutex.h"
+            "include/system/system.h"
+            "include/system/thread.h"
+    )
     list(APPEND ANV_SOURCES ${SYSTEM_SOURCES})
     list(APPEND ANV_HEADERS ${SYSTEM_HEADERS})
     list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/system")
@@ -160,8 +230,18 @@ endif()
 
 # Testing framework module
 if(ANV_WITH_TESTING)
-    file(GLOB_RECURSE TESTING_SOURCES "src/testing/*.c")
-    file(GLOB_RECURSE TESTING_HEADERS "include/testing/*.h")
+    set(TESTING_SOURCES
+            ""
+    )
+
+    set(TESTING_HEADERS
+            "include/testing/assertions.h"
+            "include/testing/benchmarks.h"
+            "include/testing/fixtures.h"
+            "include/testing/suite.h"
+            "include/testing/testing.h"
+    )
+
     list(APPEND ANV_SOURCES ${TESTING_SOURCES})
     list(APPEND ANV_HEADERS ${TESTING_HEADERS})
     list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/testing")

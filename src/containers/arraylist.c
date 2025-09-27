@@ -665,9 +665,9 @@ ANV_API ANVArrayList* anv_arraylist_copy_deep(const ANVArrayList* list, const bo
 // Forward iterator state
 typedef struct ArrayListIterState
 {
-    const ANVArrayList* list;
-    size_t current_index;
-    bool reverse;
+        const ANVArrayList* list;
+        size_t current_index;
+        bool reverse;
 } ArrayListIterState;
 
 static void* arraylist_iter_get(const ANVIterator* iter)

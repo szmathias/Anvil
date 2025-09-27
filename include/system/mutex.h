@@ -18,16 +18,16 @@ extern "C" {
 #endif
 
 #ifdef ANVIL_PLATFORM_WINDOWS
-#include <windows.h>
+    #include <windows.h>
 // Structure to wrap CRITICAL_SECTION with ownership tracking
 typedef struct
 {
-    CRITICAL_SECTION cs;
-    volatile DWORD owner_thread_id;
-    volatile LONG lock_count;
+        CRITICAL_SECTION cs;
+        volatile DWORD owner_thread_id;
+        volatile LONG lock_count;
 } ANVMutex;
 #else
-#include <pthread.h>
+    #include <pthread.h>
 typedef pthread_mutex_t ANVMutex;
 #endif
 

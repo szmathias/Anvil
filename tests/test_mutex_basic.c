@@ -1,4 +1,4 @@
-#include "system/threads.h"
+#include "system/thread.h"
 #include "system/mutex.h"
 #include "TestAssert.h"
 #include <stdio.h>

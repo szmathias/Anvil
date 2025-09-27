@@ -5,9 +5,9 @@
 #ifndef ANVIL_TESTING_H
 #define ANVIL_TESTING_H
 
-#include "suite.h"
 #include "assertions.h"
-#include "fixtures.h"
 #include "benchmarks.h"
+#include "fixtures.h"
+#include "suite.h"
 
-#endif //ANVIL_TESTING_H
+#endif // ANVIL_TESTING_H

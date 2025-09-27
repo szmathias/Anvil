@@ -40,7 +40,7 @@ static void* const HASHSET_PRESENT = (void*)1;
 //==============================================================================
 
 ANV_API ANVHashSet* anv_hashset_create(ANVAllocator* alloc, const anv_hash_func hash,
-                               const key_equals_func key_equals, const size_t initial_capacity)
+                                       const key_equals_func key_equals, const size_t initial_capacity)
 {
     if (!alloc || !hash || !key_equals)
     {
@@ -478,9 +478,9 @@ ANV_API ANVHashSet* anv_hashset_copy_deep(const ANVHashSet* set, const anv_copy_
 // HashSet iterator state - wraps HashMap iterator but only returns keys
 typedef struct HashSetIteratorState
 {
-    ANVIterator map_iterator; // Underlying HashMap iterator
-    void* current_key;        // Current key to return
-    ANVAllocator* alloc;      // Allocator for freeing this state
+        ANVIterator map_iterator; // Underlying HashMap iterator
+        void* current_key;        // Current key to return
+        ANVAllocator* alloc;      // Allocator for freeing this state
 } HashSetIteratorState;
 
 static void* hashset_iterator_get(const ANVIterator* it)
@@ -676,7 +676,7 @@ ANV_API ANVIterator anv_hashset_iterator(const ANVHashSet* set)
 }
 
 ANV_API ANVHashSet* anv_hashset_from_iterator(ANVIterator* it, ANVAllocator* alloc,
-                                      const anv_hash_func hash, const key_equals_func key_equals, const bool should_copy)
+                                              const anv_hash_func hash, const key_equals_func key_equals, const bool should_copy)
 {
     if (!it || !alloc || !hash || !key_equals)
     {

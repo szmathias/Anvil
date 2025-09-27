@@ -5,8 +5,8 @@
 #ifndef ANVIL_ARRAYLIST_H
 #define ANVIL_ARRAYLIST_H
 
-#include "iterator.h"
 #include "common/common.h"
+#include "iterator.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,10 +23,10 @@ extern "C" {
  */
 typedef struct ANVArrayList
 {
-    void** data;         // Array of pointers to user data
-    size_t size;         // Current number of elements
-    size_t capacity;     // Maximum number of elements before reallocation
-    ANVAllocator* alloc; // Custom allocator
+        void** data;         // Array of pointers to user data
+        size_t size;         // Current number of elements
+        size_t capacity;     // Maximum number of elements before reallocation
+        ANVAllocator* alloc; // Custom allocator
 } ANVArrayList;
 
 //==============================================================================
@@ -374,4 +374,4 @@ ANV_API ANVArrayList* anv_arraylist_from_iterator(ANVIterator* it, ANVAllocator*
 }
 #endif
 
-#endif //ANVIL_ARRAYLIST_H
+#endif // ANVIL_ARRAYLIST_H

@@ -5,8 +5,8 @@
 #ifndef ANVIL_STACK_H
 #define ANVIL_STACK_H
 
-#include "iterator.h"
 #include "common/common.h"
+#include "iterator.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,8 +21,8 @@ extern "C" {
  */
 typedef struct ANVStackNode
 {
-    void* data;                // Pointer to user data
-    struct ANVStackNode* next; // Pointer to next node (towards bottom)
+        void* data;                // Pointer to user data
+        struct ANVStackNode* next; // Pointer to next node (towards bottom)
 } ANVStackNode;
 
 /**
@@ -32,9 +32,9 @@ typedef struct ANVStackNode
  */
 typedef struct ANVStack
 {
-    ANVStackNode* top;   // Pointer to top node
-    size_t size;         // Number of elements in stack
-    ANVAllocator* alloc; // Custom allocator
+        ANVStackNode* top;   // Pointer to top node
+        size_t size;         // Number of elements in stack
+        ANVAllocator* alloc; // Custom allocator
 } ANVStack;
 
 //==============================================================================
@@ -47,7 +47,7 @@ typedef struct ANVStack
  * @param alloc Custom allocator (required)
  * @return Pointer to new Stack, or NULL on failure
  */
-ANV_API ANVStack* anv_stack_create(ANVAllocator * alloc);
+ANV_API ANVStack* anv_stack_create(ANVAllocator* alloc);
 
 /**
  * Destroy the stack and free all nodes.
@@ -218,4 +218,4 @@ ANV_API ANVStack* anv_stack_from_iterator(ANVIterator* it, ANVAllocator* alloc, 
 }
 #endif
 
-#endif //ANVIL_STACK_H
+#endif // ANVIL_STACK_H

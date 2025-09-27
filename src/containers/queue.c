@@ -359,9 +359,9 @@ ANV_API ANVQueue* anv_queue_copy_deep(const ANVQueue* queue, const bool should_f
 
 typedef struct QueueIteratorState
 {
-    const ANVQueue* queue;
-    ANVQueueNode* current;
-    ANVQueueNode* start;
+        const ANVQueue* queue;
+        ANVQueueNode* current;
+        ANVQueueNode* start;
 } QueueIteratorState;
 
 static void* queue_iterator_get(const ANVIterator* it)

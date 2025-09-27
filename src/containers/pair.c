@@ -125,7 +125,7 @@ ANV_API void anv_pair_swap(ANVPair* pair)
 }
 
 ANV_API int anv_pair_compare(const ANVPair* pair1, const ANVPair* pair2,
-                     const pair_compare_func first_compare, const pair_compare_func second_compare)
+                             const pair_compare_func first_compare, const pair_compare_func second_compare)
 {
     if (!pair1 && !pair2)
     {
@@ -162,7 +162,7 @@ ANV_API int anv_pair_compare(const ANVPair* pair1, const ANVPair* pair2,
 }
 
 ANV_API int anv_pair_equals(const ANVPair* pair1, const ANVPair* pair2,
-                    const pair_compare_func first_compare, const pair_compare_func second_compare)
+                            const pair_compare_func first_compare, const pair_compare_func second_compare)
 {
     return anv_pair_compare(pair1, pair2, first_compare, second_compare) == 0;
 }

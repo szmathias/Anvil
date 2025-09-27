@@ -29,20 +29,18 @@ ANV_API ANVAllocator anv_alloc_default(void)
         .allocate = malloc,
         .deallocate = free,
         .data_free = free,
-        .copy = default_copy
-    };
+        .copy = default_copy};
     return alloc;
 }
 
 ANV_API ANVAllocator anv_alloc_custom(const anv_allocate_func alloc_func, const anv_deallocate_func dealloc_func,
-                              const anv_deallocate_func data_free_func, const anv_copy_func anv_copy_func)
+                                      const anv_deallocate_func data_free_func, const anv_copy_func anv_copy_func)
 {
     const ANVAllocator alloc = {
         .allocate = alloc_func,
         .deallocate = dealloc_func,
         .data_free = data_free_func,
-        .copy = anv_copy_func ? anv_copy_func : default_copy
-    };
+        .copy = anv_copy_func ? anv_copy_func : default_copy};
     return alloc;
 }
 

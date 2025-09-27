@@ -834,8 +834,8 @@ ANV_API ANVSinglyLinkedList* anv_sll_copy_deep(const ANVSinglyLinkedList* list, 
 
 typedef struct SListIteratorState
 {
-    ANVSinglyLinkedNode* current; // Current node
-    ANVSinglyLinkedList* list;    // The list being iterated
+        ANVSinglyLinkedNode* current; // Current node
+        ANVSinglyLinkedList* list;    // The list being iterated
 } SListIteratorState;
 
 static int sll_iterator_has_next(const ANVIterator* it)

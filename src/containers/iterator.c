@@ -32,10 +32,10 @@ static void invalid_reset(const ANVIterator* it)
  */
 typedef struct TransformState
 {
-    ANVIterator* base_iterator; // Source iterator
-    anv_transform_func transform;   // Transformation function
-    void* cached_result;        // Cached transformed result
-    int transform_allocates;    // Flag: does transform function allocate memory?
+        ANVIterator* base_iterator;   // Source iterator
+        anv_transform_func transform; // Transformation function
+        void* cached_result;          // Cached transformed result
+        int transform_allocates;      // Flag: does transform function allocate memory?
 } TransformState;
 
 /**
@@ -223,11 +223,11 @@ ANV_API ANVIterator anv_iterator_transform(ANVIterator* it, const ANVAllocator* 
  */
 typedef struct FilterState
 {
-    ANVIterator* base_iterator; // Source iterator
-    anv_filter_func filter;         // Predicate function
-    void* current_element;      // Cached current element
-    int has_current;            // Flag indicating if we have a cached current element
-    int current_matches;        // Flag indicating if current element matches filter
+        ANVIterator* base_iterator; // Source iterator
+        anv_filter_func filter;     // Predicate function
+        void* current_element;      // Cached current element
+        int has_current;            // Flag indicating if we have a cached current element
+        int current_matches;        // Flag indicating if current element matches filter
 } FilterState;
 
 /**
@@ -447,11 +447,11 @@ ANV_API ANVIterator anv_iterator_filter(ANVIterator* it, const ANVAllocator* all
  */
 typedef struct RangeState
 {
-    int start;        // Starting value (stored for reset/has_prev)
-    int current;      // Current value
-    int end;          // End value (exclusive)
-    int step;         // Increment value
-    int cached_value; // Cached value to return pointers to
+        int start;        // Starting value (stored for reset/has_prev)
+        int current;      // Current value
+        int end;          // End value (exclusive)
+        int step;         // Increment value
+        int cached_value; // Cached value to return pointers to
 } RangeState;
 
 /**
@@ -677,9 +677,9 @@ ANV_API ANVIterator anv_iterator_range(const int start, const int end, const int
  */
 typedef struct CopyState
 {
-    ANVIterator* base_iterator; // Source iterator
-    anv_copy_func copy;             // Copy function
-    void* cached_copy;          // Cached copied element (user owns this)
+        ANVIterator* base_iterator; // Source iterator
+        anv_copy_func copy;         // Copy function
+        void* cached_copy;          // Cached copied element (user owns this)
 } CopyState;
 
 /**
@@ -848,9 +848,9 @@ ANV_API ANVIterator anv_iterator_copy(ANVIterator* it, const ANVAllocator* alloc
  */
 typedef struct TakeState
 {
-    ANVIterator* base_iterator; // Source iterator
-    size_t max_count;           // Maximum number of elements to yield
-    size_t current_count;       // Number of elements yielded so far
+        ANVIterator* base_iterator; // Source iterator
+        size_t max_count;           // Maximum number of elements to yield
+        size_t current_count;       // Number of elements yielded so far
 } TakeState;
 
 /**
@@ -1025,9 +1025,9 @@ ANV_API ANVIterator anv_iterator_take(ANVIterator* it, const ANVAllocator* alloc
  */
 typedef struct SkipState
 {
-    ANVIterator* base_iterator; // Source iterator
-    size_t skip_count;          // Number of elements to skip
-    int has_skipped;            // Flag indicating if we have performed the skip
+        ANVIterator* base_iterator; // Source iterator
+        size_t skip_count;          // Number of elements to skip
+        int has_skipped;            // Flag indicating if we have performed the skip
 } SkipState;
 
 /**
@@ -1209,10 +1209,10 @@ ANV_API ANVIterator anv_iterator_skip(ANVIterator* it, const ANVAllocator* alloc
  */
 typedef struct ZipState
 {
-    ANVIterator* iter1;         // First source iterator
-    ANVIterator* iter2;         // Second source iterator
-    ANVPair* cached_pair;       // Cached pair to return pointers to
-    int has_cached_pair;        // Flag indicating if cached pair is valid
+        ANVIterator* iter1;   // First source iterator
+        ANVIterator* iter2;   // Second source iterator
+        ANVPair* cached_pair; // Cached pair to return pointers to
+        int has_cached_pair;  // Flag indicating if cached pair is valid
 } ZipState;
 
 /**
@@ -1421,9 +1421,9 @@ ANV_API ANVIterator anv_iterator_zip(ANVIterator* it1, ANVIterator* it2, const A
  */
 typedef struct EnumerateState
 {
-    ANVIterator* base_iterator;     // Source iterator
-    size_t current_index;           // Current index counter
-    ANVIndexedElement cached_element; // Cached indexed element to return pointers to
+        ANVIterator* base_iterator;       // Source iterator
+        size_t current_index;             // Current index counter
+        ANVIndexedElement cached_element; // Cached indexed element to return pointers to
 } EnumerateState;
 
 /**
@@ -1606,9 +1606,9 @@ ANV_API ANVIterator anv_iterator_enumerate(ANVIterator* it, const ANVAllocator* 
  */
 typedef struct RepeatState
 {
-    const void* value;         // Pointer to the value to repeat (not owned)
-    size_t total_count;        // Total number of repetitions
-    size_t current_count;      // Current iteration count (0-based)
+        const void* value;    // Pointer to the value to repeat (not owned)
+        size_t total_count;   // Total number of repetitions
+        size_t current_count; // Current iteration count (0-based)
 } RepeatState;
 
 /**
@@ -1759,9 +1759,9 @@ ANV_API ANVIterator anv_iterator_repeat(const void* value, const ANVAllocator* a
  */
 typedef struct ChainState
 {
-    ANVIterator* iterators;        // Array of source iterators (owned)
-    size_t iterator_count;         // Number of iterators in the array
-    size_t current_iterator_index; // Index of currently active iterator
+        ANVIterator* iterators;        // Array of source iterators (owned)
+        size_t iterator_count;         // Number of iterators in the array
+        size_t current_iterator_index; // Index of currently active iterator
 } ChainState;
 
 /**
@@ -1858,7 +1858,6 @@ static int chain_next(const ANVIterator* it)
     }
 
     return 0;
-
 }
 
 /**
