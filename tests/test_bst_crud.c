@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "containers/BinarySearchTree.h"
+#include "containers/binarysearchtree.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 
@@ -287,7 +287,7 @@ int test_bst_property(void)
 int test_bst_string_data(void)
 {
     ANVAllocator alloc = create_string_allocator();
-    ANVBinarySearchTree* bst = anv_bst_create(&alloc, (cmp_func)strcmp);
+    ANVBinarySearchTree* bst = anv_bst_create(&alloc, (anv_compare_func)strcmp);
 
     char* strings[] = {"apple", "banana", "cherry", "date", "elderberry"};
     int num_strings = 5;

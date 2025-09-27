@@ -2,7 +2,7 @@
 // Created by zack on 9/2/25.
 //
 
-#include "containers/SinglyLinkedList.h"
+#include "containers/singlylinkedlist.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 #include <stdio.h>

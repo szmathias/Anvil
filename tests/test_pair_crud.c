@@ -2,7 +2,7 @@
 // Created by zack on 9/15/25.
 //
 
-#include "containers/Pair.h"
+#include "containers/pair.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 #include <stdio.h>
@@ -10,7 +10,7 @@
 #include <string.h>
 
 // Helper copy functions for testing
-static void* int_copy_func(const void* data)
+static void* int_anv_copy_func(const void* data)
 {
     int* copy = malloc(sizeof(int));
     if (copy)
@@ -20,7 +20,7 @@ static void* int_copy_func(const void* data)
     return copy;
 }
 
-static void* string_copy_func(const void* data)
+static void* string_anv_copy_func(const void* data)
 {
     const char* str = (const char*)data;
     size_t len = strlen(str) + 1;
@@ -32,7 +32,7 @@ static void* string_copy_func(const void* data)
     return copy;
 }
 
-int test_pair_copy_functions(void)
+int test_pair_anv_copy_functions(void)
 {
     ANVAllocator alloc = create_int_allocator();
 
@@ -52,7 +52,7 @@ int test_pair_copy_functions(void)
     ASSERT_EQ_PTR(shallow->alloc, original->alloc);
 
     // Test deep copy with both copy functions
-    ANVPair* deep = anv_pair_copy_deep(original, true, int_copy_func, int_copy_func);
+    ANVPair* deep = anv_pair_copy_deep(original, true, int_anv_copy_func, int_anv_copy_func);
     ASSERT_NOT_NULL(deep);
     ASSERT_NOT_EQ_PTR(deep, original);
     ASSERT_NOT_EQ_PTR(deep->first, original->first);         // Different pointers
@@ -61,7 +61,7 @@ int test_pair_copy_functions(void)
     ASSERT_EQ(*(int*)deep->second, *(int*)original->second); // Same values
 
     // Test deep copy with only first copy function
-    ANVPair* partial = anv_pair_copy_deep(original, true, int_copy_func, NULL);
+    ANVPair* partial = anv_pair_copy_deep(original, true, int_anv_copy_func, NULL);
     ASSERT_NOT_NULL(partial);
     ASSERT_NOT_EQ_PTR(partial->first, original->first); // Copied
     ASSERT_EQ_PTR(partial->second, original->second);   // Referenced
@@ -69,7 +69,7 @@ int test_pair_copy_functions(void)
 
     // Test copy with NULL
     ASSERT_NULL(anv_pair_copy(NULL));
-    ASSERT_NULL(anv_pair_copy_deep(NULL, true, int_copy_func, int_copy_func));
+    ASSERT_NULL(anv_pair_copy_deep(NULL, true, int_anv_copy_func, int_anv_copy_func));
 
     anv_pair_destroy(original, true, true);
     anv_pair_destroy(shallow, false, false); // Don't free data (shared with original)
@@ -90,7 +90,7 @@ int test_pair_mixed_type_copy(void)
     ANVPair* original = anv_pair_create(&alloc, first, second);
 
     // Test deep copy with different copy functions for each element
-    ANVPair* mixed_copy = anv_pair_copy_deep(original, true, int_copy_func, string_copy_func);
+    ANVPair* mixed_copy = anv_pair_copy_deep(original, true, int_anv_copy_func, string_anv_copy_func);
     ASSERT_NOT_NULL(mixed_copy);
     ASSERT_NOT_EQ_PTR(mixed_copy->first, original->first);
     ASSERT_NOT_EQ_PTR(mixed_copy->second, original->second);
@@ -268,7 +268,7 @@ int main(void)
         test_pair_accessors,
         test_pair_setters,
         test_pair_swap,
-        test_pair_copy_functions,
+        test_pair_anv_copy_functions,
         test_pair_mixed_type_copy,
     };
 
@@ -279,7 +279,7 @@ int main(void)
         "test_pair_accessors",
         "test_pair_setters",
         "test_pair_swap",
-        "test_pair_copy_functions",
+        "test_pair_anv_copy_functions",
         "test_pair_mixed_type_copy",
     };
 

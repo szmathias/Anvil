@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "containers/SinglyLinkedList.h"
+#include "containers/singlylinkedlist.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 
@@ -281,7 +281,7 @@ int test_sll_copy_isolation(void)
 }
 
 // Test that should_copy=true fails when allocator has no copy function
-int test_sll_copy_function_required(void)
+int test_sll_anv_copy_function_required(void)
 {
     ANVAllocator alloc = anv_alloc_default();
     alloc.copy = NULL;
@@ -582,7 +582,7 @@ int main(void)
         {test_iterator_invalid, "test_iterator_invalid"},
         {test_iterator_modification, "test_iterator_modification"},
         {test_sll_copy_isolation, "test_sll_copy_isolation"},
-        {test_sll_copy_function_required, "test_sll_copy_function_required"},
+        {test_sll_anv_copy_function_required, "test_sll_anv_copy_function_required"},
         {test_sll_from_iterator_no_copy, "test_sll_from_iterator_no_copy"},
         {test_iterator_exhaustion_after_sll_creation, "test_iterator_exhaustion_after_sll_creation"},
         {test_sll_iterator_next_return_values, "test_sll_iterator_next_return_values"},

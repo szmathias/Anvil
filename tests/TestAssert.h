@@ -8,8 +8,8 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
-#include "common/CStandardCompatibility.h"
-#include "containers/DynamicString.h"
+#include "common/common.h"
+#include "containers/dynamicstring.h"
 
 #define TEST_SUCCESS 1
 #define TEST_FAILURE 0

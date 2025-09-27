@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include "containers/BinarySearchTree.h"
+#include "containers/binarysearchtree.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 

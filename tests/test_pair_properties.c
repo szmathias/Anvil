@@ -2,7 +2,7 @@
 // Created by zack on 9/15/25.
 //
 
-#include "containers/Pair.h"
+#include "containers/pair.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 #include <stdio.h>
@@ -11,7 +11,7 @@
 #include <limits.h>
 
 // Helper copy functions for testing
-static void* int_copy_func(const void* data)
+static void* int_anv_copy_func(const void* data)
 {
     int* copy = malloc(sizeof(int));
     if (copy)
@@ -140,7 +140,7 @@ int test_pair_copy_independence(void)
     *second = 84;
 
     ANVPair* original = anv_pair_create(&alloc, first, second);
-    ANVPair* copy = anv_pair_copy_deep(original, true, int_copy_func, int_copy_func);
+    ANVPair* copy = anv_pair_copy_deep(original, true, int_anv_copy_func, int_anv_copy_func);
 
     // Modify original
     int* new_value = malloc(sizeof(int));

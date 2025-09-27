@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "containers/DoublyLinkedList.h"
+#include "containers/doublylinkedlist.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 

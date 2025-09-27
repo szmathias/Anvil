@@ -2,7 +2,7 @@
 // Created by zack on 9/15/25.
 //
 
-#include "containers/Pair.h"
+#include "containers/pair.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 #include <stdio.h>
@@ -10,7 +10,7 @@
 #include <string.h>
 
 // Helper copy functions for testing
-static void* int_copy_func(const void* data)
+static void* int_anv_copy_func(const void* data)
 {
     int* copy = malloc(sizeof(int));
     if (copy)
@@ -20,7 +20,7 @@ static void* int_copy_func(const void* data)
     return copy;
 }
 
-static void* string_copy_func(const void* data)
+static void* string_anv_copy_func(const void* data)
 {
     const char* str = (const char*)data;
     size_t len = strlen(str) + 1;
@@ -33,7 +33,7 @@ static void* string_copy_func(const void* data)
 }
 
 // Helper function that always fails for testing
-static void* failing_copy_func(const void* data)
+static void* failing_anv_copy_func(const void* data)
 {
     (void)data;
     return NULL; // Always fail
@@ -65,12 +65,12 @@ int test_pair_copy_deep_allocation_failure(void)
 
     // Test failure during first element copy by using a failing copy function
     set_alloc_fail_countdown(1); // Allocate the Pair structure then fail on the first copy
-    ANVPair* copy1 = anv_pair_copy_deep(original, true, failing_copy_func, normal_alloc.copy);
+    ANVPair* copy1 = anv_pair_copy_deep(original, true, failing_anv_copy_func, normal_alloc.copy);
     ASSERT_NULL(copy1);
 
     // Test failure during second element copy by using a failing copy function
     set_alloc_fail_countdown(1); // Allocate the Pair structure then fail on the second copy
-    ANVPair* copy2 = anv_pair_copy_deep(original, true, normal_alloc.copy, failing_copy_func);
+    ANVPair* copy2 = anv_pair_copy_deep(original, true, normal_alloc.copy, failing_anv_copy_func);
     ASSERT_NULL(copy2);
 
     anv_pair_destroy(original, true, true);
@@ -133,7 +133,7 @@ int test_pair_selective_memory_management(void)
     return TEST_SUCCESS;
 }
 
-int test_pair_copy_deep_with_different_copy_functions(void)
+int test_pair_copy_deep_with_different_anv_copy_functions(void)
 {
     ANVAllocator alloc = create_int_allocator();
 
@@ -145,7 +145,7 @@ int test_pair_copy_deep_with_different_copy_functions(void)
     ANVPair* original = anv_pair_create(&alloc, first, second);
 
     // Test deep copy with different copy functions for each element
-    ANVPair* deep_copy = anv_pair_copy_deep(original, true, int_copy_func, string_copy_func);
+    ANVPair* deep_copy = anv_pair_copy_deep(original, true, int_anv_copy_func, string_anv_copy_func);
     ASSERT_NOT_NULL(deep_copy);
     ASSERT_NOT_EQ_PTR(deep_copy->first, original->first);
     ASSERT_NOT_EQ_PTR(deep_copy->second, original->second);
@@ -283,7 +283,7 @@ int main(void)
         test_pair_destroy_null_safe,
         test_pair_memory_leak_prevention,
         test_pair_selective_memory_management,
-        test_pair_copy_deep_with_different_copy_functions,
+        test_pair_copy_deep_with_different_anv_copy_functions,
         test_pair_large_data_handling,
         test_pair_multiple_operations_memory_safety,
         test_pair_edge_case_null_elements,
@@ -295,7 +295,7 @@ int main(void)
         "test_pair_destroy_null_safe",
         "test_pair_memory_leak_prevention",
         "test_pair_selective_memory_management",
-        "test_pair_copy_deep_with_different_copy_functions",
+        "test_pair_copy_deep_with_different_anv_copy_functions",
         "test_pair_large_data_handling",
         "test_pair_multiple_operations_memory_safety",
         "test_pair_edge_case_null_elements",

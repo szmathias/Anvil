@@ -3,7 +3,7 @@
 //
 
 #include <stdio.h>
-#include "containers/HashSet.h"
+#include "containers/hashset.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 

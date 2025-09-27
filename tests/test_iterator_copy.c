@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "containers/DoublyLinkedList.h"
-#include "containers/Iterator.h"
+#include "containers/doublylinkedlist.h"
+#include "containers/iterator.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 

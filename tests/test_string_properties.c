@@ -2,7 +2,7 @@
 // Created by zack on 9/4/25.
 //
 
-#include "containers/DynamicString.h"
+#include "containers/dynamicstring.h"
 #include "TestAssert.h"
 #include <stdlib.h>
 #include <stdio.h>

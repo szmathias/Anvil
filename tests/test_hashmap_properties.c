@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "containers/HashMap.h"
+#include "containers/hashmap.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 
@@ -344,7 +344,7 @@ int test_hashmap_iterator_completeness(void)
 }
 
 // Test hash map with different hash functions
-int test_hashmap_hash_function_property(void)
+int test_hashmap_anv_hash_function_property(void)
 {
     ANVAllocator alloc = anv_alloc_default();
 
@@ -387,7 +387,7 @@ int main(void)
         {test_hashmap_key_equality_property, "test_hashmap_key_equality_property"},
         {test_hashmap_contains_property, "test_hashmap_contains_property"},
         {test_hashmap_iterator_completeness, "test_hashmap_iterator_completeness"},
-        {test_hashmap_hash_function_property, "test_hashmap_hash_function_property"},
+        {test_hashmap_anv_hash_function_property, "test_hashmap_anv_hash_function_property"},
     };
 
     printf("Running HashMap properties tests...\n");

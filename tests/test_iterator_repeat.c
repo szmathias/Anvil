@@ -5,10 +5,10 @@
 // Tests cover basic iteration, edge cases, repeat handling,
 // error handling, and composition with other iterators.
 
-#include "containers/ArrayList.h"
-#include "containers/DoublyLinkedList.h"
-#include "containers/Iterator.h"
-#include "containers/Pair.h"
+#include "containers/arraylist.h"
+#include "containers/doublylinkedlist.h"
+#include "containers/iterator.h"
+#include "containers/pair.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 
