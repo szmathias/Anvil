@@ -17,7 +17,7 @@ ANV_API ANVPair* anv_pair_create(ANVAllocator* alloc, void* first, void* second)
         return NULL;
     }
 
-    ANVPair* pair = anv_alloc_malloc(alloc, sizeof(ANVPair));
+    ANVPair* pair = anv_alloc_allocate(alloc, sizeof(ANVPair));
     if (!pair)
     {
         return NULL;
@@ -25,12 +25,12 @@ ANV_API ANVPair* anv_pair_create(ANVAllocator* alloc, void* first, void* second)
 
     pair->first = first;
     pair->second = second;
-    pair->alloc = alloc;
+    pair->alloc = *alloc;
 
     return pair;
 }
 
-ANV_API int anv_pair_init(ANVPair* pair, ANVAllocator* alloc, void* first, void* second)
+ANV_API int anv_pair_init(ANVPair* pair, const ANVAllocator* alloc, void* first, void* second)
 {
     if (!pair)
     {
@@ -39,7 +39,7 @@ ANV_API int anv_pair_init(ANVPair* pair, ANVAllocator* alloc, void* first, void*
 
     pair->first = first;
     pair->second = second;
-    pair->alloc = alloc;
+    pair->alloc = *alloc;
 
     return 0;
 }
@@ -53,15 +53,15 @@ ANV_API void anv_pair_destroy(ANVPair* pair, const bool should_free_first, const
 
     if (should_free_first)
     {
-        anv_alloc_data_free(pair->alloc, pair->first);
+        anv_alloc_data_deallocate(&pair->alloc, pair->first);
     }
 
     if (should_free_second)
     {
-        anv_alloc_data_free(pair->alloc, pair->second);
+        anv_alloc_data_deallocate(&pair->alloc, pair->second);
     }
 
-    anv_alloc_free(pair->alloc, pair);
+    anv_alloc_deallocate(&pair->alloc, pair);
 }
 
 //==============================================================================
@@ -87,7 +87,7 @@ ANV_API void anv_pair_set_first(ANVPair* pair, void* first, const bool should_fr
 
     if (should_free_old)
     {
-        anv_alloc_data_free(pair->alloc, pair->first);
+        anv_alloc_data_deallocate(&pair->alloc, pair->first);
     }
 
     pair->first = first;
@@ -102,7 +102,7 @@ ANV_API void anv_pair_set_second(ANVPair* pair, void* second, const bool should_
 
     if (should_free_old)
     {
-        anv_alloc_data_free(pair->alloc, pair->second);
+        anv_alloc_data_deallocate(&pair->alloc, pair->second);
     }
 
     pair->second = second;
@@ -167,24 +167,24 @@ ANV_API int anv_pair_equals(const ANVPair* pair1, const ANVPair* pair2,
     return anv_pair_compare(pair1, pair2, first_compare, second_compare) == 0;
 }
 
-ANV_API ANVPair* anv_pair_copy(const ANVPair* pair)
+ANV_API ANVPair* anv_pair_copy(ANVPair* pair)
 {
-    if (!pair || !pair->alloc)
+    if (!pair)
     {
         return NULL;
     }
 
-    return anv_pair_create(pair->alloc, pair->first, pair->second);
+    return anv_pair_create(&pair->alloc, pair->first, pair->second);
 }
 
-ANV_API ANVPair* anv_pair_copy_deep(const ANVPair* pair, const bool should_free, const anv_copy_func first_copy, const anv_copy_func second_copy)
+ANV_API ANVPair* anv_pair_copy_deep(ANVPair* pair, const bool should_free, const anv_copy_func first_copy, const anv_copy_func second_copy)
 {
-    if (!pair || !pair->alloc)
+    if (!pair)
     {
         return NULL;
     }
 
-    ANVPair* new_pair = anv_alloc_malloc(pair->alloc, sizeof(ANVPair));
+    ANVPair* new_pair = anv_alloc_allocate(&pair->alloc, sizeof(ANVPair));
     if (!new_pair)
     {
         return NULL;
@@ -236,13 +236,9 @@ ANV_API void* anv_pair_copy_string_int(const void* pair_data)
     }
 
     const ANVPair* original = pair_data;
-    if (!original->alloc)
-    {
-        return NULL;
-    }
 
     // Create new pair structure
-    ANVPair* new_pair = anv_alloc_malloc(original->alloc, sizeof(ANVPair));
+    ANVPair* new_pair = anv_alloc_allocate(&original->alloc, sizeof(ANVPair));
     if (!new_pair)
     {
         return NULL;
@@ -257,10 +253,10 @@ ANV_API void* anv_pair_copy_string_int(const void* pair_data)
     {
         const char* str = original->first;
         const size_t len = strlen(str) + 1;
-        char* str_copy = anv_alloc_malloc(original->alloc, len);
+        char* str_copy = anv_alloc_allocate(&original->alloc, len);
         if (!str_copy)
         {
-            anv_alloc_free(original->alloc, new_pair);
+            anv_alloc_deallocate(&original->alloc, new_pair);
             return NULL;
         }
         strcpy(str_copy, str);
@@ -270,14 +266,14 @@ ANV_API void* anv_pair_copy_string_int(const void* pair_data)
     // Copy int second element
     if (original->second)
     {
-        int* int_copy = anv_alloc_malloc(original->alloc, sizeof(int));
+        int* int_copy = anv_alloc_allocate(&original->alloc, sizeof(int));
         if (!int_copy)
         {
             if (new_pair->first)
             {
-                anv_alloc_free(original->alloc, new_pair->first);
+                anv_alloc_deallocate(&original->alloc, new_pair->first);
             }
-            anv_alloc_free(original->alloc, new_pair);
+            anv_alloc_deallocate(&original->alloc, new_pair);
             return NULL;
         }
         *int_copy = *(const int*)original->second;
@@ -295,13 +291,9 @@ ANV_API void* anv_pair_copy_int_string(const void* pair_data)
     }
 
     const ANVPair* original = pair_data;
-    if (!original->alloc)
-    {
-        return NULL;
-    }
 
     // Create new pair structure
-    ANVPair* new_pair = anv_alloc_malloc(original->alloc, sizeof(ANVPair));
+    ANVPair* new_pair = anv_alloc_allocate(&original->alloc, sizeof(ANVPair));
     if (!new_pair)
     {
         return NULL;
@@ -314,10 +306,10 @@ ANV_API void* anv_pair_copy_int_string(const void* pair_data)
     // Copy int first element
     if (original->first)
     {
-        int* int_copy = anv_alloc_malloc(original->alloc, sizeof(int));
+        int* int_copy = anv_alloc_allocate(&original->alloc, sizeof(int));
         if (!int_copy)
         {
-            anv_alloc_free(original->alloc, new_pair);
+            anv_alloc_deallocate(&original->alloc, new_pair);
             return NULL;
         }
         *int_copy = *(const int*)original->first;
@@ -329,14 +321,14 @@ ANV_API void* anv_pair_copy_int_string(const void* pair_data)
     {
         const char* str = (const char*)original->second;
         const size_t len = strlen(str) + 1;
-        char* str_copy = anv_alloc_malloc(original->alloc, len);
+        char* str_copy = anv_alloc_allocate(&original->alloc, len);
         if (!str_copy)
         {
             if (new_pair->first)
             {
-                anv_alloc_free(original->alloc, new_pair->first);
+                anv_alloc_deallocate(&original->alloc, new_pair->first);
             }
-            anv_alloc_free(original->alloc, new_pair);
+            anv_alloc_deallocate(&original->alloc, new_pair);
             return NULL;
         }
         strcpy(str_copy, str);
@@ -354,13 +346,9 @@ ANV_API void* anv_pair_copy_string_string(const void* pair_data)
     }
 
     const ANVPair* original = pair_data;
-    if (!original->alloc)
-    {
-        return NULL;
-    }
 
     // Create new pair structure
-    ANVPair* new_pair = anv_alloc_malloc(original->alloc, sizeof(ANVPair));
+    ANVPair* new_pair = anv_alloc_allocate(&original->alloc, sizeof(ANVPair));
     if (!new_pair)
     {
         return NULL;
@@ -375,10 +363,10 @@ ANV_API void* anv_pair_copy_string_string(const void* pair_data)
     {
         const char* str1 = (const char*)original->first;
         const size_t len1 = strlen(str1) + 1;
-        char* str1_copy = anv_alloc_malloc(original->alloc, len1);
+        char* str1_copy = anv_alloc_allocate(&original->alloc, len1);
         if (!str1_copy)
         {
-            anv_alloc_free(original->alloc, new_pair);
+            anv_alloc_deallocate(&original->alloc, new_pair);
             return NULL;
         }
         strcpy(str1_copy, str1);
@@ -390,14 +378,14 @@ ANV_API void* anv_pair_copy_string_string(const void* pair_data)
     {
         const char* str2 = (const char*)original->second;
         const size_t len2 = strlen(str2) + 1;
-        char* str2_copy = anv_alloc_malloc(original->alloc, len2);
+        char* str2_copy = anv_alloc_allocate(&original->alloc, len2);
         if (!str2_copy)
         {
             if (new_pair->first)
             {
-                anv_alloc_free(original->alloc, new_pair->first);
+                anv_alloc_deallocate(&original->alloc, new_pair->first);
             }
-            anv_alloc_free(original->alloc, new_pair);
+            anv_alloc_deallocate(&original->alloc, new_pair);
             return NULL;
         }
         strcpy(str2_copy, str2);
@@ -415,13 +403,9 @@ ANV_API void* anv_pair_copy_int_int(const void* pair_data)
     }
 
     const ANVPair* original = pair_data;
-    if (!original->alloc)
-    {
-        return NULL;
-    }
 
     // Create new pair structure
-    ANVPair* new_pair = anv_alloc_malloc(original->alloc, sizeof(ANVPair));
+    ANVPair* new_pair = anv_alloc_allocate(&original->alloc, sizeof(ANVPair));
     if (!new_pair)
     {
         return NULL;
@@ -434,10 +418,10 @@ ANV_API void* anv_pair_copy_int_int(const void* pair_data)
     // Copy int first element
     if (original->first)
     {
-        int* int1_copy = anv_alloc_malloc(original->alloc, sizeof(int));
+        int* int1_copy = anv_alloc_allocate(&original->alloc, sizeof(int));
         if (!int1_copy)
         {
-            anv_alloc_free(original->alloc, new_pair);
+            anv_alloc_deallocate(&original->alloc, new_pair);
             return NULL;
         }
         *int1_copy = *(const int*)original->first;
@@ -447,14 +431,14 @@ ANV_API void* anv_pair_copy_int_int(const void* pair_data)
     // Copy int second element
     if (original->second)
     {
-        int* int2_copy = anv_alloc_malloc(original->alloc, sizeof(int));
+        int* int2_copy = anv_alloc_allocate(&original->alloc, sizeof(int));
         if (!int2_copy)
         {
             if (new_pair->first)
             {
-                anv_alloc_free(original->alloc, new_pair->first);
+                anv_alloc_deallocate(&original->alloc, new_pair->first);
             }
-            anv_alloc_free(original->alloc, new_pair);
+            anv_alloc_deallocate(&original->alloc, new_pair);
             return NULL;
         }
         *int2_copy = *(const int*)original->second;

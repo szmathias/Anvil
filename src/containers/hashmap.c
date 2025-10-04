@@ -28,12 +28,7 @@
  */
 static ANVHashMapNode* create_node(const ANVHashMap* map, void* key, void* value)
 {
-    if (!map->alloc)
-    {
-        return NULL;
-    }
-
-    ANVHashMapNode* node = anv_alloc_malloc(map->alloc, sizeof(ANVHashMapNode));
+    ANVHashMapNode* node = anv_alloc_allocate(&map->alloc, sizeof(ANVHashMapNode));
     if (!node)
     {
         return NULL;
@@ -58,15 +53,15 @@ static void free_node(const ANVHashMap* map, ANVHashMapNode* node,
 
     if (should_free_key && node->key)
     {
-        anv_alloc_data_free(map->alloc, node->key);
+        anv_alloc_data_deallocate(&map->alloc, node->key);
     }
 
     if (should_free_value && node->value)
     {
-        anv_alloc_data_free(map->alloc, node->value);
+        anv_alloc_data_deallocate(&map->alloc, node->value);
     }
 
-    anv_alloc_free(map->alloc, node);
+    anv_alloc_deallocate(&map->alloc, node);
 }
 
 /**
@@ -92,7 +87,7 @@ static int resize_map(ANVHashMap* map, const size_t new_bucket_count)
     }
 
     // Allocate new bucket array
-    ANVHashMapNode** new_buckets = anv_alloc_malloc(map->alloc,
+    ANVHashMapNode** new_buckets = anv_alloc_allocate(&map->alloc,
                                                     new_bucket_count * sizeof(ANVHashMapNode*));
     if (!new_buckets)
     {
@@ -131,7 +126,7 @@ static int resize_map(ANVHashMap* map, const size_t new_bucket_count)
     }
 
     // Free old bucket array
-    anv_alloc_free(map->alloc, old_buckets);
+    anv_alloc_deallocate(&map->alloc, old_buckets);
     return 0;
 }
 
@@ -165,7 +160,7 @@ ANV_API ANVHashMap* anv_hashmap_create(ANVAllocator* alloc, const anv_hash_func 
         return NULL;
     }
 
-    ANVHashMap* map = anv_alloc_malloc(alloc, sizeof(ANVHashMap));
+    ANVHashMap* map = anv_alloc_allocate(alloc, sizeof(ANVHashMap));
     if (!map)
     {
         return NULL;
@@ -173,10 +168,10 @@ ANV_API ANVHashMap* anv_hashmap_create(ANVAllocator* alloc, const anv_hash_func 
 
     const size_t capacity = initial_capacity > 0 ? initial_capacity : DEFAULT_INITIAL_CAPACITY;
 
-    map->buckets = anv_alloc_malloc(alloc, capacity * sizeof(ANVHashMapNode*));
+    map->buckets = anv_alloc_allocate(alloc, capacity * sizeof(ANVHashMapNode*));
     if (!map->buckets)
     {
-        anv_alloc_free(alloc, map);
+        anv_alloc_deallocate(alloc, map);
         return NULL;
     }
 
@@ -191,7 +186,7 @@ ANV_API ANVHashMap* anv_hashmap_create(ANVAllocator* alloc, const anv_hash_func 
     map->max_load_factor = DEFAULT_MAX_LOAD_FACTOR;
     map->hash = hash;
     map->key_equals = key_equals;
-    map->alloc = alloc;
+    map->alloc = *alloc;
 
     return map;
 }
@@ -205,8 +200,8 @@ ANV_API void anv_hashmap_destroy(ANVHashMap* map, const bool should_free_keys, c
 
     anv_hashmap_clear(map, should_free_keys, should_free_values);
 
-    anv_alloc_free(map->alloc, map->buckets);
-    anv_alloc_free(map->alloc, map);
+    anv_alloc_deallocate(&map->alloc, map->buckets);
+    anv_alloc_deallocate(&map->alloc, map);
 }
 
 ANV_API void anv_hashmap_clear(ANVHashMap* map, const bool should_free_keys, const bool should_free_values)
@@ -358,9 +353,9 @@ ANV_API int anv_hashmap_put_with_free(ANVHashMap* map, void* key, void* value, c
         if (map->key_equals(node->key, key))
         {
             // Free the old value if requested and possible
-            if (should_free_old_value && node->value && map->alloc && map->alloc->data_free)
+            if (should_free_old_value && node->value)
             {
-                map->alloc->data_free(node->value);
+                anv_alloc_data_deallocate(&map->alloc, node->value);
             }
 
             // Update with new value
@@ -500,7 +495,7 @@ ANV_API int anv_hashmap_get_keys(const ANVHashMap* map, void*** keys_out, size_t
         return 0;
     }
 
-    void** keys = anv_alloc_malloc(map->alloc, map->size * sizeof(void*));
+    void** keys = anv_alloc_allocate(&map->alloc, map->size * sizeof(void*));
     if (!keys)
     {
         return -1;
@@ -536,7 +531,7 @@ ANV_API int anv_hashmap_get_values(const ANVHashMap* map, void*** values_out, si
         return 0;
     }
 
-    void** values = anv_alloc_malloc(map->alloc, map->size * sizeof(void*));
+    void** values = anv_alloc_allocate(&map->alloc, map->size * sizeof(void*));
     if (!values)
     {
         return -1;
@@ -580,14 +575,14 @@ ANV_API void anv_hashmap_for_each(const ANVHashMap* map, void (*action)(void* ke
 // Hash map copying functions
 //==============================================================================
 
-ANV_API ANVHashMap* anv_hashmap_copy(const ANVHashMap* map)
+ANV_API ANVHashMap* anv_hashmap_copy(ANVHashMap* map)
 {
     if (!map)
     {
         return NULL;
     }
 
-    ANVHashMap* copy = anv_hashmap_create(map->alloc, map->hash,
+    ANVHashMap* copy = anv_hashmap_create(&map->alloc, map->hash,
                                           map->key_equals, map->bucket_count);
     if (!copy)
     {
@@ -614,7 +609,7 @@ ANV_API ANVHashMap* anv_hashmap_copy(const ANVHashMap* map)
     return copy;
 }
 
-ANV_API ANVHashMap* anv_hashmap_copy_deep(const ANVHashMap* map,
+ANV_API ANVHashMap* anv_hashmap_copy_deep(ANVHashMap* map,
                                           const anv_copy_func key_copy, const anv_copy_func value_copy)
 {
     if (!map)
@@ -622,7 +617,7 @@ ANV_API ANVHashMap* anv_hashmap_copy_deep(const ANVHashMap* map,
         return NULL;
     }
 
-    ANVHashMap* copy = anv_hashmap_create(map->alloc, map->hash,
+    ANVHashMap* copy = anv_hashmap_create(&map->alloc, map->hash,
                                           map->key_equals, map->bucket_count);
     if (!copy)
     {
@@ -646,11 +641,11 @@ ANV_API ANVHashMap* anv_hashmap_copy_deep(const ANVHashMap* map,
                 // Clean up any successful copies
                 if (key_copy && copied_key)
                 {
-                    anv_alloc_data_free(map->alloc, copied_key);
+                    anv_alloc_data_deallocate(&map->alloc, copied_key);
                 }
                 if (value_copy && copied_value)
                 {
-                    anv_alloc_data_free(map->alloc, copied_value);
+                    anv_alloc_data_deallocate(&map->alloc, copied_value);
                 }
                 anv_hashmap_destroy(copy, key_copy != NULL, value_copy != NULL);
                 return NULL;
@@ -661,11 +656,11 @@ ANV_API ANVHashMap* anv_hashmap_copy_deep(const ANVHashMap* map,
                 // Clean up on failure
                 if (key_copy)
                 {
-                    anv_alloc_data_free(map->alloc, copied_key);
+                    anv_alloc_data_deallocate(&map->alloc, copied_key);
                 }
                 if (value_copy)
                 {
-                    anv_alloc_data_free(map->alloc, copied_value);
+                    anv_alloc_data_deallocate(&map->alloc, copied_value);
                 }
                 anv_hashmap_destroy(copy, key_copy != NULL, value_copy != NULL);
                 return NULL;
@@ -683,10 +678,10 @@ ANV_API ANVHashMap* anv_hashmap_copy_deep(const ANVHashMap* map,
 
 typedef struct HashMapIteratorState
 {
-        const ANVHashMap* map;
-        size_t current_bucket;
-        ANVHashMapNode* current_node;
-        ANVPair current_pair;
+    const ANVHashMap* map;
+    size_t current_bucket;
+    ANVHashMapNode* current_node;
+    ANVPair current_pair;
 } HashMapIteratorState;
 
 static void* hashmap_iterator_get(const ANVIterator* it)
@@ -697,10 +692,15 @@ static void* hashmap_iterator_get(const ANVIterator* it)
         return NULL;
     }
 
-    state->current_pair = (ANVPair){
-        .first = state->current_node->key,
-        .second = state->current_node->value,
-        .alloc = state->map->alloc};
+    state->current_pair = (ANVPair)
+    {
+        .
+        first = state->current_node->key,
+        .
+        second = state->current_node->value,
+        .
+        alloc = state->map->alloc
+    };
 
     return &state->current_pair;
 }
@@ -792,7 +792,7 @@ static void hashmap_iterator_destroy(ANVIterator* it)
     HashMapIteratorState* state = it->data_state;
     if (state->map)
     {
-        anv_alloc_free(state->map->alloc, state);
+        anv_alloc_deallocate(&state->map->alloc, state);
     }
     it->data_state = NULL;
 }
@@ -810,12 +810,12 @@ ANV_API ANVIterator anv_hashmap_iterator(const ANVHashMap* map)
     it.is_valid = hashmap_iterator_is_valid;
     it.destroy = hashmap_iterator_destroy;
 
-    if (!map || !map->alloc)
+    if (!map)
     {
         return it;
     }
 
-    HashMapIteratorState* state = anv_alloc_malloc(map->alloc, sizeof(HashMapIteratorState));
+    HashMapIteratorState* state = anv_alloc_allocate(&map->alloc, sizeof(HashMapIteratorState));
     if (!state)
     {
         return it;
@@ -907,8 +907,8 @@ ANV_API ANVHashMap* anv_hashmap_from_iterator(ANVIterator* it, ANVAllocator* all
         {
             if (should_copy)
             {
-                anv_alloc_data_free(alloc, key_to_insert);
-                anv_alloc_data_free(alloc, value_to_insert);
+                anv_alloc_data_deallocate(alloc, key_to_insert);
+                anv_alloc_data_deallocate(alloc, value_to_insert);
             }
             anv_hashmap_destroy(map, should_copy, should_copy);
             return NULL;

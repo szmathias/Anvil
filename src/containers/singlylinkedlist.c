@@ -64,7 +64,7 @@ ANV_API ANVSinglyLinkedList* anv_sll_create(ANVAllocator* alloc)
         return NULL;
     }
 
-    ANVSinglyLinkedList* list = anv_alloc_malloc(alloc, sizeof(ANVSinglyLinkedList));
+    ANVSinglyLinkedList* list = anv_alloc_allocate(alloc, sizeof(ANVSinglyLinkedList));
     if (!list)
     {
         return NULL;
@@ -73,7 +73,7 @@ ANV_API ANVSinglyLinkedList* anv_sll_create(ANVAllocator* alloc)
     list->head = NULL;
     list->tail = NULL;
     list->size = 0;
-    list->alloc = alloc;
+    list->alloc = *alloc;
 
     return list;
 }
@@ -87,7 +87,7 @@ ANV_API void anv_sll_destroy(ANVSinglyLinkedList* list, const bool should_free_d
     if (list)
     {
         anv_sll_clear(list, should_free_data);
-        anv_alloc_free(list->alloc, list);
+        anv_alloc_deallocate(&list->alloc, list);
     }
 }
 
@@ -107,9 +107,9 @@ ANV_API void anv_sll_clear(ANVSinglyLinkedList* list, const bool should_free_dat
         ANVSinglyLinkedNode* next = node->next;
         if (should_free_data && node->data)
         {
-            anv_alloc_data_free(list->alloc, node->data);
+            anv_alloc_data_deallocate(&list->alloc, node->data);
         }
-        anv_alloc_free(list->alloc, node);
+        anv_alloc_deallocate(&list->alloc, node);
         node = next;
     }
     list->head = NULL;
@@ -217,7 +217,7 @@ ANV_API int anv_sll_push_front(ANVSinglyLinkedList* list, void* data)
         return -1;
     }
 
-    ANVSinglyLinkedNode* node = anv_alloc_malloc(list->alloc, sizeof(ANVSinglyLinkedNode));
+    ANVSinglyLinkedNode* node = anv_alloc_allocate(&list->alloc, sizeof(ANVSinglyLinkedNode));
     if (!node)
     {
         return -1;
@@ -247,7 +247,7 @@ ANV_API int anv_sll_push_back(ANVSinglyLinkedList* list, void* data)
         return -1;
     }
 
-    ANVSinglyLinkedNode* node = anv_alloc_malloc(list->alloc, sizeof(ANVSinglyLinkedNode));
+    ANVSinglyLinkedNode* node = anv_alloc_allocate(&list->alloc, sizeof(ANVSinglyLinkedNode));
     if (!node)
     {
         return -1;
@@ -288,7 +288,7 @@ ANV_API int anv_sll_insert_at(ANVSinglyLinkedList* list, const size_t pos, void*
         return anv_sll_push_front(list, data);
     }
 
-    ANVSinglyLinkedNode* node = anv_alloc_malloc(list->alloc, sizeof(ANVSinglyLinkedNode));
+    ANVSinglyLinkedNode* node = anv_alloc_allocate(&list->alloc, sizeof(ANVSinglyLinkedNode));
     if (!node)
     {
         return -1;
@@ -302,7 +302,7 @@ ANV_API int anv_sll_insert_at(ANVSinglyLinkedList* list, const size_t pos, void*
         prev = prev->next;
         if (!prev)
         {
-            anv_alloc_free(list->alloc, node);
+            anv_alloc_deallocate(&list->alloc, node);
             return -1;
         }
     }
@@ -350,10 +350,10 @@ ANV_API int anv_sll_remove(ANVSinglyLinkedList* list, const void* data, const an
 
             if (should_free_data && curr->data)
             {
-                anv_alloc_data_free(list->alloc, curr->data);
+                anv_alloc_data_deallocate(&list->alloc, curr->data);
             }
 
-            anv_alloc_free(list->alloc, curr);
+            anv_alloc_deallocate(&list->alloc, curr);
             list->size--;
             return 0;
         }
@@ -394,10 +394,10 @@ ANV_API int anv_sll_remove_at(ANVSinglyLinkedList* list, const size_t pos, const
 
     if (should_free_data && curr->data)
     {
-        anv_alloc_data_free(list->alloc, curr->data);
+        anv_alloc_data_deallocate(&list->alloc, curr->data);
     }
 
-    anv_alloc_free(list->alloc, curr);
+    anv_alloc_deallocate(&list->alloc, curr);
     list->size--;
     return 0;
 }
@@ -417,10 +417,10 @@ ANV_API int anv_sll_pop_front(ANVSinglyLinkedList* list, const bool should_free_
 
     if (should_free_data && node_to_remove->data)
     {
-        anv_alloc_data_free(list->alloc, node_to_remove->data);
+        anv_alloc_data_deallocate(&list->alloc, node_to_remove->data);
     }
 
-    anv_alloc_free(list->alloc, node_to_remove);
+    anv_alloc_deallocate(&list->alloc, node_to_remove);
     list->size--;
     return 0;
 }
@@ -455,10 +455,10 @@ ANV_API int anv_sll_pop_back(ANVSinglyLinkedList* list, const bool should_free_d
 
     if (should_free_data && curr->data)
     {
-        anv_alloc_data_free(list->alloc, curr->data);
+        anv_alloc_data_deallocate(&list->alloc, curr->data);
     }
 
-    anv_alloc_free(list->alloc, curr);
+    anv_alloc_deallocate(&list->alloc, curr);
     list->size--;
     return 0;
 }
@@ -638,14 +638,14 @@ ANV_API int anv_sll_splice(ANVSinglyLinkedList* dest, ANVSinglyLinkedList* src, 
 // Higher-order functions
 //==============================================================================
 
-ANV_API ANVSinglyLinkedList* anv_sll_filter(const ANVSinglyLinkedList* list, const anv_predicate_func pred)
+ANV_API ANVSinglyLinkedList* anv_sll_filter(ANVSinglyLinkedList* list, const anv_predicate_func pred)
 {
     if (!list || !pred)
     {
         return NULL;
     }
 
-    ANVSinglyLinkedList* filtered = anv_sll_create(list->alloc);
+    ANVSinglyLinkedList* filtered = anv_sll_create(&list->alloc);
     if (!filtered)
     {
         return NULL;
@@ -668,14 +668,14 @@ ANV_API ANVSinglyLinkedList* anv_sll_filter(const ANVSinglyLinkedList* list, con
     return filtered;
 }
 
-ANV_API ANVSinglyLinkedList* anv_sll_filter_deep(const ANVSinglyLinkedList* list, const anv_predicate_func pred)
+ANV_API ANVSinglyLinkedList* anv_sll_filter_deep(ANVSinglyLinkedList* list, const anv_predicate_func pred)
 {
-    if (!list || !pred || !list->alloc || !list->alloc->copy)
+    if (!list || !pred || !list->alloc.copy)
     {
         return NULL;
     }
 
-    ANVSinglyLinkedList* filtered = anv_sll_create(list->alloc);
+    ANVSinglyLinkedList* filtered = anv_sll_create(&list->alloc);
     if (!filtered)
     {
         return NULL;
@@ -686,12 +686,12 @@ ANV_API ANVSinglyLinkedList* anv_sll_filter_deep(const ANVSinglyLinkedList* list
     {
         if (pred(curr->data))
         {
-            void* filtered_data = anv_alloc_copy(filtered->alloc, curr->data);
+            void* filtered_data = anv_alloc_copy(&filtered->alloc, curr->data);
             if (anv_sll_push_back(filtered, filtered_data) != 0)
             {
                 if (filtered_data)
                 {
-                    anv_alloc_data_free(filtered->alloc, filtered_data);
+                    anv_alloc_data_deallocate(&filtered->alloc, filtered_data);
                 }
                 anv_sll_destroy(filtered, true);
                 return NULL;
@@ -703,14 +703,14 @@ ANV_API ANVSinglyLinkedList* anv_sll_filter_deep(const ANVSinglyLinkedList* list
     return filtered;
 }
 
-ANV_API ANVSinglyLinkedList* anv_sll_transform(const ANVSinglyLinkedList* list, const anv_transform_func transform, const bool should_free_data)
+ANV_API ANVSinglyLinkedList* anv_sll_transform(ANVSinglyLinkedList* list, const anv_transform_func transform, const bool should_free_data)
 {
     if (!list || !transform)
     {
         return NULL;
     }
 
-    ANVSinglyLinkedList* transformed = anv_sll_create(list->alloc);
+    ANVSinglyLinkedList* transformed = anv_sll_create(&list->alloc);
     if (!transformed)
     {
         return NULL;
@@ -724,7 +724,7 @@ ANV_API ANVSinglyLinkedList* anv_sll_transform(const ANVSinglyLinkedList* list, 
         {
             if (should_free_data && new_data)
             {
-                anv_alloc_data_free(transformed->alloc, new_data);
+                anv_alloc_data_deallocate(&transformed->alloc, new_data);
             }
             anv_sll_destroy(transformed, should_free_data);
             return NULL;
@@ -754,14 +754,14 @@ ANV_API void anv_sll_for_each(const ANVSinglyLinkedList* list, const anv_action_
 // List copying functions
 //==============================================================================
 
-ANV_API ANVSinglyLinkedList* anv_sll_copy(const ANVSinglyLinkedList* list)
+ANV_API ANVSinglyLinkedList* anv_sll_copy(ANVSinglyLinkedList* list)
 {
     if (!list)
     {
         return NULL;
     }
 
-    ANVSinglyLinkedList* clone = anv_sll_create(list->alloc);
+    ANVSinglyLinkedList* clone = anv_sll_create(&list->alloc);
     if (!clone)
     {
         return NULL;
@@ -786,14 +786,14 @@ ANV_API ANVSinglyLinkedList* anv_sll_copy(const ANVSinglyLinkedList* list)
     return clone;
 }
 
-ANV_API ANVSinglyLinkedList* anv_sll_copy_deep(const ANVSinglyLinkedList* list, const anv_copy_func copy_data, const bool should_free_data)
+ANV_API ANVSinglyLinkedList* anv_sll_copy_deep(ANVSinglyLinkedList* list, const anv_copy_func copy_data, const bool should_free_data)
 {
     if (!list || !copy_data)
     {
         return NULL;
     }
 
-    ANVSinglyLinkedList* clone = anv_sll_create(list->alloc);
+    ANVSinglyLinkedList* clone = anv_sll_create(&list->alloc);
     if (!clone)
     {
         return NULL;
@@ -817,7 +817,7 @@ ANV_API ANVSinglyLinkedList* anv_sll_copy_deep(const ANVSinglyLinkedList* list, 
         {
             if (should_free_data)
             {
-                anv_alloc_data_free(list->alloc, data_copy);
+                anv_alloc_data_deallocate(&list->alloc, data_copy);
             }
             anv_sll_destroy(clone, should_free_data);
             return NULL;
@@ -834,8 +834,8 @@ ANV_API ANVSinglyLinkedList* anv_sll_copy_deep(const ANVSinglyLinkedList* list, 
 
 typedef struct SListIteratorState
 {
-        ANVSinglyLinkedNode* current; // Current node
-        ANVSinglyLinkedList* list;    // The list being iterated
+    ANVSinglyLinkedNode* current; // Current node
+    ANVSinglyLinkedList* list;    // The list being iterated
 } SListIteratorState;
 
 static int sll_iterator_has_next(const ANVIterator* it)
@@ -924,7 +924,7 @@ static void sll_iterator_destroy(ANVIterator* it)
     }
 
     const SListIteratorState* state = it->data_state;
-    anv_alloc_free(state->list->alloc, it->data_state);
+    anv_alloc_deallocate(&state->list->alloc, it->data_state);
     it->data_state = NULL;
 }
 
@@ -946,7 +946,7 @@ ANV_API ANVIterator anv_sll_iterator(const ANVSinglyLinkedList* list)
         return it;
     }
 
-    SListIteratorState* state = anv_alloc_malloc(list->alloc, sizeof(SListIteratorState));
+    SListIteratorState* state = anv_alloc_allocate(&list->alloc, sizeof(SListIteratorState));
     if (!state)
     {
         return it;
@@ -1012,7 +1012,7 @@ ANV_API ANVSinglyLinkedList* anv_sll_from_iterator(ANVIterator* it, ANVAllocator
         {
             if (should_copy)
             {
-                anv_alloc_data_free(alloc, element_to_insert);
+                anv_alloc_data_deallocate(alloc, element_to_insert);
             }
             anv_sll_destroy(list, should_copy);
             return NULL;

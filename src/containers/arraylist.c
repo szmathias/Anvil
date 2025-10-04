@@ -52,7 +52,7 @@ static int ensure_capacity(ANVArrayList* list, const size_t min_capacity)
     }
 
     // Reallocate the data array
-    void** new_data = anv_alloc_malloc(list->alloc, new_capacity * sizeof(void*));
+    void** new_data = anv_alloc_allocate(&list->alloc, new_capacity * sizeof(void*));
     if (!new_data)
     {
         return -1;
@@ -65,7 +65,7 @@ static int ensure_capacity(ANVArrayList* list, const size_t min_capacity)
     }
 
     // Free old data array
-    anv_alloc_free(list->alloc, list->data);
+    anv_alloc_deallocate(&list->alloc, list->data);
 
     list->data = new_data;
     list->capacity = new_capacity;
@@ -129,13 +129,13 @@ ANV_API ANVArrayList* anv_arraylist_create(ANVAllocator* alloc, const size_t ini
         return NULL;
     }
 
-    ANVArrayList* list = anv_alloc_malloc(alloc, sizeof(ANVArrayList));
+    ANVArrayList* list = anv_alloc_allocate(alloc, sizeof(ANVArrayList));
     if (!list)
     {
         return NULL;
     }
 
-    list->alloc = alloc;
+    list->alloc = *alloc;
     list->size = 0;
     list->capacity = 0;
     list->data = NULL;
@@ -144,7 +144,7 @@ ANV_API ANVArrayList* anv_arraylist_create(ANVAllocator* alloc, const size_t ini
     {
         if (ensure_capacity(list, initial_capacity) != 0)
         {
-            anv_alloc_free(alloc, list);
+            anv_alloc_deallocate(alloc, list);
             return NULL;
         }
     }
@@ -161,8 +161,8 @@ ANV_API void anv_arraylist_destroy(ANVArrayList* list, const bool should_free_da
 
     anv_arraylist_clear(list, should_free_data);
 
-    anv_alloc_free(list->alloc, list->data);
-    anv_alloc_free(list->alloc, list);
+    anv_alloc_deallocate(&list->alloc, list->data);
+    anv_alloc_deallocate(&list->alloc, list);
 }
 
 ANV_API void anv_arraylist_clear(ANVArrayList* list, const bool should_free_data)
@@ -178,7 +178,7 @@ ANV_API void anv_arraylist_clear(ANVArrayList* list, const bool should_free_data
         {
             if (list->data[i])
             {
-                anv_alloc_data_free(list->alloc, list->data[i]);
+                anv_alloc_data_deallocate(&list->alloc, list->data[i]);
             }
         }
     }
@@ -269,7 +269,7 @@ ANV_API int anv_arraylist_set(ANVArrayList* list, const size_t index, void* data
 
     if (should_free_old && list->data[index])
     {
-        anv_alloc_data_free(list->alloc, list->data[index]);
+        anv_alloc_data_deallocate(&list->alloc, list->data[index]);
     }
 
     list->data[index] = data;
@@ -367,7 +367,7 @@ ANV_API int anv_arraylist_remove_at(ANVArrayList* list, const size_t index, cons
 
     if (should_free_data && list->data[index])
     {
-        anv_alloc_data_free(list->alloc, list->data[index]);
+        anv_alloc_data_deallocate(&list->alloc, list->data[index]);
     }
 
     // Shift elements to the left
@@ -407,7 +407,7 @@ ANV_API int anv_arraylist_reserve(ANVArrayList* list, const size_t new_capacity)
 
 ANV_API int anv_arraylist_shrink_to_fit(ANVArrayList* list)
 {
-    if (!list || !list->alloc || !list->alloc->allocate)
+    if (!list || !list->alloc.allocate)
     {
         return -1;
     }
@@ -422,14 +422,14 @@ ANV_API int anv_arraylist_shrink_to_fit(ANVArrayList* list)
         // Free the data array if empty
         if (list->data)
         {
-            anv_alloc_free(list->alloc, list->data);
+            anv_alloc_deallocate(&list->alloc, list->data);
         }
         list->data = NULL;
         list->capacity = 0;
         return 0;
     }
 
-    void** new_data = anv_alloc_malloc(list->alloc, list->size * sizeof(void*));
+    void** new_data = anv_alloc_allocate(&list->alloc, list->size * sizeof(void*));
     if (!new_data)
     {
         return -1;
@@ -439,11 +439,53 @@ ANV_API int anv_arraylist_shrink_to_fit(ANVArrayList* list)
 
     if (list->data)
     {
-        anv_alloc_free(list->alloc, list->data);
+        anv_alloc_deallocate(&list->alloc, list->data);
     }
 
     list->data = new_data;
     list->capacity = list->size;
+    return 0;
+}
+
+ANV_API int anv_arraylist_resize(ANVArrayList* list, const size_t new_size, void* default_value, const bool should_free_data)
+{
+    if (!list)
+    {
+        return -1;
+    }
+
+    if (new_size < list->size)
+    {
+        // Shrinking the list
+        if (should_free_data)
+        {
+            for (size_t i = new_size; i < list->size; i++)
+            {
+                if (list->data[i])
+                {
+                    anv_alloc_data_deallocate(&list->alloc, list->data[i]);
+                }
+            }
+        }
+        list->size = new_size;
+        return 0;
+    }
+
+    if (new_size > list->size)
+    {
+        // Growing the list
+        if (ensure_capacity(list, new_size) != 0)
+        {
+            return -1;
+        }
+
+        for (size_t i = list->size; i < new_size; i++)
+        {
+            list->data[i] = default_value;
+        }
+        list->size = new_size;
+    }
+
     return 0;
 }
 
@@ -459,7 +501,7 @@ ANV_API int anv_arraylist_sort(ANVArrayList* list, const anv_compare_func compar
     }
 
     // Allocate temporary array for merge sort
-    void** temp = anv_alloc_malloc(list->alloc, list->size * sizeof(void*));
+    void** temp = anv_alloc_allocate(&list->alloc, list->size * sizeof(void*));
     if (!temp)
     {
         return -1;
@@ -467,7 +509,7 @@ ANV_API int anv_arraylist_sort(ANVArrayList* list, const anv_compare_func compar
 
     merge_sort_recursive(list->data, temp, 0, list->size - 1, compare);
 
-    anv_alloc_free(list->alloc, temp);
+    anv_alloc_deallocate(&list->alloc, temp);
 
     return 0;
 }
@@ -498,14 +540,14 @@ ANV_API int anv_arraylist_reverse(ANVArrayList* list)
 // Higher-order functions
 //==============================================================================
 
-ANV_API ANVArrayList* anv_arraylist_filter(const ANVArrayList* list, const anv_filter_func filter)
+ANV_API ANVArrayList* anv_arraylist_filter(ANVArrayList* list, const anv_filter_func filter)
 {
     if (!list || !filter)
     {
         return NULL;
     }
 
-    ANVArrayList* filtered = anv_arraylist_create(list->alloc, 0);
+    ANVArrayList* filtered = anv_arraylist_create(&list->alloc, 0);
     if (!filtered)
     {
         return NULL;
@@ -526,14 +568,14 @@ ANV_API ANVArrayList* anv_arraylist_filter(const ANVArrayList* list, const anv_f
     return filtered;
 }
 
-ANV_API ANVArrayList* anv_arraylist_filter_deep(const ANVArrayList* list, const anv_filter_func filter)
+ANV_API ANVArrayList* anv_arraylist_filter_deep(ANVArrayList* list, const anv_filter_func filter)
 {
-    if (!list || !filter || !list->alloc->copy)
+    if (!list || !filter || !list->alloc.copy)
     {
         return NULL;
     }
 
-    ANVArrayList* filtered = anv_arraylist_create(list->alloc, 0);
+    ANVArrayList* filtered = anv_arraylist_create(&list->alloc, 0);
     if (!filtered)
     {
         return NULL;
@@ -543,12 +585,12 @@ ANV_API ANVArrayList* anv_arraylist_filter_deep(const ANVArrayList* list, const 
     {
         if (filter(list->data[i]))
         {
-            void* filtered_data = anv_alloc_copy(filtered->alloc, list->data[i]);
+            void* filtered_data = anv_alloc_copy(&filtered->alloc, list->data[i]);
             if (anv_arraylist_push_back(filtered, filtered_data) != 0)
             {
                 if (filtered_data)
                 {
-                    anv_alloc_data_free(filtered->alloc, filtered_data);
+                    anv_alloc_data_deallocate(&filtered->alloc, filtered_data);
                 }
                 anv_arraylist_destroy(filtered, true);
                 return NULL;
@@ -559,14 +601,14 @@ ANV_API ANVArrayList* anv_arraylist_filter_deep(const ANVArrayList* list, const 
     return filtered;
 }
 
-ANV_API ANVArrayList* anv_arraylist_transform(const ANVArrayList* list, const anv_transform_func transform, const bool should_free_data)
+ANV_API ANVArrayList* anv_arraylist_transform(ANVArrayList* list, const anv_transform_func transform, const bool should_free_data)
 {
     if (!list || !transform)
     {
         return NULL;
     }
 
-    ANVArrayList* transformed = anv_arraylist_create(list->alloc, list->size);
+    ANVArrayList* transformed = anv_arraylist_create(&list->alloc, list->size);
     if (!transformed)
     {
         return NULL;
@@ -579,7 +621,7 @@ ANV_API ANVArrayList* anv_arraylist_transform(const ANVArrayList* list, const an
         {
             if (new_data && should_free_data)
             {
-                anv_alloc_data_free(transformed->alloc, new_data);
+                anv_alloc_data_deallocate(&transformed->alloc, new_data);
             }
             anv_arraylist_destroy(transformed, should_free_data);
             return NULL;
@@ -606,14 +648,14 @@ ANV_API void anv_arraylist_for_each(const ANVArrayList* list, const anv_action_f
 // ArrayList copying functions
 //==============================================================================
 
-ANV_API ANVArrayList* anv_arraylist_copy(const ANVArrayList* list)
+ANV_API ANVArrayList* anv_arraylist_copy(ANVArrayList* list)
 {
     if (!list)
     {
         return NULL;
     }
 
-    ANVArrayList* copy = anv_arraylist_create(list->alloc, list->capacity);
+    ANVArrayList* copy = anv_arraylist_create(&list->alloc, list->capacity);
     if (!copy)
     {
         return NULL;
@@ -631,14 +673,14 @@ ANV_API ANVArrayList* anv_arraylist_copy(const ANVArrayList* list)
     return copy;
 }
 
-ANV_API ANVArrayList* anv_arraylist_copy_deep(const ANVArrayList* list, const bool should_free_data)
+ANV_API ANVArrayList* anv_arraylist_copy_deep(ANVArrayList* list, const bool should_free_data)
 {
-    if (!list || !list->alloc || !list->alloc->copy)
+    if (!list || !list->alloc.copy)
     {
         return NULL;
     }
 
-    ANVArrayList* copy = anv_arraylist_create(list->alloc, list->capacity);
+    ANVArrayList* copy = anv_arraylist_create(&list->alloc, list->capacity);
     if (!copy)
     {
         return NULL;
@@ -646,10 +688,10 @@ ANV_API ANVArrayList* anv_arraylist_copy_deep(const ANVArrayList* list, const bo
 
     for (size_t i = 0; i < list->size; i++)
     {
-        void* copied_data = anv_alloc_copy(list->alloc, list->data[i]);
+        void* copied_data = anv_alloc_copy(&list->alloc, list->data[i]);
         if (anv_arraylist_push_back(copy, copied_data) != 0)
         {
-            anv_alloc_data_free(copy->alloc, copied_data);
+            anv_alloc_data_deallocate(&copy->alloc, copied_data);
             anv_arraylist_destroy(copy, should_free_data);
             return NULL;
         }
@@ -665,9 +707,9 @@ ANV_API ANVArrayList* anv_arraylist_copy_deep(const ANVArrayList* list, const bo
 // Forward iterator state
 typedef struct ArrayListIterState
 {
-        const ANVArrayList* list;
-        size_t current_index;
-        bool reverse;
+    const ANVArrayList* list;
+    size_t current_index;
+    bool reverse;
 } ArrayListIterState;
 
 static void* arraylist_iter_get(const ANVIterator* iter)
@@ -826,7 +868,7 @@ static void arraylist_iter_destroy(ANVIterator* iter)
         const ArrayListIterState* state = iter->data_state;
         if (state->list)
         {
-            anv_alloc_free(state->list->alloc, iter->data_state);
+            anv_alloc_deallocate(&state->list->alloc, iter->data_state);
         }
     }
     iter->data_state = NULL;
@@ -845,12 +887,12 @@ ANV_API ANVIterator anv_arraylist_iterator(const ANVArrayList* list)
     iter.is_valid = arraylist_iter_is_valid;
     iter.destroy = arraylist_iter_destroy;
 
-    if (!list || !list->alloc || !list->alloc->allocate)
+    if (!list || list->alloc.allocate)
     {
         return iter;
     }
 
-    ArrayListIterState* state = anv_alloc_malloc(list->alloc, sizeof(ArrayListIterState));
+    ArrayListIterState* state = anv_alloc_allocate(&list->alloc, sizeof(ArrayListIterState));
     if (!state)
     {
         return iter;
@@ -879,12 +921,12 @@ ANV_API ANVIterator anv_arraylist_iterator_reverse(const ANVArrayList* list)
     it.is_valid = arraylist_iter_is_valid;
     it.destroy = arraylist_iter_destroy;
 
-    if (!list || !list->alloc || !list->alloc->allocate)
+    if (!list || !list->alloc.allocate)
     {
         return it;
     }
 
-    ArrayListIterState* state = anv_alloc_malloc(list->alloc, sizeof(ArrayListIterState));
+    ArrayListIterState* state = anv_alloc_allocate(&list->alloc, sizeof(ArrayListIterState));
     if (!state)
     {
         return it;
@@ -951,7 +993,7 @@ ANV_API ANVArrayList* anv_arraylist_from_iterator(ANVIterator* it, ANVAllocator*
         {
             if (should_copy)
             {
-                anv_alloc_data_free(alloc, element_to_insert);
+                anv_alloc_data_deallocate(alloc, element_to_insert);
             }
             anv_arraylist_destroy(list, should_copy);
             return NULL;

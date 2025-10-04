@@ -11,14 +11,9 @@
 /**
  * Create a new queue node with the given data.
  */
-static ANVQueueNode* create_node(ANVQueue* queue, void* data)
+static ANVQueueNode* create_node(const ANVQueue* queue, void* data)
 {
-    if (!queue || !queue->alloc)
-    {
-        return NULL;
-    }
-
-    ANVQueueNode* node = anv_alloc_malloc(queue->alloc, sizeof(ANVQueueNode));
+    ANVQueueNode* node = anv_alloc_allocate(&queue->alloc, sizeof(ANVQueueNode));
     if (!node)
     {
         return NULL;
@@ -32,19 +27,19 @@ static ANVQueueNode* create_node(ANVQueue* queue, void* data)
 /**
  * Free a queue node and optionally its data.
  */
-static void free_node(ANVQueue* queue, ANVQueueNode* node, const bool should_free_data)
+static void free_node(const ANVQueue* queue, ANVQueueNode* node, const bool should_free_data)
 {
-    if (!queue || !node)
+    if (!node)
     {
         return;
     }
 
     if (should_free_data && node->data)
     {
-        anv_alloc_data_free(queue->alloc, node->data);
+        anv_alloc_data_deallocate(&queue->alloc, node->data);
     }
 
-    anv_alloc_free(queue->alloc, node);
+    anv_alloc_deallocate(&queue->alloc, node);
 }
 
 //==============================================================================
@@ -58,7 +53,7 @@ ANV_API ANVQueue* anv_queue_create(ANVAllocator* alloc)
         return NULL;
     }
 
-    ANVQueue* queue = anv_alloc_malloc(alloc, sizeof(ANVQueue));
+    ANVQueue* queue = anv_alloc_allocate(alloc, sizeof(ANVQueue));
     if (!queue)
     {
         return NULL;
@@ -67,7 +62,7 @@ ANV_API ANVQueue* anv_queue_create(ANVAllocator* alloc)
     queue->front = NULL;
     queue->back = NULL;
     queue->size = 0;
-    queue->alloc = alloc;
+    queue->alloc = *alloc;
 
     return queue;
 }
@@ -81,7 +76,7 @@ ANV_API void anv_queue_destroy(ANVQueue* queue, const bool should_free_data)
 
     anv_queue_clear(queue, should_free_data);
 
-    anv_alloc_free(queue->alloc, queue);
+    anv_alloc_deallocate(&queue->alloc, queue);
 }
 
 ANV_API void anv_queue_clear(ANVQueue* queue, const bool should_free_data)
@@ -276,14 +271,14 @@ ANV_API void anv_queue_for_each(const ANVQueue* queue, const anv_action_func act
 // Queue copying functions
 //==============================================================================
 
-ANV_API ANVQueue* anv_queue_copy(const ANVQueue* queue)
+ANV_API ANVQueue* anv_queue_copy(ANVQueue* queue)
 {
     if (!queue)
     {
         return NULL;
     }
 
-    ANVQueue* new_queue = anv_queue_create(queue->alloc);
+    ANVQueue* new_queue = anv_queue_create(&queue->alloc);
     if (!new_queue)
     {
         return NULL;
@@ -309,14 +304,14 @@ ANV_API ANVQueue* anv_queue_copy(const ANVQueue* queue)
     return new_queue;
 }
 
-ANV_API ANVQueue* anv_queue_copy_deep(const ANVQueue* queue, const bool should_free_data)
+ANV_API ANVQueue* anv_queue_copy_deep(ANVQueue* queue, const bool should_free_data)
 {
-    if (!queue || !queue->alloc || !queue->alloc->copy)
+    if (!queue || !queue->alloc.copy)
     {
         return NULL;
     }
 
-    ANVQueue* new_queue = anv_queue_create(queue->alloc);
+    ANVQueue* new_queue = anv_queue_create(&queue->alloc);
     if (!new_queue)
     {
         return NULL;
@@ -331,7 +326,7 @@ ANV_API ANVQueue* anv_queue_copy_deep(const ANVQueue* queue, const bool should_f
     const ANVQueueNode* current = queue->front;
     while (current)
     {
-        void* copied_data = queue->alloc->copy(current->data);
+        void* copied_data = queue->alloc.copy(current->data);
         if (!copied_data)
         {
             anv_queue_destroy(new_queue, should_free_data);
@@ -342,7 +337,7 @@ ANV_API ANVQueue* anv_queue_copy_deep(const ANVQueue* queue, const bool should_f
         {
             if (should_free_data)
             {
-                anv_alloc_data_free(queue->alloc, copied_data);
+                anv_alloc_data_deallocate(&queue->alloc, copied_data);
             }
             anv_queue_destroy(new_queue, should_free_data);
             return NULL;
@@ -359,9 +354,9 @@ ANV_API ANVQueue* anv_queue_copy_deep(const ANVQueue* queue, const bool should_f
 
 typedef struct QueueIteratorState
 {
-        const ANVQueue* queue;
-        ANVQueueNode* current;
-        ANVQueueNode* start;
+    const ANVQueue* queue;
+    ANVQueueNode* current;
+    ANVQueueNode* start;
 } QueueIteratorState;
 
 static void* queue_iterator_get(const ANVIterator* it)
@@ -443,7 +438,7 @@ static void queue_iterator_destroy(ANVIterator* it)
     if (it->data_state)
     {
         QueueIteratorState* state = it->data_state;
-        anv_alloc_free(state->queue->alloc, state);
+        anv_alloc_deallocate(&state->queue->alloc, state);
     }
     it->data_state = NULL;
 }
@@ -461,12 +456,12 @@ ANV_API ANVIterator anv_queue_iterator(const ANVQueue* queue)
     it.is_valid = queue_iterator_is_valid;
     it.destroy = queue_iterator_destroy;
 
-    if (!queue || !queue->alloc)
+    if (!queue)
     {
         return it;
     }
 
-    QueueIteratorState* state = anv_alloc_malloc(queue->alloc, sizeof(QueueIteratorState));
+    QueueIteratorState* state = anv_alloc_allocate(&queue->alloc, sizeof(QueueIteratorState));
     if (!state)
     {
         return it;
@@ -533,7 +528,7 @@ ANV_API ANVQueue* anv_queue_from_iterator(ANVIterator* it, ANVAllocator* alloc, 
         {
             if (should_copy)
             {
-                anv_alloc_data_free(alloc, element_to_insert);
+                anv_alloc_data_deallocate(alloc, element_to_insert);
             }
             anv_queue_destroy(queue, should_copy);
             return NULL;

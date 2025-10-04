@@ -11,14 +11,9 @@
 /**
  * Create a new stack node with the given data.
  */
-static ANVStackNode* create_node(ANVStack* stack, void* data)
+static ANVStackNode* create_node(const ANVStack* stack, void* data)
 {
-    if (!stack || !stack->alloc)
-    {
-        return NULL;
-    }
-
-    ANVStackNode* node = anv_alloc_malloc(stack->alloc, sizeof(ANVStackNode));
+    ANVStackNode* node = anv_alloc_allocate(&stack->alloc, sizeof(ANVStackNode));
     if (!node)
     {
         return NULL;
@@ -32,22 +27,19 @@ static ANVStackNode* create_node(ANVStack* stack, void* data)
 /**
  * Free a stack node and optionally its data.
  */
-static void free_node(ANVStack* stack, ANVStackNode* node, const bool should_free_data)
+static void free_node(const ANVStack* stack, ANVStackNode* node, const bool should_free_data)
 {
-    if (!stack || !node)
+    if (!node)
     {
         return;
     }
 
-    if (should_free_data && node->data && stack->alloc)
+    if (should_free_data && node->data)
     {
-        anv_alloc_data_free(stack->alloc, node->data);
+        anv_alloc_data_deallocate(&stack->alloc, node->data);
     }
 
-    if (stack->alloc)
-    {
-        anv_alloc_free(stack->alloc, node);
-    }
+    anv_alloc_deallocate(&stack->alloc, node);
 }
 
 //==============================================================================
@@ -61,7 +53,7 @@ ANV_API ANVStack* anv_stack_create(ANVAllocator* alloc)
         return NULL;
     }
 
-    ANVStack* stack = anv_alloc_malloc(alloc, sizeof(ANVStack));
+    ANVStack* stack = anv_alloc_allocate(alloc, sizeof(ANVStack));
     if (!stack)
     {
         return NULL;
@@ -69,7 +61,7 @@ ANV_API ANVStack* anv_stack_create(ANVAllocator* alloc)
 
     stack->top = NULL;
     stack->size = 0;
-    stack->alloc = alloc;
+    stack->alloc = *alloc;
 
     return stack;
 }
@@ -83,7 +75,7 @@ ANV_API void anv_stack_destroy(ANVStack* stack, const bool should_free_data)
 
     anv_stack_clear(stack, should_free_data);
 
-    anv_alloc_free(stack->alloc, stack);
+    anv_alloc_deallocate(&stack->alloc, stack);
 }
 
 ANV_API void anv_stack_clear(ANVStack* stack, const bool should_free_data)
@@ -250,14 +242,14 @@ ANV_API void anv_stack_for_each(const ANVStack* stack, const anv_action_func act
 // Stack copying functions
 //==============================================================================
 
-ANV_API ANVStack* anv_stack_copy(const ANVStack* stack)
+ANV_API ANVStack* anv_stack_copy(ANVStack* stack)
 {
     if (!stack)
     {
         return NULL;
     }
 
-    ANVStack* new_stack = anv_stack_create(stack->alloc);
+    ANVStack* new_stack = anv_stack_create(&stack->alloc);
     if (!new_stack)
     {
         return NULL;
@@ -269,7 +261,7 @@ ANV_API ANVStack* anv_stack_copy(const ANVStack* stack)
     }
 
     // Build a temporary array to reverse the order
-    void** temp_array = anv_alloc_malloc(stack->alloc, stack->size * sizeof(void*));
+    void** temp_array = anv_alloc_allocate(&stack->alloc, stack->size * sizeof(void*));
     if (!temp_array)
     {
         anv_stack_destroy(new_stack, false);
@@ -290,24 +282,24 @@ ANV_API ANVStack* anv_stack_copy(const ANVStack* stack)
     {
         if (anv_stack_push(new_stack, temp_array[i - 1]) != 0)
         {
-            anv_alloc_free(stack->alloc, temp_array);
+            anv_alloc_deallocate(&stack->alloc, temp_array);
             anv_stack_destroy(new_stack, false);
             return NULL;
         }
     }
 
-    anv_alloc_free(stack->alloc, temp_array);
+    anv_alloc_deallocate(&stack->alloc, temp_array);
     return new_stack;
 }
 
-ANV_API ANVStack* anv_stack_copy_deep(const ANVStack* stack, const bool should_free_data)
+ANV_API ANVStack* anv_stack_copy_deep(ANVStack* stack, const bool should_free_data)
 {
-    if (!stack || !stack->alloc)
+    if (!stack)
     {
         return NULL;
     }
 
-    ANVStack* new_stack = anv_stack_create(stack->alloc);
+    ANVStack* new_stack = anv_stack_create(&stack->alloc);
     if (!new_stack)
     {
         return NULL;
@@ -319,7 +311,7 @@ ANV_API ANVStack* anv_stack_copy_deep(const ANVStack* stack, const bool should_f
     }
 
     // Build a temporary array to reverse the order
-    void** temp_array = anv_alloc_malloc(stack->alloc, stack->size * sizeof(void*));
+    void** temp_array = anv_alloc_allocate(&stack->alloc, stack->size * sizeof(void*));
     if (!temp_array)
     {
         anv_stack_destroy(new_stack, false);
@@ -331,7 +323,7 @@ ANV_API ANVStack* anv_stack_copy_deep(const ANVStack* stack, const bool should_f
     size_t index = 0;
     while (current && index < stack->size)
     {
-        void* copied_data = anv_alloc_copy(stack->alloc, current->data);
+        void* copied_data = anv_alloc_copy(&stack->alloc, current->data);
         if (!copied_data)
         {
             // Clean up any copied data on failure
@@ -339,10 +331,10 @@ ANV_API ANVStack* anv_stack_copy_deep(const ANVStack* stack, const bool should_f
             {
                 for (size_t j = 0; j < index; j++)
                 {
-                    anv_alloc_data_free(stack->alloc, temp_array[j]);
+                    anv_alloc_data_deallocate(&stack->alloc, temp_array[j]);
                 }
             }
-            anv_alloc_free(stack->alloc, temp_array);
+            anv_alloc_deallocate(&stack->alloc, temp_array);
             anv_stack_destroy(new_stack, false);
             return NULL;
         }
@@ -360,16 +352,16 @@ ANV_API ANVStack* anv_stack_copy_deep(const ANVStack* stack, const bool should_f
             {
                 for (size_t j = 0; j < index; j++)
                 {
-                    anv_alloc_data_free(stack->alloc, temp_array[j]);
+                    anv_alloc_data_deallocate(&stack->alloc, temp_array[j]);
                 }
             }
-            anv_alloc_free(stack->alloc, temp_array);
+            anv_alloc_deallocate(&stack->alloc, temp_array);
             anv_stack_destroy(new_stack, false);
             return NULL;
         }
     }
 
-    anv_alloc_free(stack->alloc, temp_array);
+    anv_alloc_deallocate(&stack->alloc, temp_array);
     return new_stack;
 }
 
@@ -379,9 +371,9 @@ ANV_API ANVStack* anv_stack_copy_deep(const ANVStack* stack, const bool should_f
 
 typedef struct StackIteratorState
 {
-        const ANVStack* stack;
-        ANVStackNode* current;
-        ANVStackNode* start;
+    const ANVStack* stack;
+    ANVStackNode* current;
+    ANVStackNode* start;
 } StackIteratorState;
 
 static void* stack_iterator_get(const ANVIterator* it)
@@ -463,9 +455,9 @@ static void stack_iterator_destroy(ANVIterator* it)
     if (it->data_state)
     {
         StackIteratorState* state = it->data_state;
-        if (state->stack && state->stack->alloc)
+        if (state->stack)
         {
-            anv_alloc_free(state->stack->alloc, state);
+            anv_alloc_deallocate(&state->stack->alloc, state);
         }
     }
     it->data_state = NULL;
@@ -484,12 +476,12 @@ ANV_API ANVIterator anv_stack_iterator(const ANVStack* stack)
     it.is_valid = stack_iterator_is_valid;
     it.destroy = stack_iterator_destroy;
 
-    if (!stack || !stack->alloc)
+    if (!stack)
     {
         return it;
     }
 
-    StackIteratorState* state = anv_alloc_malloc(stack->alloc, sizeof(StackIteratorState));
+    StackIteratorState* state = anv_alloc_allocate(&stack->alloc, sizeof(StackIteratorState));
     if (!state)
     {
         return it;
@@ -556,7 +548,7 @@ ANV_API ANVStack* anv_stack_from_iterator(ANVIterator* it, ANVAllocator* alloc, 
         {
             if (should_copy && alloc->data_free)
             {
-                anv_alloc_data_free(alloc, element_to_insert);
+                anv_alloc_data_deallocate(alloc, element_to_insert);
             }
             anv_stack_destroy(stack, should_copy);
             return NULL;

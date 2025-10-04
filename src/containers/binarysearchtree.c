@@ -15,7 +15,7 @@
  */
 static ANVBinarySearchTreeNode* anv_bst_node_create(const ANVAllocator* alloc, void* data)
 {
-    ANVBinarySearchTreeNode* node = anv_alloc_malloc(alloc, sizeof(ANVBinarySearchTreeNode));
+    ANVBinarySearchTreeNode* node = anv_alloc_allocate(alloc, sizeof(ANVBinarySearchTreeNode));
 
     if (!node)
     {
@@ -47,11 +47,11 @@ static void anv_bst_node_destroy_recursive(ANVBinarySearchTreeNode* node, ANVAll
     // Free data if requested
     if (should_free_data && node->data)
     {
-        anv_alloc_data_free(alloc, node->data);
+        anv_alloc_data_deallocate(alloc, node->data);
     }
 
     // Free the node itself
-    anv_alloc_free(alloc, node);
+    anv_alloc_deallocate(alloc, node);
 }
 
 /**
@@ -164,11 +164,11 @@ static void anv_bst_node_remove_with_parent(ANVBinarySearchTree* tree, ANVBinary
     // Free data if requested
     if (should_free_data && node->data)
     {
-        anv_alloc_data_free(tree->alloc, node->data);
+        anv_alloc_data_deallocate(&tree->alloc, node->data);
     }
 
     // Free the node itself
-    anv_alloc_free(tree->alloc, node);
+    anv_alloc_deallocate(&tree->alloc, node);
 }
 
 /**
@@ -232,7 +232,7 @@ ANV_API ANVBinarySearchTree* anv_bst_create(ANVAllocator* alloc, const anv_compa
         return NULL;
     }
 
-    ANVBinarySearchTree* tree = anv_alloc_malloc(alloc, sizeof(ANVBinarySearchTree));
+    ANVBinarySearchTree* tree = anv_alloc_allocate(alloc, sizeof(ANVBinarySearchTree));
     if (!tree)
     {
         return NULL;
@@ -241,7 +241,7 @@ ANV_API ANVBinarySearchTree* anv_bst_create(ANVAllocator* alloc, const anv_compa
     tree->root = NULL;
     tree->size = 0;
     tree->compare = compare;
-    tree->alloc = alloc;
+    tree->alloc = *alloc;
 
     return tree;
 }
@@ -253,8 +253,8 @@ ANV_API void anv_bst_destroy(ANVBinarySearchTree* tree, const bool should_free_d
         return;
     }
 
-    anv_bst_node_destroy_recursive(tree->root, tree->alloc, should_free_data);
-    anv_alloc_free(tree->alloc, tree);
+    anv_bst_node_destroy_recursive(tree->root, &tree->alloc, should_free_data);
+    anv_alloc_deallocate(&tree->alloc, tree);
 }
 
 ANV_API void anv_bst_clear(ANVBinarySearchTree* tree, const bool should_free_data)
@@ -264,7 +264,7 @@ ANV_API void anv_bst_clear(ANVBinarySearchTree* tree, const bool should_free_dat
         return;
     }
 
-    anv_bst_node_destroy_recursive(tree->root, tree->alloc, should_free_data);
+    anv_bst_node_destroy_recursive(tree->root, &tree->alloc, should_free_data);
     tree->root = NULL;
     tree->size = 0;
 }
@@ -346,7 +346,7 @@ ANV_API int anv_bst_insert(ANVBinarySearchTree* tree, void* data)
 
     if (!tree->root)
     {
-        tree->root = anv_bst_node_create(tree->alloc, data);
+        tree->root = anv_bst_node_create(&tree->alloc, data);
         if (!tree->root)
         {
             return -1;
@@ -378,7 +378,7 @@ ANV_API int anv_bst_insert(ANVBinarySearchTree* tree, void* data)
         }
     }
 
-    ANVBinarySearchTreeNode* new_node = anv_bst_node_create(tree->alloc, data);
+    ANVBinarySearchTreeNode* new_node = anv_bst_node_create(&tree->alloc, data);
     if (!new_node || !parent)
     {
         return -1;
@@ -484,11 +484,11 @@ typedef enum
  */
 typedef struct BSTIteratorState
 {
-        const ANVBinarySearchTree* tree;  // Source tree
-        ANVStack* stack;                  // Stack for iterative traversal
-        ANVBinarySearchTreeNode* current; // Current node
-        BSTTraversalType traversal_type;  // Type of traversal
-        bool finished;                    // Has iteration finished
+    const ANVBinarySearchTree* tree;  // Source tree
+    ANVStack* stack;                  // Stack for iterative traversal
+    ANVBinarySearchTreeNode* current; // Current node
+    BSTTraversalType traversal_type;  // Type of traversal
+    bool finished;                    // Has iteration finished
 } BSTIteratorState;
 
 /**
@@ -808,14 +808,14 @@ static void bst_iterator_destroy(ANVIterator* it)
     {
         anv_stack_destroy(state->stack, false); // Don't free node data
     }
-    anv_alloc_free(it->alloc, state);
+    anv_alloc_deallocate(&it->alloc, state);
     it->data_state = NULL;
 }
 
 /**
  * Create a BST iterator with specified traversal type.
  */
-static ANVIterator bst_create_iterator(const ANVBinarySearchTree* tree, const BSTTraversalType traversal_type)
+static ANVIterator bst_create_iterator(ANVBinarySearchTree* tree, const BSTTraversalType traversal_type)
 {
     ANVIterator it = {0};
 
@@ -828,12 +828,12 @@ static ANVIterator bst_create_iterator(const ANVBinarySearchTree* tree, const BS
     it.is_valid = bst_iterator_is_valid;
     it.destroy = bst_iterator_destroy;
 
-    if (!tree || !tree->alloc)
+    if (!tree)
     {
         return it;
     }
 
-    BSTIteratorState* state = anv_alloc_malloc(tree->alloc, sizeof(BSTIteratorState));
+    BSTIteratorState* state = anv_alloc_allocate(&tree->alloc, sizeof(BSTIteratorState));
     if (!state)
     {
         return it;
@@ -845,10 +845,10 @@ static ANVIterator bst_create_iterator(const ANVBinarySearchTree* tree, const BS
     state->finished = false;
 
     // Create stack for traversal
-    state->stack = anv_stack_create(tree->alloc);
+    state->stack = anv_stack_create(&tree->alloc);
     if (!state->stack)
     {
-        anv_alloc_free(tree->alloc, state);
+        anv_alloc_deallocate(&tree->alloc, state);
         return it;
     }
 
@@ -863,7 +863,7 @@ static ANVIterator bst_create_iterator(const ANVBinarySearchTree* tree, const BS
             break;
         case BST_TRAVERSAL_POSTORDER:
             bst_setup_postorder(state);
-            // Intentional fallthrough
+        // Intentional fallthrough
         default:
             break;
     }
@@ -879,17 +879,17 @@ static ANVIterator bst_create_iterator(const ANVBinarySearchTree* tree, const BS
     return it;
 }
 
-ANV_API ANVIterator anv_bst_iterator(const ANVBinarySearchTree* tree)
+ANV_API ANVIterator anv_bst_iterator(ANVBinarySearchTree* tree)
 {
     return bst_create_iterator(tree, BST_TRAVERSAL_INORDER);
 }
 
-ANV_API ANVIterator anv_bst_iterator_preorder(const ANVBinarySearchTree* tree)
+ANV_API ANVIterator anv_bst_iterator_preorder(ANVBinarySearchTree* tree)
 {
     return bst_create_iterator(tree, BST_TRAVERSAL_PREORDER);
 }
 
-ANV_API ANVIterator anv_bst_iterator_postorder(const ANVBinarySearchTree* tree)
+ANV_API ANVIterator anv_bst_iterator_postorder(ANVBinarySearchTree* tree)
 {
     return bst_create_iterator(tree, BST_TRAVERSAL_POSTORDER);
 }
@@ -930,7 +930,7 @@ ANV_API ANVBinarySearchTree* anv_bst_from_iterator(ANVIterator* it, ANVAllocator
             {
                 if (should_copy && insert_data != data)
                 {
-                    anv_alloc_data_free(alloc, insert_data);
+                    anv_alloc_data_deallocate(alloc, insert_data);
                 }
                 anv_bst_destroy(tree, should_copy);
                 return NULL;
@@ -939,7 +939,7 @@ ANV_API ANVBinarySearchTree* anv_bst_from_iterator(ANVIterator* it, ANVAllocator
             // Indicates a duplicate was found
             if (result == 1 && should_copy && insert_data != data)
             {
-                anv_alloc_data_free(alloc, insert_data);
+                anv_alloc_data_deallocate(alloc, insert_data);
             }
         }
 

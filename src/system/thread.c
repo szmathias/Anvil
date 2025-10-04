@@ -18,26 +18,26 @@
 #include "thread.h"
 
 #ifdef ANVIL_PLATFORM_WINDOWS
-    #include <windows.h>
+#include <windows.h>
 
 // Wrapper for a user-provided thread function and argument. The wrapper
 // stores the return value so that join can retrieve it.
 typedef struct thread_wrapper
 {
-        anvthread_func func;
-        void* arg;
-        void* result;
+    anvthread_func func;
+    void* arg;
+    void* result;
 } thread_wrapper;
 
 // Linked-list entry used to map native HANDLEs to our thread_wrapper so
 // join/detach can locate the wrapper and free resources correctly.
 typedef struct handle_entry
 {
-        ANVThread thread;
-        thread_wrapper* w;
-        int done;     // set when thread finished
-        int detached; // set when detach called
-        struct handle_entry* next;
+    ANVThread thread;
+    thread_wrapper* w;
+    int done;     // set when thread finished
+    int detached; // set when detach called
+    struct handle_entry* next;
 } handle_entry;
 
 static CRITICAL_SECTION g_map_lock;
@@ -108,9 +108,9 @@ static handle_entry* find_and_remove_mapping(ANVThread thread)
     return NULL;
 }
 
-    // Find mapping without removing it. Returns pointer to entry while leaving
-    // it owned by the global map (do not free the returned pointer).
-    #ifdef _MSC_VER // Only include if used, or for debugging
+// Find mapping without removing it. Returns pointer to entry while leaving
+// it owned by the global map (do not free the returned pointer).
+#ifdef _MSC_VER // Only include if used, or for debugging
 static handle_entry* find_mapping(ANVThread thread)
 {
     ensure_map_init();
@@ -130,7 +130,7 @@ static handle_entry* find_mapping(ANVThread thread)
     LeaveCriticalSection(&g_map_lock);
     return NULL;
 }
-    #endif
+#endif
 
 // Thread entry used with CreateThread. It invokes the user function and
 // stores the return value in the wrapper. If the thread has been detached
@@ -311,7 +311,7 @@ ANV_API int anv_thread_detach(ANVThread thread)
 }
 
 #else
-    #include <pthread.h>
+#include <pthread.h>
 
 // POSIX implementations are thin wrappers around pthreads. They forward
 // return values from pthread functions directly so callers can inspect

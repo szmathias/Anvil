@@ -32,10 +32,10 @@ static void invalid_reset(const ANVIterator* it)
  */
 typedef struct TransformState
 {
-        ANVIterator* base_iterator;   // Source iterator
-        anv_transform_func transform; // Transformation function
-        void* cached_result;          // Cached transformed result
-        int transform_allocates;      // Flag: does transform function allocate memory?
+    ANVIterator* base_iterator;   // Source iterator
+    anv_transform_func transform; // Transformation function
+    void* cached_result;          // Cached transformed result
+    int transform_allocates;      // Flag: does transform function allocate memory?
 } TransformState;
 
 /**
@@ -120,7 +120,7 @@ static int transform_next(const ANVIterator* it)
     // Free any previously cached result if it was allocated
     if (state->cached_result && state->transform_allocates)
     {
-        anv_alloc_data_free(it->alloc, state->cached_result);
+        anv_alloc_data_deallocate(&it->alloc, state->cached_result);
     }
 
     // Always clear cached result so next get() will recompute it
@@ -163,7 +163,7 @@ static void transform_destroy(ANVIterator* it)
     // Free cached result if it exists
     if (state->cached_result && state->transform_allocates)
     {
-        anv_alloc_free(it->alloc, state->cached_result);
+        anv_alloc_deallocate(&it->alloc, state->cached_result);
     }
 
     // Destroy base iterator
@@ -172,7 +172,7 @@ static void transform_destroy(ANVIterator* it)
         state->base_iterator->destroy(state->base_iterator);
     }
 
-    anv_alloc_free(it->alloc, state);
+    anv_alloc_deallocate(&it->alloc, state);
     it->data_state = NULL;
 }
 
@@ -197,7 +197,7 @@ ANV_API ANVIterator anv_iterator_transform(ANVIterator* it, const ANVAllocator* 
         return new_it;
     }
 
-    TransformState* state = anv_alloc_malloc(alloc, sizeof(TransformState));
+    TransformState* state = anv_alloc_allocate(alloc, sizeof(TransformState));
     if (!state)
     {
         return new_it;
@@ -208,7 +208,7 @@ ANV_API ANVIterator anv_iterator_transform(ANVIterator* it, const ANVAllocator* 
     state->cached_result = NULL;
     state->transform_allocates = transform_allocates;
 
-    new_it.alloc = alloc;
+    new_it.alloc = *alloc;
     new_it.data_state = state;
 
     return new_it;
@@ -223,11 +223,11 @@ ANV_API ANVIterator anv_iterator_transform(ANVIterator* it, const ANVAllocator* 
  */
 typedef struct FilterState
 {
-        ANVIterator* base_iterator; // Source iterator
-        anv_filter_func filter;     // Predicate function
-        void* current_element;      // Cached current element
-        int has_current;            // Flag indicating if we have a cached current element
-        int current_matches;        // Flag indicating if current element matches filter
+    ANVIterator* base_iterator; // Source iterator
+    anv_filter_func filter;     // Predicate function
+    void* current_element;      // Cached current element
+    int has_current;            // Flag indicating if we have a cached current element
+    int current_matches;        // Flag indicating if current element matches filter
 } FilterState;
 
 /**
@@ -396,7 +396,7 @@ static void filter_destroy(ANVIterator* it)
         state->base_iterator->destroy(state->base_iterator);
     }
 
-    anv_alloc_free(it->alloc, state);
+    anv_alloc_deallocate(&it->alloc, state);
     it->data_state = NULL;
 }
 
@@ -421,7 +421,7 @@ ANV_API ANVIterator anv_iterator_filter(ANVIterator* it, const ANVAllocator* all
         return new_it;
     }
 
-    FilterState* state = anv_alloc_malloc(alloc, sizeof(FilterState));
+    FilterState* state = anv_alloc_allocate(alloc, sizeof(FilterState));
     if (!state)
     {
         return new_it;
@@ -432,7 +432,7 @@ ANV_API ANVIterator anv_iterator_filter(ANVIterator* it, const ANVAllocator* all
     state->current_element = NULL;
     state->has_current = 0;
 
-    new_it.alloc = alloc;
+    new_it.alloc = *alloc;
     new_it.data_state = state;
 
     return new_it;
@@ -447,11 +447,11 @@ ANV_API ANVIterator anv_iterator_filter(ANVIterator* it, const ANVAllocator* all
  */
 typedef struct RangeState
 {
-        int start;        // Starting value (stored for reset/has_prev)
-        int current;      // Current value
-        int end;          // End value (exclusive)
-        int step;         // Increment value
-        int cached_value; // Cached value to return pointers to
+    int start;        // Starting value (stored for reset/has_prev)
+    int current;      // Current value
+    int end;          // End value (exclusive)
+    int step;         // Increment value
+    int cached_value; // Cached value to return pointers to
 } RangeState;
 
 /**
@@ -613,7 +613,7 @@ static void range_destroy(ANVIterator* it)
         return;
     }
 
-    anv_alloc_free(it->alloc, it->data_state);
+    anv_alloc_deallocate(&it->alloc, it->data_state);
     it->data_state = NULL;
 }
 
@@ -650,7 +650,7 @@ ANV_API ANVIterator anv_iterator_range(const int start, const int end, const int
         return it; // Return invalid iterator with NULL data_state
     }
 
-    RangeState* state = anv_alloc_malloc(alloc, sizeof(RangeState));
+    RangeState* state = anv_alloc_allocate(alloc, sizeof(RangeState));
     if (!state)
     {
         return it;
@@ -662,7 +662,7 @@ ANV_API ANVIterator anv_iterator_range(const int start, const int end, const int
     state->step = step;
     state->cached_value = start; // Initialize cached value
 
-    it.alloc = alloc;
+    it.alloc = *alloc;
     it.data_state = state;
 
     return it;
@@ -677,9 +677,9 @@ ANV_API ANVIterator anv_iterator_range(const int start, const int end, const int
  */
 typedef struct CopyState
 {
-        ANVIterator* base_iterator; // Source iterator
-        anv_copy_func copy;         // Copy function
-        void* cached_copy;          // Cached copied element (user owns this)
+    ANVIterator* base_iterator; // Source iterator
+    anv_copy_func copy;         // Copy function
+    void* cached_copy;          // Cached copied element (user owns this)
 } CopyState;
 
 /**
@@ -798,7 +798,7 @@ static void copy_destroy(ANVIterator* it)
         state->base_iterator->destroy(state->base_iterator);
     }
 
-    anv_alloc_free(it->alloc, state);
+    anv_alloc_deallocate(&it->alloc, state);
     it->data_state = NULL;
 }
 
@@ -823,7 +823,7 @@ ANV_API ANVIterator anv_iterator_copy(ANVIterator* it, const ANVAllocator* alloc
         return new_it;
     }
 
-    CopyState* state = anv_alloc_malloc(alloc, sizeof(CopyState));
+    CopyState* state = anv_alloc_allocate(alloc, sizeof(CopyState));
     if (!state)
     {
         return new_it;
@@ -833,7 +833,7 @@ ANV_API ANVIterator anv_iterator_copy(ANVIterator* it, const ANVAllocator* alloc
     state->copy = copy;
     state->cached_copy = NULL;
 
-    new_it.alloc = alloc;
+    new_it.alloc = *alloc;
     new_it.data_state = state;
 
     return new_it;
@@ -848,9 +848,9 @@ ANV_API ANVIterator anv_iterator_copy(ANVIterator* it, const ANVAllocator* alloc
  */
 typedef struct TakeState
 {
-        ANVIterator* base_iterator; // Source iterator
-        size_t max_count;           // Maximum number of elements to yield
-        size_t current_count;       // Number of elements yielded so far
+    ANVIterator* base_iterator; // Source iterator
+    size_t max_count;           // Maximum number of elements to yield
+    size_t current_count;       // Number of elements yielded so far
 } TakeState;
 
 /**
@@ -975,7 +975,7 @@ static void take_destroy(ANVIterator* it)
         state->base_iterator->destroy(state->base_iterator);
     }
 
-    anv_alloc_free(it->alloc, state);
+    anv_alloc_deallocate(&it->alloc, state);
     it->data_state = NULL;
 }
 
@@ -1000,7 +1000,7 @@ ANV_API ANVIterator anv_iterator_take(ANVIterator* it, const ANVAllocator* alloc
         return new_it;
     }
 
-    TakeState* state = anv_alloc_malloc(alloc, sizeof(TakeState));
+    TakeState* state = anv_alloc_allocate(alloc, sizeof(TakeState));
     if (!state)
     {
         return new_it;
@@ -1010,7 +1010,7 @@ ANV_API ANVIterator anv_iterator_take(ANVIterator* it, const ANVAllocator* alloc
     state->max_count = count;
     state->current_count = 0;
 
-    new_it.alloc = alloc;
+    new_it.alloc = *alloc;
     new_it.data_state = state;
 
     return new_it;
@@ -1025,9 +1025,9 @@ ANV_API ANVIterator anv_iterator_take(ANVIterator* it, const ANVAllocator* alloc
  */
 typedef struct SkipState
 {
-        ANVIterator* base_iterator; // Source iterator
-        size_t skip_count;          // Number of elements to skip
-        int has_skipped;            // Flag indicating if we have performed the skip
+    ANVIterator* base_iterator; // Source iterator
+    size_t skip_count;          // Number of elements to skip
+    int has_skipped;            // Flag indicating if we have performed the skip
 } SkipState;
 
 /**
@@ -1159,7 +1159,7 @@ static void skip_destroy(ANVIterator* it)
         state->base_iterator->destroy(state->base_iterator);
     }
 
-    anv_alloc_free(it->alloc, state);
+    anv_alloc_deallocate(&it->alloc, state);
     it->data_state = NULL;
 }
 
@@ -1184,7 +1184,7 @@ ANV_API ANVIterator anv_iterator_skip(ANVIterator* it, const ANVAllocator* alloc
         return new_it;
     }
 
-    SkipState* state = anv_alloc_malloc(alloc, sizeof(SkipState));
+    SkipState* state = anv_alloc_allocate(alloc, sizeof(SkipState));
     if (!state)
     {
         return new_it;
@@ -1194,7 +1194,7 @@ ANV_API ANVIterator anv_iterator_skip(ANVIterator* it, const ANVAllocator* alloc
     state->skip_count = count;
     state->has_skipped = 0;
 
-    new_it.alloc = alloc;
+    new_it.alloc = *alloc;
     new_it.data_state = state;
 
     return new_it;
@@ -1209,10 +1209,10 @@ ANV_API ANVIterator anv_iterator_skip(ANVIterator* it, const ANVAllocator* alloc
  */
 typedef struct ZipState
 {
-        ANVIterator* iter1;   // First source iterator
-        ANVIterator* iter2;   // Second source iterator
-        ANVPair* cached_pair; // Cached pair to return pointers to
-        int has_cached_pair;  // Flag indicating if cached pair is valid
+    ANVIterator* iter1;   // First source iterator
+    ANVIterator* iter2;   // Second source iterator
+    ANVPair* cached_pair; // Cached pair to return pointers to
+    int has_cached_pair;  // Flag indicating if cached pair is valid
 } ZipState;
 
 /**
@@ -1251,7 +1251,7 @@ static void* zip_get(const ANVIterator* it)
         // Update cached pair
         state->cached_pair->first = elem1;
         state->cached_pair->second = elem2;
-        state->cached_pair->alloc = (ANVAllocator*)it->alloc;
+        state->cached_pair->alloc = it->alloc;
         state->has_cached_pair = 1;
     }
 
@@ -1363,8 +1363,8 @@ static void zip_destroy(ANVIterator* it)
         state->iter2->destroy(state->iter2);
     }
 
-    anv_alloc_free(it->alloc, state->cached_pair);
-    anv_alloc_free(it->alloc, state);
+    anv_alloc_deallocate(&it->alloc, state->cached_pair);
+    anv_alloc_deallocate(&it->alloc, state);
     it->data_state = NULL;
 }
 
@@ -1389,7 +1389,7 @@ ANV_API ANVIterator anv_iterator_zip(ANVIterator* it1, ANVIterator* it2, const A
         return new_it;
     }
 
-    ZipState* state = anv_alloc_malloc(alloc, sizeof(ZipState));
+    ZipState* state = anv_alloc_allocate(alloc, sizeof(ZipState));
     if (!state)
     {
         return new_it;
@@ -1398,7 +1398,7 @@ ANV_API ANVIterator anv_iterator_zip(ANVIterator* it1, ANVIterator* it2, const A
     state->cached_pair = anv_pair_create((ANVAllocator*)alloc, NULL, NULL);
     if (!state->cached_pair)
     {
-        anv_alloc_free(alloc, state);
+        anv_alloc_deallocate(alloc, state);
         return new_it;
     }
 
@@ -1406,7 +1406,7 @@ ANV_API ANVIterator anv_iterator_zip(ANVIterator* it1, ANVIterator* it2, const A
     state->iter2 = it2;
     state->has_cached_pair = 0;
 
-    new_it.alloc = alloc;
+    new_it.alloc = *alloc;
     new_it.data_state = state;
 
     return new_it;
@@ -1421,9 +1421,9 @@ ANV_API ANVIterator anv_iterator_zip(ANVIterator* it1, ANVIterator* it2, const A
  */
 typedef struct EnumerateState
 {
-        ANVIterator* base_iterator;       // Source iterator
-        size_t current_index;             // Current index counter
-        ANVIndexedElement cached_element; // Cached indexed element to return pointers to
+    ANVIterator* base_iterator;       // Source iterator
+    size_t current_index;             // Current index counter
+    ANVIndexedElement cached_element; // Cached indexed element to return pointers to
 } EnumerateState;
 
 /**
@@ -1458,7 +1458,7 @@ static void* enumerate_get(const ANVIterator* it)
     // Update cached indexed element
     state->cached_element.index = state->current_index;
     state->cached_element.element = element;
-    state->cached_element.alloc = (ANVAllocator*)it->alloc;
+    state->cached_element.alloc = it->alloc;
 
     return &state->cached_element;
 }
@@ -1552,7 +1552,7 @@ static void enumerate_destroy(ANVIterator* it)
         state->base_iterator->destroy(state->base_iterator);
     }
 
-    anv_alloc_free(it->alloc, state);
+    anv_alloc_deallocate(&it->alloc, state);
     it->data_state = NULL;
 }
 
@@ -1577,7 +1577,7 @@ ANV_API ANVIterator anv_iterator_enumerate(ANVIterator* it, const ANVAllocator* 
         return new_it;
     }
 
-    EnumerateState* state = anv_alloc_malloc(alloc, sizeof(EnumerateState));
+    EnumerateState* state = anv_alloc_allocate(alloc, sizeof(EnumerateState));
     if (!state)
     {
         return new_it;
@@ -1589,9 +1589,9 @@ ANV_API ANVIterator anv_iterator_enumerate(ANVIterator* it, const ANVAllocator* 
     // Initialize cached indexed element
     state->cached_element.index = start_index;
     state->cached_element.element = NULL;
-    state->cached_element.alloc = (ANVAllocator*)alloc;
+    state->cached_element.alloc = *alloc;
 
-    new_it.alloc = alloc;
+    new_it.alloc = *alloc;
     new_it.data_state = state;
 
     return new_it;
@@ -1606,9 +1606,9 @@ ANV_API ANVIterator anv_iterator_enumerate(ANVIterator* it, const ANVAllocator* 
  */
 typedef struct RepeatState
 {
-        const void* value;    // Pointer to the value to repeat (not owned)
-        size_t total_count;   // Total number of repetitions
-        size_t current_count; // Current iteration count (0-based)
+    const void* value;    // Pointer to the value to repeat (not owned)
+    size_t total_count;   // Total number of repetitions
+    size_t current_count; // Current iteration count (0-based)
 } RepeatState;
 
 /**
@@ -1709,7 +1709,7 @@ static void repeat_destroy(ANVIterator* it)
     }
 
     // Note: We don't free the value pointer since we don't own it
-    anv_alloc_free(it->alloc, it->data_state);
+    anv_alloc_deallocate(&it->alloc, it->data_state);
     it->data_state = NULL;
 }
 
@@ -1734,7 +1734,7 @@ ANV_API ANVIterator anv_iterator_repeat(const void* value, const ANVAllocator* a
         return new_it;
     }
 
-    RepeatState* state = anv_alloc_malloc(alloc, sizeof(RepeatState));
+    RepeatState* state = anv_alloc_allocate(alloc, sizeof(RepeatState));
     if (!state)
     {
         return new_it;
@@ -1744,7 +1744,7 @@ ANV_API ANVIterator anv_iterator_repeat(const void* value, const ANVAllocator* a
     state->total_count = count;
     state->current_count = 0;
 
-    new_it.alloc = alloc;
+    new_it.alloc = *alloc;
     new_it.data_state = state;
 
     return new_it;
@@ -1759,9 +1759,9 @@ ANV_API ANVIterator anv_iterator_repeat(const void* value, const ANVAllocator* a
  */
 typedef struct ChainState
 {
-        ANVIterator* iterators;        // Array of source iterators (owned)
-        size_t iterator_count;         // Number of iterators in the array
-        size_t current_iterator_index; // Index of currently active iterator
+    ANVIterator* iterators;        // Array of source iterators (owned)
+    size_t iterator_count;         // Number of iterators in the array
+    size_t current_iterator_index; // Index of currently active iterator
 } ChainState;
 
 /**
@@ -1912,10 +1912,10 @@ static void chain_destroy(ANVIterator* it)
                 current_it->destroy(current_it);
             }
         }
-        anv_alloc_free(it->alloc, state->iterators);
+        anv_alloc_deallocate(&it->alloc, state->iterators);
     }
 
-    anv_alloc_free(it->alloc, state);
+    anv_alloc_deallocate(&it->alloc, state);
     it->data_state = NULL;
 }
 
@@ -1940,17 +1940,17 @@ ANV_API ANVIterator anv_iterator_chain(ANVIterator* iterators, const size_t iter
         return new_it;
     }
 
-    ChainState* state = anv_alloc_malloc(alloc, sizeof(ChainState));
+    ChainState* state = anv_alloc_allocate(alloc, sizeof(ChainState));
     if (!state)
     {
         return new_it;
     }
 
     // Allocate array to store copies of the iterators
-    state->iterators = anv_alloc_malloc(alloc, sizeof(ANVIterator) * iterator_count);
+    state->iterators = anv_alloc_allocate(alloc, sizeof(ANVIterator) * iterator_count);
     if (!state->iterators)
     {
-        anv_alloc_free(alloc, state);
+        anv_alloc_deallocate(alloc, state);
         return new_it;
     }
 
@@ -1963,7 +1963,7 @@ ANV_API ANVIterator anv_iterator_chain(ANVIterator* iterators, const size_t iter
     state->iterator_count = iterator_count;
     state->current_iterator_index = 0;
 
-    new_it.alloc = alloc;
+    new_it.alloc = *alloc;
     new_it.data_state = state;
 
     return new_it;

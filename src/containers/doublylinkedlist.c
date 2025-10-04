@@ -152,7 +152,7 @@ ANV_API ANVDoublyLinkedList* anv_dll_create(ANVAllocator* alloc)
         return NULL;
     }
 
-    ANVDoublyLinkedList* list = anv_alloc_malloc(alloc, sizeof(ANVDoublyLinkedList));
+    ANVDoublyLinkedList* list = anv_alloc_allocate(alloc, sizeof(ANVDoublyLinkedList));
     if (!list)
     {
         return NULL;
@@ -161,7 +161,7 @@ ANV_API ANVDoublyLinkedList* anv_dll_create(ANVAllocator* alloc)
     list->head = NULL;
     list->tail = NULL;
     list->size = 0;
-    list->alloc = alloc;
+    list->alloc = *alloc;
 
     return list;
 }
@@ -171,7 +171,7 @@ ANV_API void anv_dll_destroy(ANVDoublyLinkedList* list, const bool should_free_d
     if (list)
     {
         anv_dll_clear(list, should_free_data);
-        anv_alloc_free(list->alloc, list);
+        anv_alloc_deallocate(&list->alloc, list);
     }
 }
 
@@ -188,10 +188,10 @@ ANV_API void anv_dll_clear(ANVDoublyLinkedList* list, const bool should_free_dat
         ANVDoublyLinkedNode* next = node->next;
         if (should_free_data && node->data)
         {
-            anv_alloc_data_free(list->alloc, node->data);
+            anv_alloc_data_deallocate(&list->alloc, node->data);
         }
 
-        anv_alloc_free(list->alloc, node);
+        anv_alloc_deallocate(&list->alloc, node);
         node = next;
     }
 
@@ -288,7 +288,7 @@ ANV_API int anv_dll_push_front(ANVDoublyLinkedList* list, void* data)
         return -1;
     }
 
-    ANVDoublyLinkedNode* node = anv_alloc_malloc(list->alloc, sizeof(ANVDoublyLinkedNode));
+    ANVDoublyLinkedNode* node = anv_alloc_allocate(&list->alloc, sizeof(ANVDoublyLinkedNode));
     if (!node)
     {
         return -1;
@@ -321,7 +321,7 @@ ANV_API int anv_dll_push_back(ANVDoublyLinkedList* list, void* data)
         return -1;
     }
 
-    ANVDoublyLinkedNode* node = anv_alloc_malloc(list->alloc, sizeof(ANVDoublyLinkedNode));
+    ANVDoublyLinkedNode* node = anv_alloc_allocate(&list->alloc, sizeof(ANVDoublyLinkedNode));
     if (!node)
     {
         return -1;
@@ -364,7 +364,7 @@ ANV_API int anv_dll_insert_at(ANVDoublyLinkedList* list, const size_t pos, void*
         return anv_dll_push_back(list, data);
     }
 
-    ANVDoublyLinkedNode* node = anv_alloc_malloc(list->alloc, sizeof(ANVDoublyLinkedNode));
+    ANVDoublyLinkedNode* node = anv_alloc_allocate(&list->alloc, sizeof(ANVDoublyLinkedNode));
     if (!node)
     {
         return -1;
@@ -446,9 +446,9 @@ ANV_API int anv_dll_remove(ANVDoublyLinkedList* list, const void* data, const an
 
             if (should_free_data && curr->data)
             {
-                anv_alloc_data_free(list->alloc, curr->data);
+                anv_alloc_data_deallocate(&list->alloc, curr->data);
             }
-            anv_alloc_free(list->alloc, curr);
+            anv_alloc_deallocate(&list->alloc, curr);
             list->size--;
 
             return 0;
@@ -503,9 +503,9 @@ ANV_API int anv_dll_remove_at(ANVDoublyLinkedList* list, const size_t pos, const
 
     if (should_free_data && node_to_remove->data)
     {
-        anv_alloc_data_free(list->alloc, node_to_remove->data);
+        anv_alloc_data_deallocate(&list->alloc, node_to_remove->data);
     }
-    anv_alloc_free(list->alloc, node_to_remove);
+    anv_alloc_deallocate(&list->alloc, node_to_remove);
     list->size--;
 
     return 0;
@@ -533,10 +533,10 @@ ANV_API int anv_dll_pop_front(ANVDoublyLinkedList* list, const bool should_free_
 
     if (should_free_data && node_to_remove->data)
     {
-        anv_alloc_data_free(list->alloc, node_to_remove->data);
+        anv_alloc_data_deallocate(&list->alloc, node_to_remove->data);
     }
 
-    anv_alloc_free(list->alloc, node_to_remove);
+    anv_alloc_deallocate(&list->alloc, node_to_remove);
     list->size--;
 
     return 0;
@@ -564,11 +564,11 @@ ANV_API int anv_dll_pop_back(ANVDoublyLinkedList* list, const bool should_free_d
 
     if (should_free_data && node_to_remove->data)
     {
-        anv_alloc_data_free(list->alloc, node_to_remove->data);
+        anv_alloc_data_deallocate(&list->alloc, node_to_remove->data);
     }
 
     // Free the node memory using the allocator's dealloc function
-    anv_alloc_free(list->alloc, node_to_remove);
+    anv_alloc_deallocate(&list->alloc, node_to_remove);
     list->size--;
     return 0;
 }
@@ -758,14 +758,14 @@ ANV_API int anv_dll_splice(ANVDoublyLinkedList* dest, ANVDoublyLinkedList* src, 
 // Higher-order functions
 //==============================================================================
 
-ANV_API ANVDoublyLinkedList* anv_dll_filter(const ANVDoublyLinkedList* list, const anv_predicate_func pred)
+ANV_API ANVDoublyLinkedList* anv_dll_filter(ANVDoublyLinkedList* list, const anv_predicate_func pred)
 {
     if (!list || !pred)
     {
         return NULL;
     }
 
-    ANVDoublyLinkedList* filtered = anv_dll_create(list->alloc);
+    ANVDoublyLinkedList* filtered = anv_dll_create(&list->alloc);
     if (!filtered)
     {
         return NULL;
@@ -788,14 +788,14 @@ ANV_API ANVDoublyLinkedList* anv_dll_filter(const ANVDoublyLinkedList* list, con
     return filtered;
 }
 
-ANV_API ANVDoublyLinkedList* anv_dll_filter_deep(const ANVDoublyLinkedList* list, const anv_predicate_func pred)
+ANV_API ANVDoublyLinkedList* anv_dll_filter_deep(ANVDoublyLinkedList* list, const anv_predicate_func pred)
 {
-    if (!list || !pred || !list->alloc->copy)
+    if (!list || !pred || !list->alloc.copy)
     {
         return NULL;
     }
 
-    ANVDoublyLinkedList* filtered = anv_dll_create(list->alloc);
+    ANVDoublyLinkedList* filtered = anv_dll_create(&list->alloc);
     if (!filtered)
     {
         return NULL;
@@ -806,13 +806,13 @@ ANV_API ANVDoublyLinkedList* anv_dll_filter_deep(const ANVDoublyLinkedList* list
     {
         if (pred(curr->data))
         {
-            void* filtered_data = anv_alloc_copy(filtered->alloc, curr->data);
+            void* filtered_data = anv_alloc_copy(&filtered->alloc, curr->data);
 
             if (anv_dll_push_back(filtered, filtered_data) != 0)
             {
                 if (filtered_data)
                 {
-                    anv_alloc_data_free(filtered->alloc, filtered_data);
+                    anv_alloc_data_deallocate(&filtered->alloc, filtered_data);
                 }
                 anv_dll_destroy(filtered, true);
                 return NULL;
@@ -824,14 +824,14 @@ ANV_API ANVDoublyLinkedList* anv_dll_filter_deep(const ANVDoublyLinkedList* list
     return filtered;
 }
 
-ANV_API ANVDoublyLinkedList* anv_dll_transform(const ANVDoublyLinkedList* list, const anv_transform_func transform, const bool should_free_data)
+ANV_API ANVDoublyLinkedList* anv_dll_transform(ANVDoublyLinkedList* list, const anv_transform_func transform, const bool should_free_data)
 {
     if (!list || !transform)
     {
         return NULL;
     }
 
-    ANVDoublyLinkedList* transformed = anv_dll_create(list->alloc);
+    ANVDoublyLinkedList* transformed = anv_dll_create(&list->alloc);
     if (!transformed)
     {
         return NULL;
@@ -845,7 +845,7 @@ ANV_API ANVDoublyLinkedList* anv_dll_transform(const ANVDoublyLinkedList* list, 
         {
             if (should_free_data && new_data)
             {
-                anv_alloc_data_free(transformed->alloc, new_data); // Free the transformed data if insertion fails
+                anv_alloc_data_deallocate(&transformed->alloc, new_data); // Free the transformed data if insertion fails
             }
             // Free any data already successfully inserted into the new list
             anv_dll_destroy(transformed, should_free_data);
@@ -876,14 +876,14 @@ ANV_API void anv_dll_for_each(const ANVDoublyLinkedList* list, const anv_action_
 // List copying functions
 //==============================================================================
 
-ANV_API ANVDoublyLinkedList* anv_dll_copy(const ANVDoublyLinkedList* list)
+ANV_API ANVDoublyLinkedList* anv_dll_copy(ANVDoublyLinkedList* list)
 {
     if (!list)
     {
         return NULL;
     }
 
-    ANVDoublyLinkedList* copy = anv_dll_create(list->alloc);
+    ANVDoublyLinkedList* copy = anv_dll_create(&list->alloc);
     if (!copy)
     {
         return NULL;
@@ -910,14 +910,14 @@ ANV_API ANVDoublyLinkedList* anv_dll_copy(const ANVDoublyLinkedList* list)
     return copy;
 }
 
-ANV_API ANVDoublyLinkedList* anv_dll_copy_deep(const ANVDoublyLinkedList* list, const bool should_free_data)
+ANV_API ANVDoublyLinkedList* anv_dll_copy_deep(ANVDoublyLinkedList* list, const bool should_free_data)
 {
-    if (!list || !list->alloc->copy)
+    if (!list || !list->alloc.copy)
     {
         return NULL;
     }
 
-    ANVDoublyLinkedList* copy = anv_dll_create(list->alloc);
+    ANVDoublyLinkedList* copy = anv_dll_create(&list->alloc);
     if (!copy)
     {
         return NULL;
@@ -933,7 +933,7 @@ ANV_API ANVDoublyLinkedList* anv_dll_copy_deep(const ANVDoublyLinkedList* list, 
     const ANVDoublyLinkedNode* curr = list->head;
     while (curr)
     {
-        void* data_copy = anv_alloc_copy(copy->alloc, curr->data);
+        void* data_copy = anv_alloc_copy(&copy->alloc, curr->data);
         if (!data_copy)
         {
             // On failure, destroy the partially built clone, freeing any data it contains
@@ -945,7 +945,7 @@ ANV_API ANVDoublyLinkedList* anv_dll_copy_deep(const ANVDoublyLinkedList* list, 
             // If insertion fails, free the orphaned copy and destroy the partial clone
             if (should_free_data)
             {
-                anv_alloc_data_free(list->alloc, data_copy);
+                anv_alloc_data_deallocate(&list->alloc, data_copy);
             }
             anv_dll_destroy(copy, should_free_data);
             return NULL;
@@ -1010,7 +1010,7 @@ ANV_API ANVDoublyLinkedList* anv_dll_from_iterator(ANVIterator* it, ANVAllocator
         {
             if (should_copy)
             {
-                anv_alloc_data_free(alloc, element_to_insert);
+                anv_alloc_data_deallocate(alloc, element_to_insert);
             }
             anv_dll_destroy(list, should_copy);
             return NULL;
@@ -1031,9 +1031,9 @@ ANV_API ANVDoublyLinkedList* anv_dll_from_iterator(ANVIterator* it, ANVAllocator
 
 typedef struct ListIteratorState
 {
-        ANVDoublyLinkedNode* current;    // Current node
-        ANVDoublyLinkedNode* start;      // Starting position (head or tail)
-        const ANVDoublyLinkedList* list; // The list being iterated (const for safety)
+    ANVDoublyLinkedNode* current;    // Current node
+    ANVDoublyLinkedNode* start;      // Starting position (head or tail)
+    const ANVDoublyLinkedList* list; // The list being iterated (const for safety)
 } ListIteratorState;
 
 /**
@@ -1189,12 +1189,12 @@ static void anv_dll_iterator_destroy(ANVIterator* it)
         return;
     }
 
-    if (it->alloc)
-    {
-        anv_alloc_free(it->alloc, it->data_state);
-    }
+
+    anv_alloc_deallocate(&it->alloc, it->data_state);
+
     it->data_state = NULL;
 }
+
 ANV_API ANVIterator anv_dll_iterator(const ANVDoublyLinkedList* list)
 {
     ANVIterator it = {0}; // Initialize all fields to NULL/0
@@ -1213,7 +1213,7 @@ ANV_API ANVIterator anv_dll_iterator(const ANVDoublyLinkedList* list)
         return it;
     }
 
-    ListIteratorState* state = anv_alloc_malloc(list->alloc, sizeof(ListIteratorState));
+    ListIteratorState* state = anv_alloc_allocate(&list->alloc, sizeof(ListIteratorState));
     if (!state)
     {
         return it;
@@ -1247,7 +1247,7 @@ ANV_API ANVIterator anv_dll_iterator_reverse(const ANVDoublyLinkedList* list)
         return it;
     }
 
-    ListIteratorState* state = anv_alloc_malloc(list->alloc, sizeof(ListIteratorState));
+    ListIteratorState* state = anv_alloc_allocate(&list->alloc, sizeof(ListIteratorState));
     if (!state)
     {
         return it;

@@ -47,7 +47,7 @@ ANV_API ANVHashSet* anv_hashset_create(ANVAllocator* alloc, const anv_hash_func 
         return NULL;
     }
 
-    ANVHashSet* set = anv_alloc_malloc(alloc, sizeof(ANVHashSet));
+    ANVHashSet* set = anv_alloc_allocate(alloc, sizeof(ANVHashSet));
     if (!set)
     {
         return NULL;
@@ -56,7 +56,7 @@ ANV_API ANVHashSet* anv_hashset_create(ANVAllocator* alloc, const anv_hash_func 
     set->map = anv_hashmap_create(alloc, hash, key_equals, initial_capacity);
     if (!set->map)
     {
-        anv_alloc_free(alloc, set);
+        anv_alloc_deallocate(alloc, set);
         return NULL;
     }
 
@@ -72,12 +72,12 @@ ANV_API void anv_hashset_destroy(ANVHashSet* set, const bool should_free_keys)
 
     if (set->map)
     {
-        const ANVAllocator* alloc = set->map->alloc;
+        const ANVAllocator alloc = set->map->alloc;
 
         // Never free values (they're just sentinels), but optionally free keys
         anv_hashmap_destroy(set->map, should_free_keys, false);
 
-        anv_alloc_free(alloc, set);
+        anv_alloc_deallocate(&alloc, set);
     }
 }
 
@@ -193,7 +193,7 @@ ANV_API void* anv_hashset_remove_get(ANVHashSet* set, const void* key)
     }
 
     // Free the keys array
-    anv_alloc_free(set->map->alloc, keys);
+    anv_alloc_deallocate(&set->map->alloc, keys);
 
     if (!found_key)
     {
@@ -221,7 +221,7 @@ ANV_API ANVHashSet* anv_hashset_union(const ANVHashSet* set1, const ANVHashSet* 
     }
 
     // Create result set with same configuration as set1
-    ANVHashSet* result = anv_hashset_create(set1->map->alloc, set1->map->hash,
+    ANVHashSet* result = anv_hashset_create(&set1->map->alloc, set1->map->hash,
                                             set1->map->key_equals, 0);
     if (!result)
     {
@@ -268,7 +268,7 @@ ANV_API ANVHashSet* anv_hashset_intersection(const ANVHashSet* set1, const ANVHa
     }
 
     // Create result set
-    ANVHashSet* result = anv_hashset_create(set1->map->alloc, set1->map->hash,
+    ANVHashSet* result = anv_hashset_create(&set1->map->alloc, set1->map->hash,
                                             set1->map->key_equals, 0);
     if (!result)
     {
@@ -308,7 +308,7 @@ ANV_API ANVHashSet* anv_hashset_difference(const ANVHashSet* set1, const ANVHash
     }
 
     // Create result set
-    ANVHashSet* result = anv_hashset_create(set1->map->alloc, set1->map->hash,
+    ANVHashSet* result = anv_hashset_create(&set1->map->alloc, set1->map->hash,
                                             set1->map->key_equals, 0);
     if (!result)
     {
@@ -404,7 +404,7 @@ ANV_API ANVHashSet* anv_hashset_copy(const ANVHashSet* set)
         return NULL;
     }
 
-    ANVHashSet* copy = anv_hashset_create(set->map->alloc, set->map->hash,
+    ANVHashSet* copy = anv_hashset_create(&set->map->alloc, set->map->hash,
                                           set->map->key_equals, set->map->bucket_count);
     if (!copy)
     {
@@ -437,7 +437,7 @@ ANV_API ANVHashSet* anv_hashset_copy_deep(const ANVHashSet* set, const anv_copy_
         return NULL;
     }
 
-    ANVHashSet* copy = anv_hashset_create(set->map->alloc, set->map->hash,
+    ANVHashSet* copy = anv_hashset_create(&set->map->alloc, set->map->hash,
                                           set->map->key_equals, set->map->bucket_count);
     if (!copy)
     {
@@ -457,7 +457,7 @@ ANV_API ANVHashSet* anv_hashset_copy_deep(const ANVHashSet* set, const anv_copy_
             {
                 if (key_copy && copied_key)
                 {
-                    anv_alloc_data_free(set->map->alloc, copied_key);
+                    anv_alloc_data_deallocate(&set->map->alloc, copied_key);
                 }
                 it.destroy(&it);
                 anv_hashset_destroy(copy, key_copy != NULL);
@@ -478,9 +478,9 @@ ANV_API ANVHashSet* anv_hashset_copy_deep(const ANVHashSet* set, const anv_copy_
 // HashSet iterator state - wraps HashMap iterator but only returns keys
 typedef struct HashSetIteratorState
 {
-        ANVIterator map_iterator; // Underlying HashMap iterator
-        void* current_key;        // Current key to return
-        ANVAllocator* alloc;      // Allocator for freeing this state
+    ANVIterator map_iterator; // Underlying HashMap iterator
+    void* current_key;        // Current key to return
+    ANVAllocator* alloc;      // Allocator for freeing this state
 } HashSetIteratorState;
 
 static void* hashset_iterator_get(const ANVIterator* it)
@@ -580,7 +580,7 @@ static void hashset_iterator_destroy(ANVIterator* it)
     state->map_iterator.destroy(&state->map_iterator);
 
     // Free the state using the stored allocator
-    anv_alloc_free(state->alloc, state);
+    anv_alloc_deallocate(state->alloc, state);
 
     it->data_state = NULL;
 }
@@ -660,7 +660,7 @@ ANV_API ANVIterator anv_hashset_iterator(const ANVHashSet* set)
     it.is_valid = hashset_iterator_is_valid;
     it.destroy = hashset_iterator_destroy;
 
-    HashSetIteratorState* state = anv_alloc_malloc(set->map->alloc, sizeof(HashSetIteratorState));
+    HashSetIteratorState* state = anv_alloc_allocate(&set->map->alloc, sizeof(HashSetIteratorState));
     if (!state)
     {
         return it;
@@ -668,7 +668,7 @@ ANV_API ANVIterator anv_hashset_iterator(const ANVHashSet* set)
 
     state->map_iterator = anv_hashmap_iterator(set->map);
     state->current_key = NULL;
-    state->alloc = set->map->alloc; // Set the allocator reference
+    state->alloc = &set->map->alloc; // Set the allocator reference
 
     it.alloc = set->map->alloc;
     it.data_state = state;
@@ -729,7 +729,7 @@ ANV_API ANVHashSet* anv_hashset_from_iterator(ANVIterator* it, ANVAllocator* all
         {
             if (should_copy)
             {
-                anv_alloc_data_free(alloc, key_to_insert);
+                anv_alloc_data_deallocate(alloc, key_to_insert);
             }
             anv_hashset_destroy(set, should_copy);
             return NULL;

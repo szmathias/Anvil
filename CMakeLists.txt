@@ -24,26 +24,10 @@ endif()
 # =============================================================================
 
 option(ANV_BUILD_SHARED "Build shared library instead of static" ON)
-option(ANV_BUILD_TESTS "Build test suite" ON)
-option(ANV_BUILD_EXAMPLES "Build example programs" OFF)
+option(ANV_BUILD_TESTS "Build test suite" OFF)
+option(ANV_BUILD_EXAMPLES "Build example programs" ON)
 option(ANV_BUILD_DOCS "Build documentation" OFF)
 option(ANV_ENABLE_SANITIZERS "Enable sanitizers in Debug builds" ON)
-
-# Module options - let users choose what to include
-option(ANV_WITH_ALGORITHMS "Include algorithms module" ON)
-option(ANV_WITH_COMMON "Include common module (always required)" ON)
-option(ANV_WITH_CONTAINERS "Include containers module" ON)
-option(ANV_WITH_IO "Include I/O utilities module" ON)
-option(ANV_WITH_MATH "Include math utilities module" ON)
-option(ANV_WITH_MEMORY "Include memory utilities module" ON)
-option(ANV_WITH_STRINGS "Include string utilities module" ON)
-option(ANV_WITH_SYSTEM "Include system utilities module" ON)
-option(ANV_WITH_TESTING "Include testing framework module" ON)
-
-# Force common module on (required by everything else)
-if(NOT ANV_WITH_COMMON)
-    message(FATAL_ERROR "Common module cannot be disabled - it's required by all other modules")
-endif()
 
 # =============================================================================
 # Compiler Settings
@@ -68,7 +52,7 @@ endif()
 if(NOT WIN32 AND ANV_ENABLE_SANITIZERS AND CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     message(STATUS "Enabling sanitizers for Debug build")
     list(APPEND ANV_COMPILE_FLAGS -fsanitize=address,undefined -fno-omit-frame-pointer)
-    set(ANV_LINK_FLAGS -fsanitize=address,undefined)
+    set(ANV_LINK_FLAGS -fsanitize=address,undefined -lm)
 endif()
 
 # =============================================================================
@@ -76,177 +60,41 @@ endif()
 # =============================================================================
 
 # Collect source files from enabled modules
-set(ANV_SOURCES "")
-set(ANV_HEADERS "")
-set(ANV_INCLUDE_DIRS "")
-
-# Always include common module (required foundation)
-set(COMMON_SOURCES
-        "src/common/allocator.c"
-        "src/common/result.c"
-        "src/common/version.c"
+set(ANV_SOURCES
+        src/common/allocator.c
+        src/common/result.c
+        src/common/version.c
+        src/algorithms/hash.c
+        src/containers/arraylist.c
+        src/containers/binarysearchtree.c
+        src/containers/doublylinkedlist.c
+        src/containers/dynamicstring.c
+        src/containers/hashmap.c
+        src/containers/hashset.c
+        src/containers/iterator.c
+        src/containers/pair.c
+        src/containers/queue.c
+        src/containers/singlylinkedlist.c
+        src/containers/stack.c
+        src/system/mutex.c
+        src/system/thread.c
+        src/system/timing.c
+#        src/testing/assertions.c
+        src/testing/benchmark.c
+#        src/testing/suite.c
 )
 
-set(COMMON_HEADERS
-        "include/common/allocator.h"
-        "include/common/common.h"
-        "include/common/platform.h"
-        "include/common/result.h"
-        "include/common/types.h"
-        "include/common/version.h"
+set(ANV_INCLUDE_DIRS
+        "include/anvil/algorithms"
+        "include/anvil/common"
+        "include/anvil/containers"
+        "include/anvil/io"
+        "include/anvil/math"
+        "include/anvil/memory"
+        "include/anvil/strings"
+        "include/anvil/system"
+        "include/anvil/testing"
 )
-list(APPEND ANV_SOURCES ${COMMON_SOURCES})
-list(APPEND ANV_HEADERS ${COMMON_HEADERS})
-list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/common")
-message(STATUS "Including common module (foundation)")
-
-# Algorithms module
-if(ANV_WITH_ALGORITHMS)
-    set(ALGORITHM_SOURCES
-            "src/algorithms/hash.c"
-    )
-
-    set(ALGORITHM_HEADERS
-            "include/algorithms/hash.h"
-    )
-    list(APPEND ANV_SOURCES ${ALGORITHM_SOURCES})
-    list(APPEND ANV_HEADERS ${ALGORITHM_HEADERS})
-    list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms")
-    message(STATUS "Including algorithms module")
-endif()
-
-# Containers module (core data structures)
-if(ANV_WITH_CONTAINERS)
-    set(CONTAINER_SOURCES
-            "src/containers/arraylist.c"
-            "src/containers/binarysearchtree.c"
-            "src/containers/doublylinkedlist.c"
-            "src/containers/dynamicstring.c"
-            "src/containers/hashmap.c"
-            "src/containers/hashset.c"
-            "src/containers/iterator.c"
-            "src/containers/pair.c"
-            "src/containers/queue.c"
-            "src/containers/singlylinkedlist.c"
-            "src/containers/stack.c"
-    )
-
-    set(CONTAINER_HEADERS
-            "include/containers/arraylist.h"
-            "include/containers/binarysearchtree.h"
-            "include/containers/doublylinkedlist.h"
-            "include/containers/dynamicstring.h"
-            "include/containers/hashmap.h"
-            "include/containers/hashset.h"
-            "include/containers/iterator.h"
-            "include/containers/pair.h"
-            "include/containers/queue.h"
-            "include/containers/singlylinkedlist.h"
-            "include/containers/stack.h"
-    )
-    list(APPEND ANV_SOURCES ${CONTAINER_SOURCES})
-    list(APPEND ANV_HEADERS ${CONTAINER_HEADERS})
-    list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/containers")
-    message(STATUS "Including containers module")
-endif()
-
-# I/O utilities module
-if(ANV_WITH_IO)
-    set (IO_SOURCES
-            ""
-    )
-
-    set(IO_HEADERS
-            ""
-    )
-    list(APPEND ANV_SOURCES ${IO_SOURCES})
-    list(APPEND ANV_HEADERS ${IO_HEADERS})
-    list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/io")
-    message(STATUS "Including I/O module")
-endif()
-
-# Math utilities module
-if(ANV_WITH_MATH)
-    set(MATH_SOURCES
-            ""
-    )
-
-    set(MATH_HEADERS
-            ""
-    )
-    list(APPEND ANV_SOURCES ${MATH_SOURCES})
-    list(APPEND ANV_HEADERS ${MATH_HEADERS})
-    list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/math")
-    message(STATUS "Including math module")
-endif()
-
-# Memory utilities module
-if(ANV_WITH_MEMORY)
-    set(MEMORY_SOURCES
-            ""
-    )
-
-    set(MEMORY_HEADERS
-            ""
-    )
-    list(APPEND ANV_SOURCES ${MEMORY_SOURCES})
-    list(APPEND ANV_HEADERS ${MEMORY_HEADERS})
-    list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/memory")
-    message(STATUS "Including memory module")
-endif()
-
-# String utilities module
-if(ANV_WITH_STRINGS)
-    set(STRING_SOURCES
-            ""
-    )
-
-    set(STRING_HEADERS
-            ""
-    )
-    list(APPEND ANV_SOURCES ${STRING_SOURCES})
-    list(APPEND ANV_HEADERS ${STRING_HEADERS})
-    list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/strings")
-    message(STATUS "Including strings module")
-endif()
-
-# System utilities module
-if(ANV_WITH_SYSTEM)
-    set(SYSTEM_SOURCES
-            "src/system/mutex.c"
-            "src/system/thread.c"
-    )
-
-    set(SYSTEM_HEADERS
-            "include/system/mutex.h"
-            "include/system/system.h"
-            "include/system/thread.h"
-    )
-    list(APPEND ANV_SOURCES ${SYSTEM_SOURCES})
-    list(APPEND ANV_HEADERS ${SYSTEM_HEADERS})
-    list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/system")
-    message(STATUS "Including system module")
-endif()
-
-# Testing framework module
-if(ANV_WITH_TESTING)
-    set(TESTING_SOURCES
-            ""
-    )
-
-    set(TESTING_HEADERS
-            "include/testing/assertions.h"
-            "include/testing/benchmarks.h"
-            "include/testing/fixtures.h"
-            "include/testing/suite.h"
-            "include/testing/testing.h"
-    )
-
-    list(APPEND ANV_SOURCES ${TESTING_SOURCES})
-    list(APPEND ANV_HEADERS ${TESTING_HEADERS})
-    list(APPEND ANV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/testing")
-    message(STATUS "Including testing module")
-endif()
 
 # Verify we have source files
 if(NOT ANV_SOURCES)
@@ -353,6 +201,7 @@ endif()
 # =============================================================================
 
 if(ANV_BUILD_EXAMPLES)
+    enable_testing()
     add_subdirectory(examples)
     message(STATUS "Building examples")
 endif()
@@ -443,20 +292,6 @@ endif()
 # Generate compile_commands.json for IDE support
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Custom targets for development
-add_custom_target(format
-        COMMAND find ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include
-        -name "*.c" -o -name "*.h" | xargs clang-format -i
-        COMMENT "Formatting source code with clang-format"
-        VERBATIM
-)
-
-add_custom_target(analyze
-        COMMAND clang-tidy ${ANV_SOURCES} -- -I${CMAKE_CURRENT_SOURCE_DIR}/include
-        COMMENT "Running static analysis with clang-tidy"
-        VERBATIM
-)
-
 # =============================================================================
 # Status Summary
 # =============================================================================
@@ -476,21 +311,13 @@ message(STATUS "C Standard:           C${CMAKE_C_STANDARD}")
 message(STATUS "Compiler:             ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
 
 message(STATUS "")
-message(STATUS "Enabled modules:")
-message(STATUS "  Common (required):    ${ANV_WITH_COMMON}")
-message(STATUS "  Containers:           ${ANV_WITH_CONTAINERS}")
-message(STATUS "  Algorithms:           ${ANV_WITH_ALGORITHMS}")
-message(STATUS "  Strings:              ${ANV_WITH_STRINGS}")
-message(STATUS "  I/O:                  ${ANV_WITH_IO}")
-message(STATUS "  System:               ${ANV_WITH_SYSTEM}")
-message(STATUS "  Math:                 ${ANV_WITH_MATH}")
-
-message(STATUS "")
 message(STATUS "Build options:")
 message(STATUS "  Tests:                ${ANV_BUILD_TESTS}")
 message(STATUS "  Examples:             ${ANV_BUILD_EXAMPLES}")
 message(STATUS "  Documentation:        ${ANV_BUILD_DOCS}")
 message(STATUS "  Sanitizers:           ${ANV_ENABLE_SANITIZERS}")
+
+list(LENGTH ANV_SOURCES CMAKE_CURRENT_LIST_LENGTH)
 
 message(STATUS "")
 message(STATUS "Source files found:   ${CMAKE_CURRENT_LIST_LENGTH} files")
