@@ -863,7 +863,7 @@ static ANVIterator bst_create_iterator(ANVBinarySearchTree* tree, const BSTTrave
             break;
         case BST_TRAVERSAL_POSTORDER:
             bst_setup_postorder(state);
-        // Intentional fallthrough
+            // Fallthrough
         default:
             break;
     }
