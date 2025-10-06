@@ -1,5 +1,6 @@
 # Test suite for Anvil library
 cmake_minimum_required(VERSION 3.16)
+project(Anvil-Examples LANGUAGES C)
 
 set (TESTING_SOURCES
         testing/benchmark.c
