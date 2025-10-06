@@ -694,12 +694,9 @@ static void* hashmap_iterator_get(const ANVIterator* it)
 
     state->current_pair = (ANVPair)
     {
-        .
-        first = state->current_node->key,
-        .
-        second = state->current_node->value,
-        .
-        alloc = state->map->alloc
+        .first = state->current_node->key,
+        .second = state->current_node->value,
+        .alloc = state->map->alloc
     };
 
     return &state->current_pair;
