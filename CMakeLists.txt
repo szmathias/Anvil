@@ -40,11 +40,13 @@ elseif(MSVC)
     set(ANV_COMPILE_FLAGS /W4 /wd4996 /wd4100)
 endif()
 
+set(ANV_LINK_FLAGS -lm)
+
 # Sanitizers for Debug builds
 if(NOT WIN32 AND ANV_ENABLE_SANITIZERS AND CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     message(STATUS "Enabling sanitizers for Debug build")
     list(APPEND ANV_COMPILE_FLAGS -fsanitize=address,undefined -fno-omit-frame-pointer)
-    set(ANV_LINK_FLAGS -fsanitize=address,undefined -lm)
+    list(APPEND ANV_LINK_FLAGS -fsanitize=address,undefined)
 endif()
 
 # =============================================================================
