@@ -36,16 +36,8 @@ option(ANV_ENABLE_SANITIZERS "Enable sanitizers in Debug builds" ON)
 # Warning levels
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     set(ANV_COMPILE_FLAGS -Wall -Wextra -Wpedantic -g)
-    # Additional warnings for high code quality
-    list(APPEND ANV_COMPILE_FLAGS
-            -Wcast-align -Wdisabled-optimization
-            -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations
-            -Wmissing-include-dirs -Wredundant-decls
-            -Wstrict-overflow=5 -Wswitch-default -Wundef -Wno-unused-parameter
-    )
 elseif(MSVC)
     set(ANV_COMPILE_FLAGS /W4 /wd4996 /wd4100)
-    # Disable specific warnings: deprecated functions, unused parameters
 endif()
 
 # Sanitizers for Debug builds
