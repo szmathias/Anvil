@@ -114,14 +114,16 @@ if(ANV_BUILD_SHARED)
             SOVERSION ${PROJECT_VERSION_MAJOR}
     )
 
-    if(WIN32)
+    if(WIN32 AND ANV_BUILD_TESTS)
         add_custom_command(TARGET Anvil POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 $<TARGET_FILE:Anvil>
                 ${CMAKE_BINARY_DIR}/tests/
                 COMMENT "Copying Anvil.dll to tests directory for Windows"
         )
+    endif()
 
+    if(WIN32 AND ANV_BUILD_EXAMPLES)
         add_custom_command(TARGET Anvil POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 $<TARGET_FILE:Anvil>
@@ -129,6 +131,7 @@ if(ANV_BUILD_SHARED)
                 COMMENT "Copying Anvil.dll to examples directory for Windows"
         )
     endif()
+
 
 else()
     add_library(Anvil STATIC ${ANV_SOURCES})
