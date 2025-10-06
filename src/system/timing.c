@@ -12,7 +12,7 @@
 #define _GNU_SOURCE 1
 #endif
 
-#ifdef ANVIL_PLATFORM_WINDOWS
+#ifdef ANV_PLATFORM_WINDOWS
 #include <windows.h>
 #else
 #include <time.h>

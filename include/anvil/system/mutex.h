@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-#ifdef ANVIL_PLATFORM_WINDOWS
+#ifdef ANV_PLATFORM_WINDOWS
     #include <windows.h>
 // Structure to wrap CRITICAL_SECTION with ownership tracking
 typedef struct
@@ -26,6 +26,7 @@ typedef struct
         volatile DWORD owner_thread_id;
         volatile LONG lock_count;
 } ANVMutex;
+
 #else
     #include <pthread.h>
 typedef pthread_mutex_t ANVMutex;

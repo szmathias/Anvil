@@ -20,7 +20,7 @@
 extern "C" {
 #endif
 
-#ifdef ANVIL_PLATFORM_WINDOWS
+#ifdef ANV_PLATFORM_WINDOWS
     #include <windows.h>
 typedef HANDLE ANVThread;
 #else

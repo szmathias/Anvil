@@ -17,7 +17,7 @@
 
 #include "thread.h"
 
-#ifdef ANVIL_PLATFORM_WINDOWS
+#ifdef ANV_PLATFORM_WINDOWS
 #include <windows.h>
 
 // Wrapper for a user-provided thread function and argument. The wrapper

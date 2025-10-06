@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#ifdef ANVIL_PLATFORM_WINDOWS
+#ifdef ANV_PLATFORM_WINDOWS
 #include <io.h>
 #include <process.h>
 #else
