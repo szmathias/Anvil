@@ -6,7 +6,7 @@
 #define ANVIL_TESTING_H
 
 #include "testing/assertions.h"
-#include "testing/benchmarks.h"
+#include "testing/benchmark.h"
 #include "testing/fixtures.h"
 #include "testing/suite.h"
 

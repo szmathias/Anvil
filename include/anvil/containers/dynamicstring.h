@@ -141,6 +141,7 @@ ANV_API char* anv_str_substr_string(const ANVString* str, size_t pos, size_t cou
 
 // Splits the string at each occurrence of delim and returns an array of
 // Strings. The number of strings created is returned by the function.
+ANV_API size_t anv_str_split_cstring(const char* str, const char* delim, ANVString** out);
 ANV_API size_t anv_str_split(const ANVString* str, const char* delim, ANVString** out);
 
 // Compares lhs to rhs. If they are equivalent then we evaluate the

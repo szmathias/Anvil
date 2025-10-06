@@ -5,6 +5,6 @@
 #ifndef ANVIL_IO_H
 #define ANVIL_IO_H
 
-
+#include "io/print.h"
 
 #endif //ANVIL_IO_H

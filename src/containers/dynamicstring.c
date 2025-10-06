@@ -745,6 +745,55 @@ ANV_API char* anv_str_substr_string(const ANVString* str, const size_t pos, cons
     return anv_str_substr_cstring(data_to_use, pos, count, buffer);
 }
 
+ANV_API size_t anv_str_split_cstring(const char* str, const char* delim, ANVString** out)
+{
+    if (!str || !delim)
+    {
+        return 0;
+    }
+
+    const size_t str_size = strlen(str);
+    if (str_size == 0)
+    {
+        return 0;
+    }
+
+    ANVString *parts = malloc(sizeof(ANVString));
+    if (!parts)
+    {
+        return 0;
+    }
+
+    char *buffer = mem_calloc(str_size + 1);
+    if (!buffer)
+    {
+        free(parts);
+        return 0;
+    }
+
+    memcpy(buffer, str, str_size);
+    size_t num_strings = 0;
+    const char* token = strtok(buffer, delim);
+    while (token != NULL)
+    {
+        ANVString* temp = realloc(parts, sizeof(ANVString) * (num_strings + 1));
+        if (!temp)
+        {
+            free(parts);
+            return 0;
+        }
+
+        parts = temp;
+        parts[num_strings] = anv_str_create_from_cstring(token);
+        num_strings++;
+        token = strtok(NULL, delim);
+    }
+    *out = parts;
+    free(buffer);
+
+    return num_strings;
+}
+
 ANV_API size_t anv_str_split(const ANVString* str, const char* delim, ANVString** out)
 {
     if (!str || !delim)
@@ -752,42 +801,8 @@ ANV_API size_t anv_str_split(const ANVString* str, const char* delim, ANVString*
         return 0;
     }
 
-    if (str->size == 0)
-    {
-        return 0;
-    }
-
-    size_t num_strings = 0;
-    char* buffer = mem_calloc(str->size + 1);
-    memcpy(buffer, STR_DATA(str), str->size);
-
-    ANVString* temp = malloc(sizeof(ANVString));
-    if (!temp)
-    {
-        free(buffer);
-        return 0;
-    }
-
-    const char* token = strtok(buffer, delim);
-    while (token != NULL)
-    {
-        ANVString* new_temp = realloc(temp, sizeof(ANVString) * (num_strings + 1));
-        if (!new_temp)
-        {
-            fprintf(stderr, "Error: Unable to allocate memory\n");
-            free(buffer);
-            free(temp);
-            return 0;
-        }
-        temp = new_temp;
-        temp[num_strings] = anv_str_create_from_cstring(token);
-        num_strings++;
-        token = strtok(NULL, delim);
-    }
-    *out = temp;
-    free(buffer);
-
-    return num_strings;
+    const char* data_to_use = STR_DATA(str);
+    return anv_str_split_cstring(data_to_use, delim, out);
 }
 
 ANV_API int anv_str_compare_cstring(const ANVString* lhs, const char* rhs)

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(Anvil
         LANGUAGES C
-        VERSION 0.1.0
+        VERSION 0.1.2
         DESCRIPTION "Personal Standard Library - Useful tools for building C applications"
 )
 
@@ -81,7 +81,8 @@ set(ANV_SOURCES
         src/system/timing.c
 #        src/testing/assertions.c
         src/testing/benchmark.c
-#        src/testing/suite.c
+        src/io/print.c
+        #        src/testing/suite.c
 )
 
 set(ANV_INCLUDE_DIRS
@@ -123,7 +124,15 @@ if(ANV_BUILD_SHARED)
                 ${CMAKE_BINARY_DIR}/tests/
                 COMMENT "Copying Anvil.dll to tests directory for Windows"
         )
+
+        add_custom_command(TARGET Anvil POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:Anvil>
+                ${CMAKE_BINARY_DIR}/examples/
+                COMMENT "Copying Anvil.dll to examples directory for Windows"
+        )
     endif()
+
 else()
     add_library(Anvil STATIC ${ANV_SOURCES})
     message(STATUS "Building static library")

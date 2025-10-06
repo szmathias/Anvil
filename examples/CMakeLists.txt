@@ -2,11 +2,12 @@
 cmake_minimum_required(VERSION 3.16)
 
 set (TESTING_SOURCES
-        "testing/test_suite_basic.c"
+        testing/benchmark.c
+        testing/printing.c
 )
 
 set (TESTING_HEADERS
-        "testing/testing_setup.h"
+        testing/testing_setup.h
 )
 
 foreach(TEST_SOURCE ${TESTING_SOURCES})
