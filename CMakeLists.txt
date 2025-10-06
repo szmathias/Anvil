@@ -40,7 +40,10 @@ elseif(MSVC)
     set(ANV_COMPILE_FLAGS /W4 /wd4996 /wd4100)
 endif()
 
-set(ANV_LINK_FLAGS -lm)
+set(ANV_LINK_FLAGS)
+if(NOT MSVC)
+    list(APPEND ANV_LINK_FLAGS -lm)
+endif()
 
 # Sanitizers for Debug builds
 if(NOT WIN32 AND ANV_ENABLE_SANITIZERS AND CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -153,7 +156,7 @@ target_include_directories(Anvil PRIVATE
 # Compiler options
 target_compile_options(Anvil PRIVATE ${ANV_COMPILE_FLAGS})
 
-# Link options (for sanitizers)
+# Link options
 if(ANV_LINK_FLAGS)
     target_link_libraries(Anvil PUBLIC ${ANV_LINK_FLAGS})
 endif()
