@@ -7,7 +7,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "containers/SinglyLinkedList.h"
+#include "containers/singlylinkedlist.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 

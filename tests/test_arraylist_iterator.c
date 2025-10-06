@@ -2,7 +2,7 @@
 // Created by zack on 9/2/25.
 //
 
-#include "containers/ArrayList.h"
+#include "containers/arraylist.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 #include <stdio.h>
@@ -349,7 +349,7 @@ int test_arraylist_copy_isolation(void)
 }
 
 // Test that should_copy=true fails when allocator has no copy function
-int test_arraylist_copy_function_required(void)
+int test_arraylist_anv_copy_function_required(void)
 {
     ANVAllocator alloc = anv_alloc_default();
     alloc.copy = NULL;
@@ -611,7 +611,7 @@ int main(void)
         {test_iterator_invalid, "test_iterator_invalid"},
         {test_iterator_modification, "test_iterator_modification"},
         {test_arraylist_copy_isolation, "test_arraylist_copy_isolation"},
-        {test_arraylist_copy_function_required, "test_arraylist_copy_function_required"},
+        {test_arraylist_anv_copy_function_required, "test_arraylist_anv_copy_function_required"},
         {test_arraylist_from_iterator_no_copy, "test_arraylist_from_iterator_no_copy"},
         {test_iterator_exhaustion_after_arraylist_creation, "test_iterator_exhaustion_after_arraylist_creation"},
         {test_arraylist_iterator_next_return_values, "test_arraylist_iterator_next_return_values"},

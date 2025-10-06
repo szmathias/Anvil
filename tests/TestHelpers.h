@@ -5,7 +5,7 @@
 #ifndef ANVIL_TESTHELPERS_H
 #define ANVIL_TESTHELPERS_H
 
-#include "common/Allocator.h"
+#include "common/common.h"
 
 // --- Types ---
 typedef struct
@@ -50,28 +50,28 @@ Person* create_person(const char* name, int age);
 
 // --- Predicate Functions ---
 // Predicate function that returns non-zero for even numbers
-int is_even(const void* data);
+bool is_even(const void* data);
 
 // Predicate: is odd
-int is_odd(const void* data);
+bool is_odd(const void* data);
 
 // Predicate: is greater than 5
-int is_greater_than_five(const void* data);
+bool is_greater_than_five(const void* data);
 
 // Predicate: is greater than 10
-int is_greater_than_10(const void* data);
+bool is_greater_than_10(const void* data);
 
 // Predicate: is greater than 20
-int is_greater_than_20(const void* data);
+bool is_greater_than_20(const void* data);
 
 // Predicate: is divisible by 3
-int is_divisible_by_3(const void* data);
+bool is_divisible_by_3(const void* data);
 
 // Predicate: is divisible by 4
-int is_divisible_by_4(const void* data);
+bool is_divisible_by_4(const void* data);
 
 // Predicate: is divisible by 6
-int is_divisible_by_six(const void* data);
+bool is_divisible_by_six(const void* data);
 
 // --- Transform Functions ---
 // Transform function that doubles a number

@@ -4,8 +4,8 @@
 
 #include <stdlib.h>
 
-#include "containers/DoublyLinkedList.h"
-#include "containers/Iterator.h"
+#include "containers/doublylinkedlist.h"
+#include "containers/iterator.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 
@@ -396,7 +396,7 @@ static int test_dll_copy_isolation(void)
 }
 
 // Test that should_copy=true fails when allocator has no copy function
-static int test_dll_copy_function_required(void)
+static int test_dll_anv_copy_function_required(void)
 {
     ANVAllocator alloc = anv_alloc_default();
     alloc.copy = NULL;
@@ -678,7 +678,7 @@ int main(void)
         {test_from_iterator, "test_from_iterator"},
         {test_iterator_invalid, "test_iterator_invalid"},
         {test_dll_copy_isolation, "test_dll_copy_isolation"},
-        {test_dll_copy_function_required, "test_dll_copy_function_required"},
+        {test_dll_anv_copy_function_required, "test_dll_anv_copy_function_required"},
         {test_dll_from_iterator_no_copy, "test_dll_from_iterator_no_copy"},
         {test_iterator_exhaustion_after_dll_creation, "test_iterator_exhaustion_after_dll_creation"},
         {test_dll_iterator_next_return_values, "test_dll_iterator_next_return_values"},

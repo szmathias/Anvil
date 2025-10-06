@@ -2,7 +2,7 @@
 // Created by zack on 9/2/25.
 //
 
-#include "containers/ArrayList.h"
+#include "containers/arraylist.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 #include <stdio.h>

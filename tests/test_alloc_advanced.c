@@ -3,14 +3,14 @@
 // Advanced allocator integration tests
 //
 
-#include "common/Allocator.h"
-#include "containers/ArrayList.h"
-#include "containers/SinglyLinkedList.h"
-#include "TestAssert.h"
-#include "TestHelpers.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+
+#include "TestAssert.h"
+#include "TestHelpers.h"
+#include "common/common.h"
+#include "containers/arraylist.h"
+#include "containers/singlylinkedlist.h"
 
 //==============================================================================
 // Pool Allocator Implementation
@@ -478,7 +478,7 @@ int test_mixed_allocator_scenarios(void)
     return TEST_SUCCESS;
 }
 
-int test_allocator_copy_function_variants(void)
+int test_allocator_anv_copy_function_variants(void)
 {
     // Test different copy function behaviors
     const ANVAllocator shallow_alloc = anv_alloc_custom(malloc, free, free, NULL);
@@ -527,7 +527,7 @@ int main(void)
             {"Allocator with Linked List", test_allocator_with_linked_list},
             {"Allocator Stress Test", test_allocator_stress_test},
             {"Mixed Allocator Scenarios", test_mixed_allocator_scenarios},
-            {"Copy Function Variants", test_allocator_copy_function_variants}
+            {"Copy Function Variants", test_allocator_anv_copy_function_variants}
         };
 
     const int num_tests = sizeof(tests) / sizeof(tests[0]);

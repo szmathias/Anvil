@@ -5,7 +5,7 @@
 // Tests cover basic iteration, edge cases, multiple iterator chaining,
 // error handling, and composition with other iterators.
 
-#include "containers/Iterator.h"
+#include "containers/iterator.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 
@@ -354,13 +354,13 @@ static int test_chain_with_nested_chains(void)
 // Mixed Data Structure Tests
 //==============================================================================
 
-#include "containers/ArrayList.h"
-#include "containers/DoublyLinkedList.h"
-#include "containers/HashSet.h"
-#include "containers/Pair.h"
-#include "containers/Queue.h"
-#include "containers/SinglyLinkedList.h"
-#include "containers/Stack.h"
+#include "containers/arraylist.h"
+#include "containers/doublylinkedlist.h"
+#include "containers/hashset.h"
+#include "containers/pair.h"
+#include "containers/queue.h"
+#include "containers/singlylinkedlist.h"
+#include "containers/stack.h"
 
 static int test_chain_with_arraylist_and_dll(void)
 {

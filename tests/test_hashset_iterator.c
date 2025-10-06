@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "containers/HashSet.h"
-#include "containers/Iterator.h"
+#include "containers/hashset.h"
+#include "containers/iterator.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 
@@ -317,7 +317,7 @@ static int test_hashset_copy_isolation(void)
 }
 
 // Test that should_copy=true fails when allocator has no copy function
-static int test_hashset_copy_function_required(void)
+static int test_hashset_anv_copy_function_required(void)
 {
     ANVAllocator alloc = anv_alloc_default();
     alloc.copy = NULL;
@@ -598,7 +598,7 @@ int main(void)
         {test_hashset_from_iterator, "test_hashset_from_iterator"},
         {test_hashset_iterator_invalid, "test_hashset_iterator_invalid"},
         {test_hashset_copy_isolation, "test_hashset_copy_isolation"},
-        {test_hashset_copy_function_required, "test_hashset_copy_function_required"},
+        {test_hashset_anv_copy_function_required, "test_hashset_anv_copy_function_required"},
         {test_hashset_from_iterator_no_copy, "test_hashset_from_iterator_no_copy"},
         {test_hashset_iterator_exhaustion_after_creation, "test_hashset_iterator_exhaustion_after_creation"},
         {test_hashset_iterator_next_return_values, "test_hashset_iterator_next_return_values"},

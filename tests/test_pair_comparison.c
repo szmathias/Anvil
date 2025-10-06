@@ -2,7 +2,7 @@
 // Created by zack on 9/15/25.
 //
 
-#include "containers/Pair.h"
+#include "containers/pair.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 #include <stdio.h>
@@ -10,7 +10,7 @@
 #include <string.h>
 
 // Helper copy functions for testing
-static void* int_copy_func(const void* data)
+static void* int_anv_copy_func(const void* data)
 {
     int* copy = malloc(sizeof(int));
     if (copy)
@@ -20,7 +20,7 @@ static void* int_copy_func(const void* data)
     return copy;
 }
 
-static void* string_copy_func(const void* data)
+static void* string_anv_copy_func(const void* data)
 {
     const char* str = (const char*)data;
     size_t len = strlen(str) + 1;
@@ -264,10 +264,10 @@ int test_pair_compare_mixed_types_with_copy(void)
     const char* original_second2 = "banana";
 
     // Create pairs with copied data using different copy functions
-    int* first1 = int_copy_func(&original_first1);
-    int* first2 = int_copy_func(&original_first2);
-    char* second1 = string_copy_func(original_second1);
-    char* second2 = string_copy_func(original_second2);
+    int* first1 = int_anv_copy_func(&original_first1);
+    int* first2 = int_anv_copy_func(&original_first2);
+    char* second1 = string_anv_copy_func(original_second1);
+    char* second2 = string_anv_copy_func(original_second2);
 
     ANVPair* pair1 = anv_pair_create(&alloc, first1, second1);
     ANVPair* pair2 = anv_pair_create(&alloc, first2, second2);

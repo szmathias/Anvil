@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "containers/HashMap.h"
+#include "containers/hashmap.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 

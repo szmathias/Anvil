@@ -1,5 +1,5 @@
-#include "system/Threads.h"
-#include "system/Mutex.h"
+#include "system/thread.h"
+#include "system/mutex.h"
 #include "TestAssert.h"
 #include <stdio.h>
 #include <stdlib.h>

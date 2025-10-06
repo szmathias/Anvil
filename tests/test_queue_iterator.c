@@ -4,8 +4,8 @@
 
 #include "TestAssert.h"
 #include "TestHelpers.h"
-#include "containers/Queue.h"
-#include "containers/ArrayList.h"
+#include "containers/queue.h"
+#include "containers/arraylist.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -208,7 +208,7 @@ int test_queue_copy_isolation(void)
 }
 
 // Test that should_copy=true fails when allocator has no copy function
-int test_queue_copy_function_required(void)
+int test_queue_anv_copy_function_required(void)
 {
     ANVAllocator alloc = anv_alloc_default();
     alloc.copy = NULL;
@@ -466,7 +466,7 @@ int main(void)
         {test_queue_iterator_invalid, "test_queue_iterator_invalid"},
         {test_queue_iterator_modification, "test_queue_iterator_modification"},
         {test_queue_copy_isolation, "test_queue_copy_isolation"},
-        {test_queue_copy_function_required, "test_queue_copy_function_required"},
+        {test_queue_anv_copy_function_required, "test_queue_anv_copy_function_required"},
         {test_queue_from_iterator_no_copy, "test_queue_from_iterator_no_copy"},
         {test_iterator_exhaustion_after_queue_creation, "test_iterator_exhaustion_after_queue_creation"},
         {test_queue_iterator_next_return_values, "test_queue_iterator_next_return_values"},

@@ -1,6 +1,6 @@
 #include "TestAssert.h"
 #include "TestHelpers.h"
-#include "containers/Stack.h"
+#include "containers/stack.h"
 #include <stdio.h>
 #include <stdlib.h>
 

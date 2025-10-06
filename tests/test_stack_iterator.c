@@ -4,8 +4,8 @@
 
 #include "TestAssert.h"
 #include "TestHelpers.h"
-#include "containers/Stack.h"
-#include "containers/ArrayList.h"
+#include "containers/stack.h"
+#include "containers/arraylist.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -207,7 +207,7 @@ int test_stack_copy_isolation(void)
 }
 
 // Test that should_copy=true fails when allocator has no copy function
-int test_stack_copy_function_required(void)
+int test_stack_anv_copy_function_required(void)
 {
     ANVAllocator alloc = anv_alloc_default();
     alloc.copy = NULL;
@@ -396,7 +396,7 @@ int main(void)
         {test_stack_iterator_invalid, "test_stack_iterator_invalid"},
         {test_stack_iterator_modification, "test_stack_iterator_modification"},
         {test_stack_copy_isolation, "test_stack_copy_isolation"},
-        {test_stack_copy_function_required, "test_stack_copy_function_required"},
+        {test_stack_anv_copy_function_required, "test_stack_anv_copy_function_required"},
         {test_stack_from_iterator_no_copy, "test_stack_from_iterator_no_copy"},
         {test_iterator_exhaustion_after_stack_creation, "test_iterator_exhaustion_after_stack_creation"},
         {test_stack_iterator_next_return_values, "test_stack_iterator_next_return_values"},

@@ -6,9 +6,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "containers/BinarySearchTree.h"
+
 #include "TestAssert.h"
 #include "TestHelpers.h"
+#include "containers/binarysearchtree.h"
 
 // Test basic BST creation and destruction
 int test_bst_create_destroy(void)
@@ -102,14 +103,14 @@ int test_bst_contains(void)
     ANVAllocator alloc = create_int_allocator();
     ANVBinarySearchTree* bst = anv_bst_create(&alloc, int_cmp);
 
-    int values[] = {50, 30, 70, 20, 40, 60, 80};
+    const int values[] = {50, 30, 70, 20, 40, 60, 80};
     int* data[7];
 
     // Insert test data
     for (int i = 0; i < 7; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -120,7 +121,7 @@ int test_bst_contains(void)
     }
 
     // Test non-existing values
-    int non_existing[] = {10, 25, 35, 55, 75, 90};
+    const int non_existing[] = {10, 25, 35, 55, 75, 90};
     for (int i = 0; i < 6; i++)
     {
         ASSERT(!anv_bst_contains(bst, &non_existing[i]));
@@ -150,13 +151,13 @@ int test_bst_min_max(void)
     for (int i = 0; i < 9; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
     // Test min and max
-    int* min_val = (int*)anv_bst_min(bst);
-    int* max_val = (int*)anv_bst_max(bst);
+    const int* min_val = anv_bst_min(bst);
+    const int* max_val = anv_bst_max(bst);
 
     ASSERT_NOT_NULL(min_val);
     ASSERT_NOT_NULL(max_val);
@@ -180,32 +181,32 @@ int test_bst_remove(void)
     for (int i = 0; i < 7; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
     ASSERT_EQ(anv_bst_size(bst), 7);
 
     // Test removing leaf node
-    int leaf_val = 20;
+    const int leaf_val = 20;
     ASSERT_EQ(anv_bst_remove(bst, &leaf_val, true), 0);
     ASSERT_EQ(anv_bst_size(bst), 6);
     ASSERT(!anv_bst_contains(bst, &leaf_val));
 
     // Test removing node with one child
-    int one_child_val = 30;
+    const int one_child_val = 30;
     ASSERT_EQ(anv_bst_remove(bst, &one_child_val, true), 0);
     ASSERT_EQ(anv_bst_size(bst), 5);
     ASSERT(!anv_bst_contains(bst, &one_child_val));
 
     // Test removing node with two children (root)
-    int root_val = 50;
+    const int root_val = 50;
     ASSERT_EQ(anv_bst_remove(bst, &root_val, true), 0);
     ASSERT_EQ(anv_bst_size(bst), 4);
     ASSERT(!anv_bst_contains(bst, &root_val));
 
     // Test removing non-existent value
-    int non_existent = 99;
+    const int non_existent = 99;
     ASSERT_EQ(anv_bst_remove(bst, &non_existent, false), -1);
     ASSERT_EQ(anv_bst_size(bst), 4);
 
@@ -259,13 +260,13 @@ int test_bst_property(void)
     ANVBinarySearchTree* bst = anv_bst_create(&alloc, int_cmp);
 
     // Insert values in various orders to test BST property
-    int values[] = {50, 30, 70, 20, 40, 60, 80, 10, 25, 35, 45};
+    const int values[] = {50, 30, 70, 20, 40, 60, 80, 10, 25, 35, 45};
     int* data[11];
 
     for (int i = 0; i < 11; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -287,10 +288,10 @@ int test_bst_property(void)
 int test_bst_string_data(void)
 {
     ANVAllocator alloc = create_string_allocator();
-    ANVBinarySearchTree* bst = anv_bst_create(&alloc, (cmp_func)strcmp);
+    ANVBinarySearchTree* bst = anv_bst_create(&alloc, (anv_compare_func)strcmp);
 
     char* strings[] = {"apple", "banana", "cherry", "date", "elderberry"};
-    int num_strings = 5;
+    const int num_strings = 5;
 
     // Insert strings
     for (int i = 0; i < num_strings; i++)
@@ -324,7 +325,7 @@ typedef struct
 
 int main(void)
 {
-    TestCase tests[] = {
+    const TestCase tests[] = {
         {test_bst_create_destroy, "test_bst_create_destroy"},
         {test_bst_null_parameters, "test_bst_null_parameters"},
         {test_bst_insert, "test_bst_insert"},
@@ -336,7 +337,7 @@ int main(void)
         {test_bst_string_data, "test_bst_string_data"}
     };
 
-    int num_tests = sizeof(tests) / sizeof(tests[0]);
+    const int num_tests = sizeof(tests) / sizeof(tests[0]);
     int passed = 0;
 
     printf("Running BST CRUD tests...\n");
@@ -346,7 +347,7 @@ int main(void)
         printf("Running %s... ", tests[i].name);
         fflush(stdout);
 
-        int result = tests[i].func();
+        const int result = tests[i].func();
         if (result == TEST_SUCCESS)
         {
             printf("PASSED\n");
@@ -363,5 +364,6 @@ int main(void)
     }
 
     printf("\nBST CRUD Tests: %d/%d passed\n", passed, num_tests);
+
     return (passed == num_tests) ? 0 : 1;
 }

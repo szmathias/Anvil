@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "containers/HashMap.h"
+#include "containers/hashmap.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 

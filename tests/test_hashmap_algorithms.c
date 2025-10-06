@@ -6,11 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-#include "containers/HashMap.h"
-#include <containers/Pair.h>
 #include "TestAssert.h"
 #include "TestHelpers.h"
+#include "containers/hashmap.h"
+#include "containers/pair.h"
 
 // Test hash map copying (shallow)
 int test_hashmap_copy_shallow(void)

@@ -8,12 +8,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "containers/ArrayList.h"
-#include "containers/DoublyLinkedList.h"
-#include "containers/Iterator.h"
-#include "containers/Pair.h"
-#include "containers/Queue.h"
-#include "containers/Stack.h"
+#include "containers/arraylist.h"
+#include "containers/doublylinkedlist.h"
+#include "containers/iterator.h"
+#include "containers/pair.h"
+#include "containers/queue.h"
+#include "containers/stack.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 

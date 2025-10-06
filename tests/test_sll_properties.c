@@ -4,7 +4,7 @@
 
 #include <stdlib.h>
 
-#include "containers/SinglyLinkedList.h"
+#include "containers/singlylinkedlist.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 

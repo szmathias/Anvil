@@ -5,7 +5,7 @@
 // Tests cover basic iteration, edge cases, skip handling,
 // error handling, and composition with other iterators.
 
-#include "containers/Iterator.h"
+#include "containers/iterator.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 

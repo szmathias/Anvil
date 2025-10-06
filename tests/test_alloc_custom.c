@@ -2,7 +2,7 @@
 // Created by GitHub Copilot on 9/11/25.
 //
 
-#include "common/Allocator.h"
+#include "common/common.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 #include <stdio.h>
@@ -280,7 +280,7 @@ int test_counting_allocator(void)
     return TEST_SUCCESS;
 }
 
-int test_custom_copy_functions(void)
+int test_custom_anv_copy_functions(void)
 {
     const ANVAllocator int_alloc = anv_alloc_custom(malloc, free, free, int_copy);
     const ANVAllocator str_alloc = anv_alloc_custom(malloc, free, free, string_copy);
@@ -427,7 +427,7 @@ int main(void)
             {"Arena Allocator", test_arena_allocator},
             {"Stack Allocator", test_stack_allocator},
             {"Counting Allocator", test_counting_allocator},
-            {"Custom Copy Functions", test_custom_copy_functions},
+            {"Custom Copy Functions", test_custom_anv_copy_functions},
             {"Allocator Edge Cases", test_allocator_edge_cases},
             {"Allocator with NULL Functions", test_allocator_with_null_functions},
             {"Arena Memory Alignment", test_arena_memory_alignment},

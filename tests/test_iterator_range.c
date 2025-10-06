@@ -5,7 +5,7 @@
 // Tests cover basic iteration, edge cases, bidirectional movement with zigzag compensation,
 // error handling, and API behavior separation.
 
-#include "containers/Iterator.h"
+#include "containers/iterator.h"
 #include "TestAssert.h"
 #include "TestHelpers.h"
 
