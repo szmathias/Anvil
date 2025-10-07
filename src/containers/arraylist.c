@@ -887,7 +887,7 @@ ANV_API ANVIterator anv_arraylist_iterator(const ANVArrayList* list)
     iter.is_valid = arraylist_iter_is_valid;
     iter.destroy = arraylist_iter_destroy;
 
-    if (!list || list->alloc.allocate)
+    if (!list || !list->alloc.allocate)
     {
         return iter;
     }
