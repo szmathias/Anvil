@@ -5,6 +5,10 @@ project(Anvil
         DESCRIPTION "Personal Standard Library - Useful tools for building C applications"
 )
 
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
 # =============================================================================
 # Build Configuration
 # =============================================================================
@@ -129,13 +133,6 @@ endif()
 
 # Create alias for consistent naming
 add_library(Anvil::Anvil ALIAS Anvil)
-
-set_target_properties(Anvil
-        PROPERTIES
-        C_STANDARD 11
-        C_STANDARD_REQUIRED ON
-        C_EXTENSIONS OFF
-)
 
 # =============================================================================
 # Target Configuration

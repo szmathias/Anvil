@@ -19,12 +19,12 @@ endif()
 
 # Set legacy variables for compatibility (optional)
 set(ANVIL_LIBRARIES Anvil::Anvil)
-set(ANVIL_INCLUDE_DIRS ${ANV_INCLUDE_DIR})
+set(ANVIL_INCLUDE_DIRS ${ANV_INCLUDE_DIRS})
 set(ANVIL_FOUND TRUE)
 
 # Print found message
 if(NOT Anvil_FIND_QUIETLY)
-    message(STATUS "Found Anvil: ${ANVIL_VERSION} (found version \"${ANVIL_VERSION}\")")
+    message(STATUS "Found Anvil: ${ANV_VERSION} (found version \"${ANV_VERSION}\")")
 endif()
 
 check_required_components(Anvil)
