@@ -4,14 +4,10 @@
 @PACKAGE_INIT@
 
 # Anvil library information
-set(ANVIL_VERSION "@PROJECT_VERSION@")
-set(ANVIL_VERSION_MAJOR "@PROJECT_VERSION_MAJOR@")
-set(ANVIL_VERSION_MINOR "@PROJECT_VERSION_MINOR@")
-set(ANVIL_VERSION_PATCH "@PROJECT_VERSION_PATCH@")
-
-# Installation paths
-set_and_check(ANVIL_INCLUDE_DIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
-set_and_check(ANVIL_LIB_DIR "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
+set(ANV_VERSION "@PROJECT_VERSION@")
+set(ANV_VERSION_MAJOR "@PROJECT_VERSION_MAJOR@")
+set(ANV_VERSION_MINOR "@PROJECT_VERSION_MINOR@")
+set(ANV_VERSION_PATCH "@PROJECT_VERSION_PATCH@")
 
 # Include the targets file
 include("${CMAKE_CURRENT_LIST_DIR}/AnvilTargets.cmake")
@@ -23,26 +19,8 @@ endif()
 
 # Set legacy variables for compatibility (optional)
 set(ANVIL_LIBRARIES Anvil::Anvil)
-set(ANVIL_INCLUDE_DIRS ${ANVIL_INCLUDE_DIR})
+set(ANVIL_INCLUDE_DIRS ${ANV_INCLUDE_DIR})
 set(ANVIL_FOUND TRUE)
-
-# Component support (future expansion)
-set(ANVIL_COMPONENTS_AVAILABLE common containers algorithms strings io system math)
-
-# Check requested components
-if(Anvil_FIND_COMPONENTS)
-    foreach(component ${Anvil_FIND_COMPONENTS})
-        if(NOT ${component} IN_LIST ANVIL_COMPONENTS_AVAILABLE)
-            set(Anvil_FOUND FALSE)
-            set(Anvil_${component}_FOUND FALSE)
-            if(Anvil_FIND_REQUIRED_${component})
-                message(FATAL_ERROR "Anvil component '${component}' not found!")
-            endif()
-        else()
-            set(Anvil_${component}_FOUND TRUE)
-        endif()
-    endforeach()
-endif()
 
 # Print found message
 if(NOT Anvil_FIND_QUIETLY)

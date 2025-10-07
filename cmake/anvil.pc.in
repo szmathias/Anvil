@@ -9,7 +9,7 @@ includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 Name: Anvil
 Description: Personal Standard Library - Essential tools for building robust C applications
 Version: @PROJECT_VERSION@
-URL: https://github.com/yourusername/Anvil
+URL: https://github.com/szmathias/Anvil
 
 Libs: -L${libdir} -lanvil
 Cflags: -I${includedir}

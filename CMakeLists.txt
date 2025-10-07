@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.24)
 project(Anvil
         LANGUAGES C
         VERSION 0.1.2
@@ -8,10 +8,6 @@ project(Anvil
 # =============================================================================
 # Build Configuration
 # =============================================================================
-
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
 
 # Default to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
@@ -108,12 +104,6 @@ if(ANV_BUILD_SHARED)
     add_library(Anvil SHARED ${ANV_SOURCES})
     message(STATUS "Building shared library")
 
-    # Set shared library properties
-    set_target_properties(Anvil PROPERTIES
-            VERSION ${PROJECT_VERSION}
-            SOVERSION ${PROJECT_VERSION_MAJOR}
-    )
-
     if(WIN32 AND ANV_BUILD_TESTS)
         add_custom_command(TARGET Anvil POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -132,7 +122,6 @@ if(ANV_BUILD_SHARED)
         )
     endif()
 
-
 else()
     add_library(Anvil STATIC ${ANV_SOURCES})
     message(STATUS "Building static library")
@@ -141,15 +130,16 @@ endif()
 # Create alias for consistent naming
 add_library(Anvil::Anvil ALIAS Anvil)
 
+set_target_properties(Anvil
+        PROPERTIES
+        C_STANDARD 11
+        C_STANDARD_REQUIRED ON
+        C_EXTENSIONS OFF
+)
+
 # =============================================================================
 # Target Configuration
 # =============================================================================
-
-# Include directories
-target_include_directories(Anvil PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-)
 
 # Private include directories for internal use
 target_include_directories(Anvil PRIVATE
@@ -175,7 +165,6 @@ elseif(APPLE)
     target_compile_definitions(Anvil PUBLIC ANV_PLATFORM_MACOS)
 elseif(UNIX)
     target_compile_definitions(Anvil PUBLIC ANV_PLATFORM_LINUX)
-    # Link threading library on Unix-like systems
     find_package(Threads REQUIRED)
     target_link_libraries(Anvil PRIVATE Threads::Threads)
 endif()
@@ -235,51 +224,56 @@ endif()
 
 include(GNUInstallDirs)
 
+# Include directories
+target_include_directories(Anvil PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+
 # Install all headers preserving directory structure
 install(DIRECTORY include/
-        DESTINATION include
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*.h"
 )
 
 # Install library
 install(TARGETS Anvil
         EXPORT AnvilTargets
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 # Install CMake config files for find_package() support
 install(EXPORT AnvilTargets
         FILE AnvilTargets.cmake
         NAMESPACE Anvil::
-        DESTINATION lib/cmake/Anvil
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Anvil
 )
 
 # Create package config files
 include(CMakePackageConfigHelpers)
 
-# Version file
-write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/AnvilConfigVersion.cmake"
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY SameMajorVersion
-)
+## Version file
+#write_basic_package_version_file(
+#        "${CMAKE_CURRENT_BINARY_DIR}/AnvilConfigVersion.cmake"
+#        VERSION ${PROJECT_VERSION}
+#        COMPATIBILITY SameMajorVersion
+#)
 
 # Config file
 configure_package_config_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/AnvilConfig.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/AnvilConfig.cmake"
-        INSTALL_DESTINATION lib/cmake/Anvil
-        PATH_VARS CMAKE_INSTALL_INCLUDEDIR
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Anvil
 )
 
 # Install config files
 install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/AnvilConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/AnvilConfigVersion.cmake"
-        DESTINATION lib/cmake/Anvil
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Anvil
 )
 
 # Create pkg-config file for traditional Unix builds
@@ -289,6 +283,7 @@ if(UNIX)
             "${CMAKE_CURRENT_BINARY_DIR}/anvil.pc"
             @ONLY
     )
+
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/anvil.pc"
             DESTINATION lib/pkgconfig
     )
