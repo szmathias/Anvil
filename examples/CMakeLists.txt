@@ -4,7 +4,6 @@ project(Anvil-Examples LANGUAGES C)
 
 set (TESTING_SOURCES
         testing/benchmark.c
-        testing/printing.c
 )
 
 set (TESTING_HEADERS

@@ -76,10 +76,10 @@ set(ANV_SOURCES
         src/system/mutex.c
         src/system/thread.c
         src/system/timing.c
-#        src/testing/assertions.c
         src/testing/benchmark.c
-        src/io/print.c
-        #        src/testing/suite.c
+        src/io/file.c
+        src/memory/arena.c
+        src/memory/stack_frame.c
 )
 
 set(ANV_INCLUDE_DIRS
