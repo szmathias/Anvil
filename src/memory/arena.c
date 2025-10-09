@@ -37,10 +37,14 @@ ANV_API ANVResult anv_arena_destroy(ANVArena *arena)
 
 ANV_API void *anv_arena_allocate(ANVArena *arena, const size_t size)
 {
-    // Align to 8-byte boundary
+    if (!arena || !arena->memory || size == 0)
+    {
+        return NULL;
+    }
+
     const size_t aligned_size = (size + 7) & ~7;
 
-    if (!arena || !arena->memory || arena->used + aligned_size > arena->size)
+    if (arena->used + aligned_size > arena->size)
     {
         return NULL;
     }
@@ -52,7 +56,6 @@ ANV_API void *anv_arena_allocate(ANVArena *arena, const size_t size)
 
 ANV_API void anv_arena_deallocate(const ANVArena *arena, const void *ptr)
 {
-    // Arena allocator doesn't free individual allocations
     (void)arena;
     (void)ptr;
 }

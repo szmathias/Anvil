@@ -13,7 +13,6 @@ ANV_API void *anv_stackframe_allocate(ANVStackFrame* frame, const size_t size)
         return NULL;
     }
 
-    // Align to 8-byte boundary
     const size_t aligned_size = (size + 7) & ~7;
 
     if (frame->top + aligned_size > ANV_STACK_FRAME_SIZE)
