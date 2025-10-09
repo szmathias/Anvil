@@ -5,4 +5,7 @@
 #ifndef ANVIL_MEMORY_H
 #define ANVIL_MEMORY_H
 
+#include "memory/arena.h"
+#include "memory/stack_frame.h"
+
 #endif //ANVIL_MEMORY_H
