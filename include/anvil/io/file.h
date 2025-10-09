@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 #include "anvil/common.h"
-#include "dynamicstring.h"
+#include "anvil/containers/dynamicstring.h"
 
 #ifdef __cplusplus
 extern "C" {
