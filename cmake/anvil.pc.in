@@ -1,0 +1,15 @@
+# Anvil - Personal Standard Library for C
+# pkg-config file for traditional Unix builds
+
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: Anvil
+Description: Personal Standard Library - Essential tools for building robust C applications
+Version: @PROJECT_VERSION@
+URL: https://github.com/szmathias/Anvil
+
+Libs: -L${libdir} -lanvil
+Cflags: -I${includedir}
