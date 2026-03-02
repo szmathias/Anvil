@@ -462,7 +462,7 @@ typedef struct HashSetIteratorState
 {
     ANVIterator map_iterator; // Underlying HashMap iterator
     void* current_key;        // Current key to return
-    ANVAllocator alloc;      // Allocator for freeing this state
+    ANVAllocator alloc;       // Allocator for freeing this state
 } HashSetIteratorState;
 
 static void* hashset_iterator_get(const ANVIterator* it)
@@ -575,6 +575,11 @@ ANV_API ANVIterator anv_hashset_iterator(const ANVHashSet* set)
     it.reset = hashset_iterator_reset;
     it.is_valid = hashset_iterator_is_valid;
     it.destroy = hashset_iterator_destroy;
+
+    if (!set || !set->map)
+    {
+        return it;
+    }
 
     HashSetIteratorState* state = anv_alloc_allocate(&set->map->alloc, sizeof(HashSetIteratorState));
     if (!state)

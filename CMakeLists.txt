@@ -50,6 +50,14 @@ if(NOT WIN32 AND ANV_ENABLE_SANITIZERS AND CMAKE_BUILD_TYPE STREQUAL "Debug" AND
     list(APPEND ANV_LINK_FLAGS -fsanitize=address,undefined)
 endif()
 
+# Code coverage for Coverage builds
+option(ANV_ENABLE_COVERAGE "Enable code coverage instrumentation" OFF)
+if(ANV_ENABLE_COVERAGE AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    message(STATUS "Enabling code coverage instrumentation")
+    list(APPEND ANV_COMPILE_FLAGS --coverage -fprofile-arcs -ftest-coverage)
+    list(APPEND ANV_LINK_FLAGS --coverage)
+endif()
+
 # =============================================================================
 # Source File Collection
 # =============================================================================
@@ -114,7 +122,7 @@ if(WIN32 AND ANV_BUILD_TESTS)
     add_custom_command(TARGET Anvil POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:Anvil>
-            ${CMAKE_BINARY_DIR}/tests/
+            ${CMAKE_BINARY_DIR}/tests/$<CONFIG>/
             COMMENT "Copying Anvil to tests directory for Windows"
     )
 endif()
@@ -123,7 +131,7 @@ if(WIN32 AND ANV_BUILD_EXAMPLES)
     add_custom_command(TARGET Anvil POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:Anvil>
-            ${CMAKE_BINARY_DIR}/examples/
+            ${CMAKE_BINARY_DIR}/examples/$<CONFIG>/
             COMMENT "Copying Anvil to examples directory for Windows"
     )
 endif()
@@ -179,9 +187,9 @@ endif()
 # =============================================================================
 
 if(ANV_BUILD_TESTS)
-#    enable_testing()
-#    add_subdirectory(tests)
-#    message(STATUS "Building test suite")
+    enable_testing()
+    add_subdirectory(tests)
+    message(STATUS "Building test suite")
 endif()
 
 # =============================================================================
