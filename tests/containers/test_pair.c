@@ -1,102 +1,91 @@
-//
-// Created by zack on 9/15/25.
-//
-
-#include "containers/pair.h"
-#include "TestAssert.h"
-#include "TestHelpers.h"
-#include "TestRunner.h"
-#include <limits.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// ============================================================================
-// Helper functions (deduplicated from all source files)
-// ============================================================================
+#include <anvil/testing.h>
+#include "TestHelpers.h"
+#include "containers/pair.h"
 
-static void* int_anv_copy_func(const void* data)
-{
-    int* copy = malloc(sizeof(int));
-    if (copy)
-    {
-        *copy = *(const int*)data;
-    }
-    return copy;
-}
+//==============================================================================
+// Static Helpers
+//==============================================================================
 
-static void* string_anv_copy_func(const void* data)
-{
-    const char* str = (const char*)data;
-    size_t len = strlen(str) + 1;
-    char* copy = malloc(len);
-    if (copy)
-    {
-        strcpy(copy, str);
-    }
-    return copy;
-}
+// Use int_copy from TestHelpers.h instead of local int_anv_copy_func
+#define int_anv_copy_func int_copy
 
-// Custom string comparison function (from test_pair_comparison.c)
-static int string_cmp(const void* a, const void* b)
-{
-    return strcmp((const char*)a, (const char*)b);
-}
+// Use string_copy from TestHelpers.h instead of local string_anv_copy_func
+#define string_anv_copy_func string_copy
 
-// Helper function that always fails for testing (from test_pair_memory.c)
-static void* failing_anv_copy_func(const void* data)
-{
-    (void)data;
-    return NULL; // Always fail
-}
+// Use failing_copy_func from TestHelpers.h instead of local failing_anv_copy_func
+#define failing_anv_copy_func failing_copy_func
 
-// ============================================================================
-// CRUD Tests (from test_pair_crud.c)
-// ============================================================================
+//==============================================================================
+// CRUD Tests
+//==============================================================================
 
-int test_pair_anv_copy_functions(void)
+int test_pair_shallow_copy(void)
 {
     ANVAllocator alloc = create_int_allocator();
-
-    int* first = malloc(sizeof(int));
-    int* second = malloc(sizeof(int));
-    *first = 42;
-    *second = 84;
+    MAKE_INT(first, 42);
+    MAKE_INT(second, 84);
 
     ANVPair* original = anv_pair_create(&alloc, first, second);
 
-    // Test shallow copy
     ANVPair* shallow = anv_pair_copy(original);
     ASSERT_NOT_NULL(shallow);
     ASSERT_NOT_EQ_PTR(shallow, original);
-    ASSERT_EQ_PTR(shallow->first, original->first);   // Same pointers
-    ASSERT_EQ_PTR(shallow->second, original->second); // Same pointers
+    ASSERT_EQ_PTR(shallow->first, original->first);
+    ASSERT_EQ_PTR(shallow->second, original->second);
     ASSERT_EQ_PTR(shallow->alloc.allocate, original->alloc.allocate);
 
-    // Test deep copy with both copy functions
+    anv_pair_destroy(original, true, true);
+    anv_pair_destroy(shallow, false, false);
+    return TEST_SUCCESS;
+}
+
+int test_pair_deep_copy_both(void)
+{
+    ANVAllocator alloc = create_int_allocator();
+    MAKE_INT(first, 42);
+    MAKE_INT(second, 84);
+
+    ANVPair* original = anv_pair_create(&alloc, first, second);
+
     ANVPair* deep = anv_pair_copy_deep(original, int_anv_copy_func, int_anv_copy_func, true);
     ASSERT_NOT_NULL(deep);
     ASSERT_NOT_EQ_PTR(deep, original);
-    ASSERT_NOT_EQ_PTR(deep->first, original->first);         // Different pointers
-    ASSERT_NOT_EQ_PTR(deep->second, original->second);       // Different pointers
-    ASSERT_EQ(*(int*)deep->first, *(int*)original->first);   // Same values
-    ASSERT_EQ(*(int*)deep->second, *(int*)original->second); // Same values
-
-    // Test deep copy with only first copy function
-    ANVPair* partial = anv_pair_copy_deep(original, int_anv_copy_func, NULL, true);
-    ASSERT_NOT_NULL(partial);
-    ASSERT_NOT_EQ_PTR(partial->first, original->first); // Copied
-    ASSERT_EQ_PTR(partial->second, original->second);   // Referenced
-    ASSERT_EQ(*(int*)partial->first, *(int*)original->first);
-
-    // Test copy with NULL
-    ASSERT_NULL(anv_pair_copy(NULL));
-    ASSERT_NULL(anv_pair_copy_deep(NULL, int_anv_copy_func, int_anv_copy_func, true));
+    ASSERT_NOT_EQ_PTR(deep->first, original->first);
+    ASSERT_NOT_EQ_PTR(deep->second, original->second);
+    ASSERT_EQ(*(int*)deep->first, *(int*)original->first);
+    ASSERT_EQ(*(int*)deep->second, *(int*)original->second);
 
     anv_pair_destroy(original, true, true);
-    anv_pair_destroy(shallow, false, false); // Don't free data (shared with original)
     anv_pair_destroy(deep, true, true);
-    anv_pair_destroy(partial, true, false); // First copied, second referenced
+    return TEST_SUCCESS;
+}
+
+int test_pair_deep_copy_partial(void)
+{
+    ANVAllocator alloc = create_int_allocator();
+    MAKE_INT(first, 42);
+    MAKE_INT(second, 84);
+
+    ANVPair* original = anv_pair_create(&alloc, first, second);
+
+    ANVPair* partial = anv_pair_copy_deep(original, int_anv_copy_func, NULL, true);
+    ASSERT_NOT_NULL(partial);
+    ASSERT_NOT_EQ_PTR(partial->first, original->first);
+    ASSERT_EQ_PTR(partial->second, original->second);
+    ASSERT_EQ(*(int*)partial->first, *(int*)original->first);
+
+    anv_pair_destroy(original, true, true);
+    anv_pair_destroy(partial, true, false);
+    return TEST_SUCCESS;
+}
+
+int test_pair_copy_null(void)
+{
+    ASSERT_NULL(anv_pair_copy(NULL));
+    ASSERT_NULL(anv_pair_copy_deep(NULL, int_anv_copy_func, int_anv_copy_func, true));
     return TEST_SUCCESS;
 }
 
@@ -279,9 +268,9 @@ int test_pair_swap(void)
     return TEST_SUCCESS;
 }
 
-// ============================================================================
-// Comparison Tests (from test_pair_comparison.c)
-// ============================================================================
+//==============================================================================
+// Comparison Tests
+//==============================================================================
 
 int test_pair_compare_equal_pairs(void)
 {
@@ -536,9 +525,9 @@ int test_pair_compare_mixed_types_with_copy(void)
     return TEST_SUCCESS;
 }
 
-// ============================================================================
-// Memory Tests (from test_pair_memory.c)
-// ============================================================================
+//==============================================================================
+// Memory Tests
+//==============================================================================
 
 int test_pair_memory_allocation_failure(void)
 {
@@ -670,8 +659,8 @@ int test_pair_large_data_handling(void)
     // Fill with data
     for (size_t i = 0; i < size - 1; i++)
     {
-        large_str1[i] = 'A' + (i % 26);
-        large_str2[i] = 'a' + (i % 26);
+        large_str1[i] = 'A' + i % 26;
+        large_str2[i] = 'a' + i % 26;
     }
     large_str1[size - 1] = '\0';
     large_str2[size - 1] = '\0';
@@ -774,9 +763,9 @@ int test_pair_edge_case_null_elements(void)
     return TEST_SUCCESS;
 }
 
-// ============================================================================
-// Properties Tests (from test_pair_properties.c)
-// ============================================================================
+//==============================================================================
+// Properties Tests
+//==============================================================================
 
 int test_pair_symmetry_property(void)
 {
@@ -1053,56 +1042,127 @@ int test_pair_boundary_values(void)
     return TEST_SUCCESS;
 }
 
-// ============================================================================
-// Main - Combined test runner (36 tests total)
-// ============================================================================
+//==============================================================================
+// Fuzz Tests
+//==============================================================================
+
+int test_pair_fuzz(void)
+{
+    srand((unsigned int)42);
+    ANVAllocator alloc = create_int_allocator();
+
+    for (int i = 0; i < 10000; i++)
+    {
+        MAKE_INT(first, rand());
+        MAKE_INT(second, rand());
+
+        ANVPair* pair = anv_pair_create(&alloc, first, second);
+        ASSERT_NOT_NULL(pair);
+        ASSERT_EQ(*(int*)pair->first, *first);
+        ASSERT_EQ(*(int*)pair->second, *second);
+
+        const unsigned op = rand() % 4;
+
+        switch (op)
+        {
+            case 0: // shallow copy
+            {
+                ANVPair* copy = anv_pair_copy(pair);
+                ASSERT_NOT_NULL(copy);
+                ASSERT_EQ_PTR(copy->first, pair->first);
+                ASSERT_EQ_PTR(copy->second, pair->second);
+                anv_pair_destroy(copy, false, false);
+                break;
+            }
+            case 1: // deep copy
+            {
+                ANVPair* deep = anv_pair_copy_deep(pair, int_anv_copy_func, int_anv_copy_func, true);
+                ASSERT_NOT_NULL(deep);
+                ASSERT_NOT_EQ_PTR(deep->first, pair->first);
+                ASSERT_EQ(*(int*)deep->first, *(int*)pair->first);
+                anv_pair_destroy(deep, true, true);
+                break;
+            }
+            case 2: // swap
+            {
+                int orig_first = *(int*)pair->first;
+                int orig_second = *(int*)pair->second;
+                anv_pair_swap(pair);
+                ASSERT_EQ(*(int*)pair->first, orig_second);
+                ASSERT_EQ(*(int*)pair->second, orig_first);
+                break;
+            }
+            case 3: // compare with self
+            {
+                ASSERT_EQ(anv_pair_compare(pair, pair, int_cmp, int_cmp), 0);
+                break;
+            }
+            default:
+                break;
+        }
+
+        anv_pair_destroy(pair, true, true);
+    }
+
+    return TEST_SUCCESS;
+}
+
+//==============================================================================
+// Main
+//==============================================================================
 
 int main(void)
 {
     const ANVTestCase tests[] = {
-        // CRUD Tests (8)
-        {test_pair_create_destroy, "test_pair_create_destroy"},
-        {test_pair_create_with_null_elements, "test_pair_create_with_null_elements"},
-        {test_pair_create_invalid_allocator, "test_pair_create_invalid_allocator"},
-        {test_pair_accessors, "test_pair_accessors"},
-        {test_pair_setters, "test_pair_setters"},
-        {test_pair_swap, "test_pair_swap"},
-        {test_pair_anv_copy_functions, "test_pair_anv_copy_functions"},
-        {test_pair_mixed_type_copy, "test_pair_mixed_type_copy"},
+        // CRUD Tests
+        TEST_REGISTER(test_pair_create_destroy),
+        TEST_REGISTER(test_pair_create_with_null_elements),
+        TEST_REGISTER(test_pair_create_invalid_allocator),
+        TEST_REGISTER(test_pair_accessors),
+        TEST_REGISTER(test_pair_setters),
+        TEST_REGISTER(test_pair_swap),
+        TEST_REGISTER(test_pair_shallow_copy),
+        TEST_REGISTER(test_pair_deep_copy_both),
+        TEST_REGISTER(test_pair_deep_copy_partial),
+        TEST_REGISTER(test_pair_copy_null),
+        TEST_REGISTER(test_pair_mixed_type_copy),
 
-        // Comparison Tests (9)
-        {test_pair_compare_equal_pairs, "test_pair_compare_equal_pairs"},
-        {test_pair_compare_first_different, "test_pair_compare_first_different"},
-        {test_pair_compare_second_different, "test_pair_compare_second_different"},
-        {test_pair_compare_null_pairs, "test_pair_compare_null_pairs"},
-        {test_pair_compare_no_comparison_functions, "test_pair_compare_no_comparison_functions"},
-        {test_pair_compare_with_strings, "test_pair_compare_with_strings"},
-        {test_pair_compare_with_persons, "test_pair_compare_with_persons"},
-        {test_pair_compare_mixed_types, "test_pair_compare_mixed_types"},
-        {test_pair_compare_mixed_types_with_copy, "test_pair_compare_mixed_types_with_copy"},
+        // Comparison Tests
+        TEST_REGISTER(test_pair_compare_equal_pairs),
+        TEST_REGISTER(test_pair_compare_first_different),
+        TEST_REGISTER(test_pair_compare_second_different),
+        TEST_REGISTER(test_pair_compare_null_pairs),
+        TEST_REGISTER(test_pair_compare_no_comparison_functions),
+        TEST_REGISTER(test_pair_compare_with_strings),
+        TEST_REGISTER(test_pair_compare_with_persons),
+        TEST_REGISTER(test_pair_compare_mixed_types),
+        TEST_REGISTER(test_pair_compare_mixed_types_with_copy),
 
-        // Memory Tests (9)
-        {test_pair_memory_allocation_failure, "test_pair_memory_allocation_failure"},
-        {test_pair_copy_deep_allocation_failure, "test_pair_copy_deep_allocation_failure"},
-        {test_pair_destroy_null_safe, "test_pair_destroy_null_safe"},
-        {test_pair_memory_leak_prevention, "test_pair_memory_leak_prevention"},
-        {test_pair_selective_memory_management, "test_pair_selective_memory_management"},
-        {test_pair_copy_deep_with_different_anv_copy_functions, "test_pair_copy_deep_with_different_anv_copy_functions"},
-        {test_pair_large_data_handling, "test_pair_large_data_handling"},
-        {test_pair_multiple_operations_memory_safety, "test_pair_multiple_operations_memory_safety"},
-        {test_pair_edge_case_null_elements, "test_pair_edge_case_null_elements"},
+        // Memory Tests
+        TEST_REGISTER(test_pair_memory_allocation_failure),
+        TEST_REGISTER(test_pair_copy_deep_allocation_failure),
+        TEST_REGISTER(test_pair_destroy_null_safe),
+        TEST_REGISTER(test_pair_memory_leak_prevention),
+        TEST_REGISTER(test_pair_selective_memory_management),
+        TEST_REGISTER(test_pair_copy_deep_with_different_anv_copy_functions),
+        TEST_REGISTER(test_pair_large_data_handling),
+        TEST_REGISTER(test_pair_multiple_operations_memory_safety),
+        TEST_REGISTER(test_pair_edge_case_null_elements),
 
-        // Properties Tests (10)
-        {test_pair_symmetry_property, "test_pair_symmetry_property"},
-        {test_pair_reflexivity_property, "test_pair_reflexivity_property"},
-        {test_pair_transitivity_property, "test_pair_transitivity_property"},
-        {test_pair_swap_idempotency, "test_pair_swap_idempotency"},
-        {test_pair_copy_independence, "test_pair_copy_independence"},
-        {test_pair_shallow_copy_dependency, "test_pair_shallow_copy_dependency"},
-        {test_pair_lexicographic_ordering, "test_pair_lexicographic_ordering"},
-        {test_pair_comparison_consistency, "test_pair_comparison_consistency"},
-        {test_pair_different_allocators, "test_pair_different_allocators"},
-        {test_pair_boundary_values, "test_pair_boundary_values"},
+        // Properties Tests
+        TEST_REGISTER(test_pair_symmetry_property),
+        TEST_REGISTER(test_pair_reflexivity_property),
+        TEST_REGISTER(test_pair_transitivity_property),
+        TEST_REGISTER(test_pair_swap_idempotency),
+        TEST_REGISTER(test_pair_copy_independence),
+        TEST_REGISTER(test_pair_shallow_copy_dependency),
+        TEST_REGISTER(test_pair_lexicographic_ordering),
+        TEST_REGISTER(test_pair_comparison_consistency),
+        TEST_REGISTER(test_pair_different_allocators),
+        TEST_REGISTER(test_pair_boundary_values),
+
+        // Fuzz Tests
+        TEST_REGISTER(test_pair_fuzz),
     };
 
     return anv_run_tests("Pair", tests, sizeof(tests) / sizeof(tests[0]));

@@ -1,40 +1,26 @@
-//
-// Consolidated HashMap tests
-// Merged from: test_hashmap_algorithms.c, test_hashmap_crud.c,
-//              test_hashmap_iterator.c, test_hashmap_memory.c,
-//              test_hashmap_memory_safe.c, test_hashmap_performance.c,
-//              test_hashmap_properties.c
-//
-
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 
-#include "TestAssert.h"
+#include <anvil/testing.h>
 #include "TestHelpers.h"
-#include "TestRunner.h"
 #include "containers/hashmap.h"
-#include "containers/iterator.h"
 #include "containers/pair.h"
 
 //==============================================================================
-// Static helpers
+// Static Helpers
 //==============================================================================
 
-// Helper function for for_each test (from algorithms)
 static void increment_value(void* key, void* value)
 {
-    (void)key; // Unused
+    (void)key;
     int* val = value;
     (*val)++;
 }
 
 //==============================================================================
-// Algorithms tests
+// Algorithms Tests
 //==============================================================================
 
-// Test hash map copying (shallow)
 int test_hashmap_copy_shallow(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -68,7 +54,6 @@ int test_hashmap_copy_shallow(void)
     return TEST_SUCCESS;
 }
 
-// Test hash map copying (deep)
 int test_hashmap_copy_deep(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -94,8 +79,8 @@ int test_hashmap_copy_deep(void)
     {
         int* orig_value = anv_hashmap_get(original, &i);
         int* copy_value = anv_hashmap_get(copy, &i);
-        ASSERT_NOT_EQ_PTR(orig_value, copy_value); // Should be different pointers
-        ASSERT_EQ(*orig_value, *copy_value);       // Same values
+        ASSERT_NOT_EQ_PTR(orig_value, copy_value);
+        ASSERT_EQ(*orig_value, *copy_value);
         ASSERT_EQ(*orig_value, i * 10);
     }
 
@@ -228,7 +213,6 @@ int test_hashmap_from_iterator_algorithms(void)
     ANVAllocator alloc = create_string_allocator();
     alloc.copy = anv_pair_copy_string_string;
     ANVHashMap* original = anv_hashmap_create(&alloc, anv_hash_string, anv_key_equals_string, 0);
-
 
     const char* keys[] = {"key1", "key2", "key3"};
     const char* values[] = {"val1", "val2", "val3"};
@@ -949,8 +933,8 @@ int test_hashmap_iterator_mixed_operations(void)
     const ANVPair* pair2 = iter.get(&iter);
     ASSERT_NOT_NULL(pair1);
     ASSERT_NOT_NULL(pair2);
-    ASSERT_EQ(pair1, pair2);                                 // Same pointer
-    ASSERT_EQ_STR((char*)pair1->first, (char*)pair2->first);     // Same key
+    ASSERT_EQ(pair1, pair2);                                   // Same pointer
+    ASSERT_EQ_STR((char*)pair1->first, (char*)pair2->first);   // Same key
     ASSERT_EQ_STR((char*)pair1->second, (char*)pair2->second); // Same value
 
     // Capture first pair's data before advancing
@@ -971,13 +955,13 @@ int test_hashmap_iterator_mixed_operations(void)
 
     // Same pointer (cached), but different content after advancing
     ASSERT_EQ(pair1, pair3); // Same cached pointer
-    ASSERT(strcmp(first_key, (char*)pair3->first) != 0 ||
-           strcmp(first_value, (char*)pair3->second) != 0); // Different content
+    ASSERT(strcmp(first_key, pair3->first) != 0 ||
+           strcmp(first_value, pair3->second) != 0); // Different content
 
     // Verify get() consistency at new position
     const ANVPair* pair4 = iter.get(&iter);
-    ASSERT_EQ(pair3, pair4);                                 // Same pointer
-    ASSERT_EQ_STR((char*)pair3->first, (char*)pair4->first);     // Same content
+    ASSERT_EQ(pair3, pair4);                                   // Same pointer
+    ASSERT_EQ_STR((char*)pair3->first, (char*)pair4->first);   // Same content
     ASSERT_EQ_STR((char*)pair3->second, (char*)pair4->second); // Same content
 
     // Test has_next behavior
@@ -1186,11 +1170,11 @@ int test_hashmap_copy_failure(void)
     ASSERT_EQ(anv_hashmap_put(original, "key2", "value2"), 0);
 
     // Try to copy with failing allocator
-    ANVAllocator failing_alloc = create_failing_int_allocator();
+    const ANVAllocator failing_alloc = create_failing_int_allocator();
     set_alloc_fail_countdown(1);
 
     // Temporarily replace allocator for copy test
-    ANVAllocator orig_alloc = original->alloc;
+    const ANVAllocator orig_alloc = original->alloc;
     original->alloc = failing_alloc;
 
     ANVHashMap* copy = anv_hashmap_copy(original);
@@ -2076,82 +2060,253 @@ int test_hashmap_anv_hash_function_property(void)
 }
 
 //==============================================================================
-// Main - combined test runner (57 tests total)
+// Stress & Collision Tests
+//==============================================================================
+
+// Custom hash that always returns the same bucket — forces worst-case chaining
+static size_t collision_hash(const void* key)
+{
+    (void)key;
+    return 42; // Every key hashes to the same bucket
+}
+
+int test_hashmap_collision_stress(void)
+{
+    ANVAllocator alloc = create_int_allocator();
+    ANVHashMap* map = anv_hashmap_create(&alloc, collision_hash, anv_key_equals_int, 4);
+    ASSERT_NOT_NULL(map);
+
+    const int N = 200;
+    int* keys[200];
+    int* values[200];
+
+    // Insert N items that all collide
+    for (int i = 0; i < N; i++)
+    {
+        keys[i] = malloc(sizeof(int));
+        values[i] = malloc(sizeof(int));
+        *keys[i] = i;
+        *values[i] = i * 100;
+        ASSERT_EQ(anv_hashmap_put(map, keys[i], values[i]), 0);
+    }
+    ASSERT_EQ(anv_hashmap_size(map), (size_t)N);
+
+    // All items should be retrievable despite collisions
+    for (int i = 0; i < N; i++)
+    {
+        int* val = anv_hashmap_get(map, keys[i]);
+        ASSERT_NOT_NULL(val);
+        ASSERT_EQ(*val, i * 100);
+    }
+
+    // Remove half of them
+    for (int i = 0; i < N / 2; i++)
+    {
+        ASSERT_EQ(anv_hashmap_remove(map, keys[i], true, true), 0);
+    }
+    ASSERT_EQ(anv_hashmap_size(map), (size_t)(N / 2));
+
+    // Remaining half still accessible
+    for (int i = N / 2; i < N; i++)
+    {
+        int* val = anv_hashmap_get(map, keys[i]);
+        ASSERT_NOT_NULL(val);
+        ASSERT_EQ(*val, i * 100);
+    }
+
+    anv_hashmap_destroy(map, true, true);
+    return TEST_SUCCESS;
+}
+
+int test_hashmap_high_load_factor(void)
+{
+    ANVAllocator alloc = create_int_allocator();
+    // Very small initial capacity to force many resizes
+    ANVHashMap* map = anv_hashmap_create(&alloc, anv_hash_int, anv_key_equals_int, 2);
+    ASSERT_NOT_NULL(map);
+
+    const int N = 10000;
+    int* keys[10000];
+    int* values[10000];
+
+    for (int i = 0; i < N; i++)
+    {
+        keys[i] = malloc(sizeof(int));
+        values[i] = malloc(sizeof(int));
+        *keys[i] = i;
+        *values[i] = i;
+        ASSERT_EQ(anv_hashmap_put(map, keys[i], values[i]), 0);
+    }
+    ASSERT_EQ(anv_hashmap_size(map), (size_t)N);
+
+    // Verify all items after many resizes
+    for (int i = 0; i < N; i++)
+    {
+        int* val = anv_hashmap_get(map, keys[i]);
+        ASSERT_NOT_NULL(val);
+        ASSERT_EQ(*val, i);
+    }
+
+    // Check load factor is reasonable (should have resized to keep it <1)
+    ASSERT_LT(anv_hashmap_load_factor(map), 1.0);
+
+    anv_hashmap_destroy(map, true, true);
+    return TEST_SUCCESS;
+}
+
+//==============================================================================
+// Fuzz Tests
+//==============================================================================
+
+int test_hashmap_fuzz(void)
+{
+    srand((unsigned int)42);
+    ANVAllocator alloc = create_int_allocator();
+    ANVHashMap* map = anv_hashmap_create(&alloc, anv_hash_int, anv_key_equals_int, 4);
+    ASSERT_NOT_NULL(map);
+
+    // Track which keys are live so we can verify size
+    size_t expected_size = 0;
+
+    for (int i = 0; i < 50000; i++)
+    {
+        const unsigned op = rand() % 4;
+        const int key_val = rand() % 500; // Limited key space to force collisions & updates
+
+        switch (op)
+        {
+            case 0: // put (insert or update)
+            {
+                int* key = malloc(sizeof(int));
+                int* value = malloc(sizeof(int));
+                *key = key_val;
+                *value = rand();
+
+                const int already_exists = anv_hashmap_contains_key(map, key);
+                const int rc = anv_hashmap_put(map, key, value);
+                if (rc == 0 && !already_exists)
+                    expected_size++;
+                break;
+            }
+            case 1: // get
+            {
+                const void* val = anv_hashmap_get(map, &key_val);
+                if (anv_hashmap_contains_key(map, &key_val))
+                {
+                    ASSERT_NOT_NULL(val);
+                }
+                break;
+            }
+            case 2: // remove
+            {
+                if (anv_hashmap_contains_key(map, &key_val))
+                {
+                    ASSERT_EQ(anv_hashmap_remove(map, &key_val, true, true), 0);
+                    expected_size--;
+                }
+                break;
+            }
+            case 3: // contains_key
+            {
+                anv_hashmap_contains_key(map, &key_val);
+                break;
+            }
+            default:
+                break;
+        }
+
+        // Invariant: size must always match
+        ASSERT_EQ(anv_hashmap_size(map), expected_size);
+    }
+
+    anv_hashmap_destroy(map, true, true);
+    return TEST_SUCCESS;
+}
+
+//==============================================================================
+// Main
 //==============================================================================
 
 int main(void)
 {
     const ANVTestCase tests[] = {
-        // --- Algorithms (6 tests) ---
-        {test_hashmap_copy_shallow, "test_hashmap_copy_shallow"},
-        {test_hashmap_copy_deep, "test_hashmap_copy_deep"},
-        {test_hashmap_for_each, "test_hashmap_for_each"},
-        {test_hashmap_get_keys, "test_hashmap_get_keys"},
-        {test_hashmap_get_values, "test_hashmap_get_values"},
-        {test_hashmap_from_iterator_algorithms, "test_hashmap_from_iterator_algorithms"},
+        // Algorithms
+        TEST_REGISTER(test_hashmap_copy_shallow),
+        TEST_REGISTER(test_hashmap_copy_deep),
+        TEST_REGISTER(test_hashmap_for_each),
+        TEST_REGISTER(test_hashmap_get_keys),
+        TEST_REGISTER(test_hashmap_get_values),
+        TEST_REGISTER(test_hashmap_from_iterator_algorithms),
 
-        // --- CRUD (8 tests) ---
-        {test_hashmap_create_destroy, "test_hashmap_create_destroy"},
-        {test_hashmap_put_get, "test_hashmap_put_get"},
-        {test_hashmap_update, "test_hashmap_update"},
-        {test_hashmap_remove, "test_hashmap_remove"},
-        {test_hashmap_remove_get, "test_hashmap_remove_get"},
-        {test_hashmap_contains, "test_hashmap_contains"},
-        {test_hashmap_int_keys, "test_hashmap_int_keys"},
-        {test_hashmap_resize, "test_hashmap_resize"},
+        // CRUD
+        TEST_REGISTER(test_hashmap_create_destroy),
+        TEST_REGISTER(test_hashmap_put_get),
+        TEST_REGISTER(test_hashmap_update),
+        TEST_REGISTER(test_hashmap_remove),
+        TEST_REGISTER(test_hashmap_remove_get),
+        TEST_REGISTER(test_hashmap_contains),
+        TEST_REGISTER(test_hashmap_int_keys),
+        TEST_REGISTER(test_hashmap_resize),
 
-        // --- Iterator (16 tests) ---
-        {test_hashmap_iterator_basic, "test_hashmap_iterator_basic"},
-        {test_hashmap_iterator_empty, "test_hashmap_iterator_empty"},
-        {test_hashmap_iterator_with_modifications, "test_hashmap_iterator_with_modifications"},
-        {test_hashmap_iterator_multiple, "test_hashmap_iterator_multiple"},
-        {test_hashmap_iterator_get, "test_hashmap_iterator_get"},
-        {test_hashmap_iterator_backward, "test_hashmap_iterator_backward"},
-        {test_hashmap_from_iterator, "test_hashmap_from_iterator"},
-        {test_hashmap_iterator_invalid, "test_hashmap_iterator_invalid"},
-        {test_hashmap_copy_isolation, "test_hashmap_copy_isolation"},
-        {test_hashmap_anv_copy_function_required, "test_hashmap_anv_copy_function_required"},
-        {test_hashmap_from_iterator_no_copy, "test_hashmap_from_iterator_no_copy"},
-        {test_hashmap_iterator_exhaustion_after_creation, "test_hashmap_iterator_exhaustion_after_creation"},
-        {test_hashmap_iterator_next_return_values, "test_hashmap_iterator_next_return_values"},
-        {test_hashmap_iterator_mixed_operations, "test_hashmap_iterator_mixed_operations"},
-        {test_hashmap_iterator_reset, "test_hashmap_iterator_reset"},
-        {test_hashmap_iterator_single_element, "test_hashmap_iterator_single_element"},
+        // Iterator
+        TEST_REGISTER(test_hashmap_iterator_basic),
+        TEST_REGISTER(test_hashmap_iterator_empty),
+        TEST_REGISTER(test_hashmap_iterator_with_modifications),
+        TEST_REGISTER(test_hashmap_iterator_multiple),
+        TEST_REGISTER(test_hashmap_iterator_get),
+        TEST_REGISTER(test_hashmap_iterator_backward),
+        TEST_REGISTER(test_hashmap_from_iterator),
+        TEST_REGISTER(test_hashmap_iterator_invalid),
+        TEST_REGISTER(test_hashmap_copy_isolation),
+        TEST_REGISTER(test_hashmap_anv_copy_function_required),
+        TEST_REGISTER(test_hashmap_from_iterator_no_copy),
+        TEST_REGISTER(test_hashmap_iterator_exhaustion_after_creation),
+        TEST_REGISTER(test_hashmap_iterator_next_return_values),
+        TEST_REGISTER(test_hashmap_iterator_mixed_operations),
+        TEST_REGISTER(test_hashmap_iterator_reset),
+        TEST_REGISTER(test_hashmap_iterator_single_element),
 
-        // --- Memory (9 tests) ---
-        {test_hashmap_failing_allocator, "test_hashmap_failing_allocator"},
-        {test_hashmap_node_alloc_failure, "test_hashmap_node_alloc_failure"},
-        {test_hashmap_resize_failure, "test_hashmap_resize_failure"},
-        {test_hashmap_memory_freeing, "test_hashmap_memory_freeing"},
-        {test_hashmap_copy_failure, "test_hashmap_copy_failure"},
-        {test_hashmap_deep_copy_failure, "test_hashmap_deep_copy_failure"},
-        {test_hashmap_get_keys_failure, "test_hashmap_get_keys_failure"},
-        {test_hashmap_null_handling, "test_hashmap_null_handling"},
-        {test_hashmap_extreme_sizes, "test_hashmap_extreme_sizes"},
+        // Memory
+        TEST_REGISTER(test_hashmap_failing_allocator),
+        TEST_REGISTER(test_hashmap_node_alloc_failure),
+        TEST_REGISTER(test_hashmap_resize_failure),
+        TEST_REGISTER(test_hashmap_memory_freeing),
+        TEST_REGISTER(test_hashmap_copy_failure),
+        TEST_REGISTER(test_hashmap_deep_copy_failure),
+        TEST_REGISTER(test_hashmap_get_keys_failure),
+        TEST_REGISTER(test_hashmap_null_handling),
+        TEST_REGISTER(test_hashmap_extreme_sizes),
 
-        // --- Memory-safe (4 tests) ---
-        {test_hashmap_put_replace, "test_hashmap_put_replace"},
-        {test_hashmap_put_with_free, "test_hashmap_put_with_free"},
-        {test_memory_leak_prevention, "test_memory_leak_prevention"},
-        {test_multiple_updates_cleanup, "test_multiple_updates_cleanup"},
+        // Memory-safe
+        TEST_REGISTER(test_hashmap_put_replace),
+        TEST_REGISTER(test_hashmap_put_with_free),
+        TEST_REGISTER(test_memory_leak_prevention),
+        TEST_REGISTER(test_multiple_updates_cleanup),
 
-        // --- Performance (6 tests) ---
-        {test_hashmap_performance_insertion, "test_hashmap_performance_insertion"},
-        {test_hashmap_performance_lookup, "test_hashmap_performance_lookup"},
-        {test_hashmap_performance_removal, "test_hashmap_performance_removal"},
-        {test_hashmap_performance_copy, "test_hashmap_performance_copy"},
-        {test_hashmap_performance_iteration, "test_hashmap_performance_iteration"},
-        {test_hashmap_performance_resize, "test_hashmap_performance_resize"},
+        // Performance
+        TEST_REGISTER(test_hashmap_performance_insertion),
+        TEST_REGISTER(test_hashmap_performance_lookup),
+        TEST_REGISTER(test_hashmap_performance_removal),
+        TEST_REGISTER(test_hashmap_performance_copy),
+        TEST_REGISTER(test_hashmap_performance_iteration),
+        TEST_REGISTER(test_hashmap_performance_resize),
 
-        // --- Properties (8 tests) ---
-        {test_hashmap_size_property, "test_hashmap_size_property"},
-        {test_hashmap_uniqueness_property, "test_hashmap_uniqueness_property"},
-        {test_hashmap_load_factor_property, "test_hashmap_load_factor_property"},
-        {test_hashmap_resize_property, "test_hashmap_resize_property"},
-        {test_hashmap_key_equality_property, "test_hashmap_key_equality_property"},
-        {test_hashmap_contains_property, "test_hashmap_contains_property"},
-        {test_hashmap_iterator_completeness, "test_hashmap_iterator_completeness"},
-        {test_hashmap_anv_hash_function_property, "test_hashmap_anv_hash_function_property"},
+        // Properties
+        TEST_REGISTER(test_hashmap_size_property),
+        TEST_REGISTER(test_hashmap_uniqueness_property),
+        TEST_REGISTER(test_hashmap_load_factor_property),
+        TEST_REGISTER(test_hashmap_resize_property),
+        TEST_REGISTER(test_hashmap_key_equality_property),
+        TEST_REGISTER(test_hashmap_contains_property),
+        TEST_REGISTER(test_hashmap_iterator_completeness),
+        TEST_REGISTER(test_hashmap_anv_hash_function_property),
+
+        // Stress & Collision
+        TEST_REGISTER(test_hashmap_collision_stress),
+        TEST_REGISTER(test_hashmap_high_load_factor),
+
+        // Fuzz
+        TEST_REGISTER(test_hashmap_fuzz),
     };
 
     return anv_run_tests("HashMap", tests, sizeof(tests) / sizeof(tests[0]));

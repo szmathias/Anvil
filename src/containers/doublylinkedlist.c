@@ -1088,7 +1088,6 @@ static void anv_dll_iterator_destroy(ANVIterator* it)
         return;
     }
 
-
     anv_alloc_deallocate(&it->alloc, it->data_state);
 
     it->data_state = NULL;

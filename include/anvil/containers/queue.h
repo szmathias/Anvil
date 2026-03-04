@@ -21,8 +21,8 @@ extern "C" {
  */
 typedef struct ANVQueueNode
 {
-        void* data;                // Pointer to user data
-        struct ANVQueueNode* next; // Pointer to next node
+    void* data;                // Pointer to user data
+    struct ANVQueueNode* next; // Pointer to next node
 } ANVQueueNode;
 
 /**
@@ -30,10 +30,10 @@ typedef struct ANVQueueNode
  */
 typedef struct ANVQueue
 {
-        ANVQueueNode* front; // Pointer to front node
-        ANVQueueNode* back;  // Pointer to back node
-        size_t size;         // Number of elements
-        ANVAllocator alloc;  // Custom allocator
+    ANVQueueNode* front; // Pointer to front node
+    ANVQueueNode* back;  // Pointer to back node
+    size_t size;         // Number of elements
+    ANVAllocator alloc;  // Custom allocator
 } ANVQueue;
 
 /**
@@ -54,7 +54,7 @@ typedef void (*anv_action_func)(void* data);
  * @param alloc Custom allocator (required)
  * @return Pointer to new Queue, or NULL on failure
  */
-ANV_API ANVQueue* anv_queue_create(ANVAllocator* alloc);
+ANV_API ANVQueue* anv_queue_create(ANVAllocator * alloc);
 
 /**
  * Destroy the queue and free all nodes.

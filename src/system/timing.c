@@ -2,19 +2,18 @@
 // Created by zack on 9/27/25.
 //
 
-
 #ifndef _POSIX_C_SOURCE
-    #define _POSIX_C_SOURCE 199309L
+#define _POSIX_C_SOURCE 199309L
 #endif
 
 #ifndef _GNU_SOURCE
-    #define _GNU_SOURCE 1
+#define _GNU_SOURCE 1
 #endif
 
 #ifdef ANV_PLATFORM_WINDOWS
-    #include <Windows.h>
+#include <Windows.h>
 #else
-    #include <time.h>
+#include <time.h>
 #endif
 
 #include "timing.h"

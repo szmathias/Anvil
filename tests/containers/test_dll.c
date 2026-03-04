@@ -1,23 +1,13 @@
-//
-// Consolidated DoublyLinkedList tests.
-// Merged from: test_dll_algorithms.c, test_dll_crud.c, test_dll_iterator.c,
-//              test_dll_memory.c, test_dll_performance.c, test_dll_properties.c
-//
-
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 
-#include "containers/doublylinkedlist.h"
-#include "containers/iterator.h"
-#include "TestAssert.h"
+#include <anvil/testing.h>
 #include "TestHelpers.h"
-#include "TestRunner.h"
+#include "containers/doublylinkedlist.h"
 
-// =============================================================================
-// CRUD Tests (from test_dll_crud.c)
-// =============================================================================
+//==============================================================================
+// CRUD Tests
+//==============================================================================
 
 static int test_create_destroy(void)
 {
@@ -31,35 +21,60 @@ static int test_create_destroy(void)
     return TEST_SUCCESS;
 }
 
-static int test_insert_front_back_find(void)
+static int test_push_front(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    ASSERT_EQ(anv_dll_push_front(list, b), 0);
     ASSERT_EQ(anv_dll_push_front(list, a), 0);
-    ASSERT_EQ(anv_dll_push_back(list, b), 0);
-    ASSERT_EQ(anv_dll_push_back(list, c), 0);
-    ASSERT_EQ(list->size, 3);
-
-    // Verify head and tail pointers
+    ASSERT_EQ(list->size, 2);
     ASSERT_EQ(*(int*)list->head->data, 1);
-    ASSERT_EQ(*(int*)list->tail->data, 3);
-
-    // Verify next and prev pointers
+    ASSERT_EQ(*(int*)list->tail->data, 2);
     ASSERT_NULL(list->head->prev);
+    ASSERT_NULL(list->tail->next);
+
+    anv_dll_destroy(list, true);
+    return TEST_SUCCESS;
+}
+
+static int test_push_back(void)
+{
+    ANVAllocator alloc = create_int_allocator();
+    ANVDoublyLinkedList* list = anv_dll_create(&alloc);
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    ASSERT_EQ(anv_dll_push_back(list, a), 0);
+    ASSERT_EQ(anv_dll_push_back(list, b), 0);
+    ASSERT_EQ(list->size, 2);
+    ASSERT_EQ(*(int*)list->head->data, 1);
+    ASSERT_EQ(*(int*)list->tail->data, 2);
     ASSERT_NOT_NULL(list->head->next);
     ASSERT_NOT_NULL(list->tail->prev);
-    ASSERT_NULL(list->tail->next);
+
+    anv_dll_destroy(list, true);
+    return TEST_SUCCESS;
+}
+
+static int test_find(void)
+{
+    ANVAllocator alloc = create_int_allocator();
+    ANVDoublyLinkedList* list = anv_dll_create(&alloc);
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
+    anv_dll_push_back(list, a);
+    anv_dll_push_back(list, b);
+    anv_dll_push_back(list, c);
 
     const int key = 2;
     const ANVDoublyLinkedNode* found = anv_dll_find(list, &key, int_cmp);
     ASSERT_NOT_NULL(found);
     ASSERT_EQ(*(int*)found->data, 2);
+
+    const int missing_key = 99;
+    ASSERT_NULL(anv_dll_find(list, &missing_key, int_cmp));
 
     anv_dll_destroy(list, true);
     return TEST_SUCCESS;
@@ -69,12 +84,9 @@ static int test_remove(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
     anv_dll_push_back(list, a);
     anv_dll_push_back(list, b);
     anv_dll_push_back(list, c);
@@ -99,8 +111,7 @@ static int test_remove_not_found(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 1;
+    MAKE_INT(a, 1);
     anv_dll_push_back(list, a);
 
     const int key = 99;
@@ -124,14 +135,11 @@ static int test_insert_at(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
-    ASSERT_EQ(anv_dll_push_back(list, a), 0);  // [1]
-    ASSERT_EQ(anv_dll_push_back(list, c), 0);  // [1,3]
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
+    ASSERT_EQ(anv_dll_push_back(list, a), 0);    // [1]
+    ASSERT_EQ(anv_dll_push_back(list, c), 0);    // [1,3]
     ASSERT_EQ(anv_dll_insert_at(list, 1, b), 0); // [1,2,3]
     ASSERT_EQ(list->size, 3);
 
@@ -154,12 +162,9 @@ static int test_remove_at(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 10;
-    int* b = malloc(sizeof(int));
-    *b = 20;
-    int* c = malloc(sizeof(int));
-    *c = 30;
+    MAKE_INT(a, 10);
+    MAKE_INT(b, 20);
+    MAKE_INT(c, 30);
     anv_dll_push_back(list, a); // [10]
     anv_dll_push_back(list, b); // [10,20]
     anv_dll_push_back(list, c); // [10,20,30]
@@ -188,12 +193,9 @@ static int test_remove_front(void)
     ASSERT_EQ(anv_dll_pop_front(list, true), -1);
 
     // Add elements
-    int* a = malloc(sizeof(int));
-    *a = 10;
-    int* b = malloc(sizeof(int));
-    *b = 20;
-    int* c = malloc(sizeof(int));
-    *c = 30;
+    MAKE_INT(a, 10);
+    MAKE_INT(b, 20);
+    MAKE_INT(c, 30);
     anv_dll_push_back(list, a);
     anv_dll_push_back(list, b);
     anv_dll_push_back(list, c);
@@ -231,8 +233,7 @@ static int test_remove_back(void)
     ASSERT_EQ(anv_dll_pop_back(list, true), -1);
 
     // Test on single element list
-    int* a = malloc(sizeof(int));
-    *a = 10;
+    MAKE_INT(a, 10);
     anv_dll_push_back(list, a);
     ASSERT_EQ(anv_dll_pop_back(list, true), 0);
     ASSERT_EQ(list->size, 0);
@@ -240,12 +241,9 @@ static int test_remove_back(void)
     ASSERT_NULL(list->tail);
 
     // Test with multiple elements
-    int* b = malloc(sizeof(int));
-    *b = 20;
-    int* c = malloc(sizeof(int));
-    *c = 30;
-    int* d = malloc(sizeof(int));
-    *d = 40;
+    MAKE_INT(b, 20);
+    MAKE_INT(c, 30);
+    MAKE_INT(d, 40);
     anv_dll_push_back(list, b);
     anv_dll_push_back(list, c);
     anv_dll_push_back(list, d);
@@ -271,10 +269,8 @@ static int test_remove_at_head(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 100;
-    int* b = malloc(sizeof(int));
-    *b = 200;
+    MAKE_INT(a, 100);
+    MAKE_INT(b, 200);
     anv_dll_push_back(list, a); // [100]
     anv_dll_push_back(list, b); // [100,200]
 
@@ -295,12 +291,9 @@ static int test_remove_at_last(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
     anv_dll_push_back(list, a); // [1]
     anv_dll_push_back(list, b); // [1,2]
     anv_dll_push_back(list, c); // [1,2,3]
@@ -321,8 +314,7 @@ static int test_remove_at_invalid(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 1;
+    MAKE_INT(a, 1);
     anv_dll_push_back(list, a); // [1]
 
     ASSERT_EQ(anv_dll_remove_at(list, 5, true), -1);          // invalid position
@@ -345,9 +337,8 @@ static int test_remove_at_single_element(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 123;
-    anv_dll_push_back(list, a);                   // [123]
+    MAKE_INT(a, 123);
+    anv_dll_push_back(list, a);                     // [123]
     ASSERT_EQ(anv_dll_remove_at(list, 0, true), 0); // remove only element
     ASSERT_EQ(list->size, 0);
     ASSERT_NULL(list->head);
@@ -360,9 +351,8 @@ static int test_remove_at_single_element_invalid_pos(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 123;
-    anv_dll_push_back(list, a);                    // [123]
+    MAKE_INT(a, 123);
+    anv_dll_push_back(list, a);                      // [123]
     ASSERT_EQ(anv_dll_remove_at(list, 1, true), -1); // invalid position
     ASSERT_EQ(list->size, 1);
     anv_dll_destroy(list, true);
@@ -373,8 +363,7 @@ static int test_insert_at_out_of_bounds(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 1;
+    MAKE_INT(a, 1);
     ASSERT_EQ(anv_dll_insert_at(list, 2, a), -1);          // out of bounds (list size is 0)
     ASSERT_EQ(anv_dll_insert_at(list, (size_t)-1, a), -1); // very large index
     anv_dll_destroy(list, true);
@@ -398,14 +387,11 @@ static int test_mixed_operations_integrity(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 10;
-    int* b = malloc(sizeof(int));
-    *b = 20;
-    int* c = malloc(sizeof(int));
-    *c = 30;
-    anv_dll_push_back(list, a);  // [10]
-    anv_dll_push_front(list, b); // [20,10]
+    MAKE_INT(a, 10);
+    MAKE_INT(b, 20);
+    MAKE_INT(c, 30);
+    anv_dll_push_back(list, a);    // [10]
+    anv_dll_push_front(list, b);   // [20,10]
     anv_dll_insert_at(list, 1, c); // [20,30,10]
     ASSERT_EQ(list->size, 3);
 
@@ -440,10 +426,8 @@ static int test_size(void)
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
     ASSERT_EQ(anv_dll_size(list), 0);
 
-    int* a = malloc(sizeof(int));
-    *a = 10;
-    int* b = malloc(sizeof(int));
-    *b = 20;
+    MAKE_INT(a, 10);
+    MAKE_INT(b, 20);
     anv_dll_push_back(list, a);
     ASSERT_EQ(anv_dll_size(list), 1);
     anv_dll_push_back(list, b);
@@ -462,8 +446,7 @@ static int test_is_empty(void)
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
     ASSERT_EQ(anv_dll_is_empty(list), 1); // Empty list
 
-    int* a = malloc(sizeof(int));
-    *a = 10;
+    MAKE_INT(a, 10);
     anv_dll_push_back(list, a);
     ASSERT_EQ(anv_dll_is_empty(list), 0); // Non-empty list
 
@@ -512,8 +495,7 @@ static int test_remove_all(void)
     // Add 10 elements
     for (int i = 0; i < 10; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
     ASSERT_EQ(list->size, 10);
@@ -532,9 +514,9 @@ static int test_remove_all(void)
     return TEST_SUCCESS;
 }
 
-// =============================================================================
-// Algorithm Tests (from test_dll_algorithms.c)
-// =============================================================================
+//==============================================================================
+// Algorithm Tests
+//==============================================================================
 
 static int test_sort_empty(void)
 {
@@ -552,8 +534,7 @@ static int test_sort_already_sorted(void)
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
     for (int i = 0; i < 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -577,8 +558,7 @@ static int test_sort_reverse_order(void)
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
     for (int i = 4; i >= 0; i--)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -613,8 +593,7 @@ static int test_sort_with_duplicates(void)
 
     for (size_t i = 0; i < count; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = values[i];
+        MAKE_INT(val, values[i]);
         anv_dll_push_back(list, val);
     }
 
@@ -651,8 +630,7 @@ static int test_sort_large_list(void)
     // Insert in reverse order
     for (int i = SIZE - 1; i >= 0; i--)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -692,8 +670,7 @@ static int test_sort_custom_compare(void)
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
     for (int i = 0; i < 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -776,8 +753,7 @@ static int test_reverse(void)
     ASSERT_EQ(list->size, 0);
 
     // Test single element
-    int* a = malloc(sizeof(int));
-    *a = 10;
+    MAKE_INT(a, 10);
     anv_dll_push_back(list, a);
     ASSERT_EQ(anv_dll_reverse(list), 0);
     ASSERT_EQ(list->size, 1);
@@ -785,10 +761,8 @@ static int test_reverse(void)
     ASSERT_EQ(list->head, list->tail);
 
     // Test multiple elements
-    int* b = malloc(sizeof(int));
-    *b = 20;
-    int* c = malloc(sizeof(int));
-    *c = 30;
+    MAKE_INT(b, 20);
+    MAKE_INT(c, 30);
     anv_dll_push_back(list, b);
     anv_dll_push_back(list, c);
     // List is now [10,20,30]
@@ -842,10 +816,8 @@ static int test_merge(void)
     ASSERT_EQ(list2->size, 0);
 
     // Test merging empty with non-empty
-    int* a1 = malloc(sizeof(int));
-    *a1 = 10;
-    int* b1 = malloc(sizeof(int));
-    *b1 = 20;
+    MAKE_INT(a1, 10);
+    MAKE_INT(b1, 20);
     anv_dll_push_back(list2, a1);
     anv_dll_push_back(list2, b1);
 
@@ -865,10 +837,8 @@ static int test_merge(void)
 
     // Test merging two non-empty lists
     ANVDoublyLinkedList* list3 = anv_dll_create(&alloc);
-    int* a2 = malloc(sizeof(int));
-    *a2 = 30;
-    int* b2 = malloc(sizeof(int));
-    *b2 = 40;
+    MAKE_INT(a2, 30);
+    MAKE_INT(b2, 40);
     anv_dll_push_back(list3, a2);
     anv_dll_push_back(list3, b2);
 
@@ -907,16 +877,11 @@ static int test_splice(void)
     ANVDoublyLinkedList* dest1 = anv_dll_create(&alloc);
     ANVDoublyLinkedList* src1 = anv_dll_create(&alloc);
 
-    int* a1 = malloc(sizeof(int));
-    *a1 = 10;
-    int* b1 = malloc(sizeof(int));
-    *b1 = 20;
-    int* c1 = malloc(sizeof(int));
-    *c1 = 30;
-    int* d1 = malloc(sizeof(int));
-    *d1 = 40;
-    int* e1 = malloc(sizeof(int));
-    *e1 = 50;
+    MAKE_INT(a1, 10);
+    MAKE_INT(b1, 20);
+    MAKE_INT(c1, 30);
+    MAKE_INT(d1, 40);
+    MAKE_INT(e1, 50);
 
     anv_dll_push_back(dest1, a1);
     anv_dll_push_back(dest1, b1);
@@ -945,16 +910,11 @@ static int test_splice(void)
     ANVDoublyLinkedList* dest2 = anv_dll_create(&alloc);
     ANVDoublyLinkedList* src2 = anv_dll_create(&alloc);
 
-    int* a2 = malloc(sizeof(int));
-    *a2 = 10;
-    int* b2 = malloc(sizeof(int));
-    *b2 = 20;
-    int* c2 = malloc(sizeof(int));
-    *c2 = 30;
-    int* d2 = malloc(sizeof(int));
-    *d2 = 40;
-    int* e2 = malloc(sizeof(int));
-    *e2 = 50;
+    MAKE_INT(a2, 10);
+    MAKE_INT(b2, 20);
+    MAKE_INT(c2, 30);
+    MAKE_INT(d2, 40);
+    MAKE_INT(e2, 50);
 
     anv_dll_push_back(dest2, a2);
     anv_dll_push_back(dest2, b2);
@@ -983,16 +943,11 @@ static int test_splice(void)
     ANVDoublyLinkedList* dest3 = anv_dll_create(&alloc);
     ANVDoublyLinkedList* src3 = anv_dll_create(&alloc);
 
-    int* a3 = malloc(sizeof(int));
-    *a3 = 10;
-    int* b3 = malloc(sizeof(int));
-    *b3 = 20;
-    int* c3 = malloc(sizeof(int));
-    *c3 = 30;
-    int* d3 = malloc(sizeof(int));
-    *d3 = 40;
-    int* e3 = malloc(sizeof(int));
-    *e3 = 50;
+    MAKE_INT(a3, 10);
+    MAKE_INT(b3, 20);
+    MAKE_INT(c3, 30);
+    MAKE_INT(d3, 40);
+    MAKE_INT(e3, 50);
 
     anv_dll_push_back(dest3, a3);
     anv_dll_push_back(dest3, b3);
@@ -1046,14 +1001,10 @@ static int test_equals(void)
     ASSERT_EQ(anv_dll_equals(list1, list2, int_cmp), 1);
 
     // Lists with same elements should be equal
-    int* a1 = malloc(sizeof(int));
-    *a1 = 10;
-    int* b1 = malloc(sizeof(int));
-    *b1 = 20;
-    int* a2 = malloc(sizeof(int));
-    *a2 = 10;
-    int* b2 = malloc(sizeof(int));
-    *b2 = 20;
+    MAKE_INT(a1, 10);
+    MAKE_INT(b1, 20);
+    MAKE_INT(a2, 10);
+    MAKE_INT(b2, 20);
     anv_dll_push_back(list1, a1);
     anv_dll_push_back(list1, b1);
     anv_dll_push_back(list2, a2);
@@ -1062,18 +1013,15 @@ static int test_equals(void)
     ASSERT_EQ(anv_dll_equals(list1, list2, int_cmp), 1);
 
     // Lists with different elements should not be equal
-    int* c2 = malloc(sizeof(int));
-    *c2 = 30;
+    MAKE_INT(c2, 30);
     anv_dll_push_back(list2, c2);
 
     ASSERT_EQ(anv_dll_equals(list1, list2, int_cmp), 0);
 
     // Lists with same size but different elements should not be equal
     ANVDoublyLinkedList* list3 = anv_dll_create(&alloc);
-    int* a3 = malloc(sizeof(int));
-    *a3 = 10;
-    int* b3 = malloc(sizeof(int));
-    *b3 = 30; // Different value
+    MAKE_INT(a3, 10);
+    MAKE_INT(b3, 30); // Different value
     anv_dll_push_back(list3, a3);
     anv_dll_push_back(list3, b3);
 
@@ -1098,8 +1046,7 @@ static int test_filter(void)
     // Add numbers 0-9
     for (int i = 0; i < 10; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -1145,8 +1092,7 @@ static int test_filter_deep(void)
     // Add numbers 0-9
     for (int i = 0; i < 10; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -1195,8 +1141,7 @@ static int test_transform(void)
     // Add numbers 1-5
     for (int i = 1; i <= 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -1257,8 +1202,7 @@ static int test_for_each(void)
     // Add numbers 1-5
     for (int i = 1; i <= 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -1286,9 +1230,9 @@ static int test_for_each(void)
     return TEST_SUCCESS;
 }
 
-// =============================================================================
-// Iterator Tests (from test_dll_iterator.c)
-// =============================================================================
+//==============================================================================
+// Iterator Tests
+//==============================================================================
 
 static int test_basic_iteration(void)
 {
@@ -1299,8 +1243,7 @@ static int test_basic_iteration(void)
     // Insert elements
     for (int i = 1; i <= 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -1363,8 +1306,7 @@ static int test_iterator_with_modifications(void)
     // Insert initial elements
     for (int i = 1; i <= 3; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -1378,8 +1320,7 @@ static int test_iterator_with_modifications(void)
     it.next(&it);
 
     // Modify list by adding new elements
-    int* new_val = malloc(sizeof(int));
-    *new_val = 99;
+    MAKE_INT(new_val, 99);
     anv_dll_push_back(list, new_val);
 
     // Continue iteration
@@ -1417,8 +1358,7 @@ static int test_multiple_iterators(void)
     // Insert elements
     for (int i = 1; i <= 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -1468,8 +1408,7 @@ static int test_reverse_iteration(void)
     // Insert elements 1-5
     for (int i = 1; i <= 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -1507,8 +1446,7 @@ static int test_iterator_get(void)
     // Insert elements
     for (int i = 1; i <= 3; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -1544,8 +1482,7 @@ static int test_bidirectional_iteration(void)
     // Insert elements 1-5
     for (int i = 1; i <= 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -1753,8 +1690,7 @@ static int test_dll_iterator_next_return_values(void)
     ASSERT_NOT_NULL(list);
 
     // Add single element
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
     ASSERT_EQ(anv_dll_push_back(list, data), 0);
 
     ANVIterator iter = anv_dll_iterator(list);
@@ -1786,8 +1722,7 @@ static int test_dll_iterator_mixed_operations(void)
     // Add test data (will be in sequential order: 0, 10, 20)
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_dll_push_back(list, data), 0);
     }
 
@@ -1842,8 +1777,7 @@ static int test_dll_iterator_order(void)
     const int values[] = {100, 200, 300, 400, 500};
     for (int i = 0; i < 5; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = values[i];
+        MAKE_INT(data, values[i]);
         ASSERT_EQ(anv_dll_push_back(list, data), 0);
     }
 
@@ -1874,8 +1808,7 @@ static int test_dll_iterator_reset(void)
     // Add numbers 1-3
     for (int i = 1; i <= 3; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -1901,8 +1834,7 @@ static int test_dll_iterator_single_element(void)
     ANVAllocator alloc = create_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
 
-    int* val = malloc(sizeof(int));
-    *val = 42;
+    MAKE_INT(val, 42);
     anv_dll_push_back(list, val);
 
     ANVIterator iter = anv_dll_iterator(list);
@@ -1922,17 +1854,16 @@ static int test_dll_iterator_single_element(void)
     return TEST_SUCCESS;
 }
 
-// =============================================================================
-// Memory Tests (from test_dll_memory.c)
-// =============================================================================
+//==============================================================================
+// Memory Tests
+//==============================================================================
 
 static int test_custom_allocator(void)
 {
     ANVAllocator alloc = create_failing_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
     ASSERT_NOT_NULL(list);
-    int* a = malloc(sizeof(int));
-    *a = 42;
+    MAKE_INT(a, 42);
     ASSERT_EQ(anv_dll_push_back(list, a), 0);
     ASSERT_EQ(list->size, 1);
     anv_dll_destroy(list, true);
@@ -1947,8 +1878,7 @@ static int test_clear(void)
     // Add some elements
     for (int i = 0; i < 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
     ASSERT_EQ(list->size, 5);
@@ -1963,8 +1893,7 @@ static int test_clear(void)
     ASSERT_EQ(anv_dll_is_empty(list), 1);
 
     // Make sure we can still add elements after clearing
-    int* val = malloc(sizeof(int));
-    *val = 42;
+    MAKE_INT(val, 42);
     ASSERT_EQ(anv_dll_push_back(list, val), 0);
     ASSERT_EQ(list->size, 1);
 
@@ -2002,8 +1931,7 @@ static int test_copy_shallow(void)
     // Add some elements
     for (int i = 0; i < 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i * 10;
+        MAKE_INT(val, i * 10);
         anv_dll_push_back(list, val);
     }
 
@@ -2070,8 +1998,7 @@ static int test_copy_deep(void)
     // Add some elements
     for (int i = 0; i < 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i * 10;
+        MAKE_INT(val, i * 10);
         anv_dll_push_back(list, val);
     }
 
@@ -2213,15 +2140,13 @@ static int test_insert_allocation_failure(void)
     set_alloc_fail_countdown(-1);
     ANVAllocator alloc = create_failing_int_allocator();
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
-    int* a = malloc(sizeof(int));
-    *a = 1;
+    MAKE_INT(a, 1);
     anv_dll_push_back(list, a);
     ASSERT_EQ(list->size, 1);
 
     // Set allocator to fail on the next allocation (for the node)
     set_alloc_fail_countdown(0);
-    int* b = malloc(sizeof(int));
-    *b = 2;
+    MAKE_INT(b, 2);
     ASSERT_EQ(anv_dll_push_back(list, b), -1);
 
     // Verify list is unchanged
@@ -2243,8 +2168,7 @@ static int test_copy_deep_allocation_failure(void)
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
     for (int i = 0; i < 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -2275,8 +2199,7 @@ static int test_transform_allocation_failure(void)
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
     for (int i = 0; i < 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -2307,8 +2230,7 @@ static int test_from_iterator_custom_alloc_failure(void)
     ANVDoublyLinkedList* list = anv_dll_create(&src_alloc);
     for (int i = 0; i < 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
     ANVIterator it = anv_dll_iterator(list);
@@ -2336,9 +2258,9 @@ static int test_from_iterator_custom_alloc_failure(void)
     return TEST_SUCCESS;
 }
 
-// =============================================================================
-// Performance Tests (from test_dll_performance.c)
-// =============================================================================
+//==============================================================================
+// Performance Tests
+//==============================================================================
 
 static int test_stress(void)
 {
@@ -2349,8 +2271,7 @@ static int test_stress(void)
     // Add many elements
     for (int i = 0; i < NUM_ELEMENTS; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         ASSERT_EQ(anv_dll_push_back(list, val), 0);
     }
     ASSERT_EQ(list->size, (size_t)NUM_ELEMENTS);
@@ -2392,8 +2313,7 @@ static int test_performance(void)
         clock_t start = clock();
         for (int i = 0; i < SIZE; i++)
         {
-            int* val = malloc(sizeof(int));
-            *val = i;
+            MAKE_INT(val, i);
             anv_dll_push_back(list, val);
         }
         clock_t end = clock();
@@ -2418,9 +2338,9 @@ static int test_performance(void)
     return TEST_SUCCESS;
 }
 
-// =============================================================================
-// Property Tests (from test_dll_properties.c)
-// =============================================================================
+//==============================================================================
+// Properties Tests
+//==============================================================================
 
 static int test_anv_dll_size_after_insert_and_remove(void)
 {
@@ -2428,13 +2348,11 @@ static int test_anv_dll_size_after_insert_and_remove(void)
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
     ASSERT_EQ(anv_dll_size(list), 0);
 
-    int* a = malloc(sizeof(int));
-    *a = 1;
+    MAKE_INT(a, 1);
     anv_dll_push_back(list, a);
     ASSERT_EQ(anv_dll_size(list), 1);
 
-    int* b = malloc(sizeof(int));
-    *b = 2;
+    MAKE_INT(b, 2);
     anv_dll_push_front(list, b);
     ASSERT_EQ(anv_dll_size(list), 2);
 
@@ -2454,8 +2372,7 @@ static int test_anv_dll_sort_is_idempotent(void)
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
     for (int i = 0; i < 10; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -2477,8 +2394,7 @@ static int test_anv_dll_reverse_is_involution(void)
     ANVDoublyLinkedList* list = anv_dll_create(&alloc);
     for (int i = 0; i < 10; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_dll_push_back(list, val);
     }
 
@@ -2494,99 +2410,183 @@ static int test_anv_dll_reverse_is_involution(void)
     return TEST_SUCCESS;
 }
 
-// =============================================================================
-// Test Registration - 74 tests total
-// =============================================================================
+//==============================================================================
+// Fuzz Tests
+//==============================================================================
 
-const ANVTestCase tests[] = {
-    // --- CRUD (22 tests) ---
-    {test_create_destroy, "test_create_destroy"},
-    {test_insert_front_back_find, "test_insert_front_back_find"},
-    {test_remove, "test_remove"},
-    {test_remove_not_found, "test_remove_not_found"},
-    {test_nullptr_handling, "test_nullptr_handling"},
-    {test_insert_at, "test_insert_at"},
-    {test_remove_at, "test_remove_at"},
-    {test_remove_at_head, "test_remove_at_head"},
-    {test_remove_at_last, "test_remove_at_last"},
-    {test_remove_at_invalid, "test_remove_at_invalid"},
-    {test_remove_at_empty, "test_remove_at_empty"},
-    {test_remove_at_single_element, "test_remove_at_single_element"},
-    {test_remove_at_single_element_invalid_pos, "test_remove_at_single_element_invalid_pos"},
-    {test_insert_at_out_of_bounds, "test_insert_at_out_of_bounds"},
-    {test_insert_remove_null_data, "test_insert_remove_null_data"},
-    {test_mixed_operations_integrity, "test_mixed_operations_integrity"},
-    {test_size, "test_size"},
-    {test_is_empty, "test_is_empty"},
-    {test_complex_data_type, "test_complex_data_type"},
-    {test_remove_all, "test_remove_all"},
-    {test_remove_front, "test_remove_front"},
-    {test_remove_back, "test_remove_back"},
+static int test_dll_fuzz(void)
+{
+    srand((unsigned int)42);
+    ANVAllocator alloc = create_int_allocator();
+    ANVDoublyLinkedList* list = anv_dll_create(&alloc);
+    ASSERT_NOT_NULL(list);
 
-    // --- Algorithms (16 tests) ---
-    {test_sort_empty, "test_sort_empty"},
-    {test_sort_already_sorted, "test_sort_already_sorted"},
-    {test_sort_reverse_order, "test_sort_reverse_order"},
-    {test_sort_with_duplicates, "test_sort_with_duplicates"},
-    {test_sort_large_list, "test_sort_large_list"},
-    {test_sort_custom_compare, "test_sort_custom_compare"},
-    {test_sort_null_args, "test_sort_null_args"},
-    {test_sort_stability, "test_sort_stability"},
-    {test_reverse, "test_reverse"},
-    {test_merge, "test_merge"},
-    {test_splice, "test_splice"},
-    {test_equals, "test_equals"},
-    {test_filter, "test_filter"},
-    {test_filter_deep, "test_filter_deep"},
-    {test_transform, "test_transform"},
-    {test_for_each, "test_for_each"},
+    size_t expected_size = 0;
 
-    // --- Iterator (18 tests) ---
-    {test_basic_iteration, "test_basic_iteration"},
-    {test_empty_list_iterator, "test_empty_list_iterator"},
-    {test_iterator_with_modifications, "test_iterator_with_modifications"},
-    {test_multiple_iterators, "test_multiple_iterators"},
-    {test_reverse_iteration, "test_reverse_iteration"},
-    {test_iterator_get, "test_iterator_get"},
-    {test_bidirectional_iteration, "test_bidirectional_iteration"},
-    {test_from_iterator, "test_from_iterator"},
-    {test_iterator_invalid, "test_iterator_invalid"},
-    {test_dll_copy_isolation, "test_dll_copy_isolation"},
-    {test_dll_anv_copy_function_required, "test_dll_anv_copy_function_required"},
-    {test_dll_from_iterator_no_copy, "test_dll_from_iterator_no_copy"},
-    {test_iterator_exhaustion_after_dll_creation, "test_iterator_exhaustion_after_dll_creation"},
-    {test_dll_iterator_next_return_values, "test_dll_iterator_next_return_values"},
-    {test_dll_iterator_mixed_operations, "test_dll_iterator_mixed_operations"},
-    {test_dll_iterator_order, "test_dll_iterator_order"},
-    {test_dll_iterator_reset, "test_dll_iterator_reset"},
-    {test_dll_iterator_single_element, "test_dll_iterator_single_element"},
+    for (int i = 0; i < 50000; i++)
+    {
+        const unsigned op = rand() % 5;
 
-    // --- Memory (13 tests) ---
-    {test_custom_allocator, "test_custom_allocator"},
-    {test_clear, "test_clear"},
-    {test_clear_empty, "test_clear_empty"},
-    {test_clear_null, "test_clear_null"},
-    {test_copy_shallow, "test_copy_shallow"},
-    {test_copy_deep, "test_copy_deep"},
-    {test_copy_complex_data, "test_copy_complex_data"},
-    {test_copy_empty, "test_copy_empty"},
-    {test_copy_null, "test_copy_null"},
-    {test_insert_allocation_failure, "test_insert_allocation_failure"},
-    {test_copy_deep_allocation_failure, "test_copy_deep_allocation_failure"},
-    {test_transform_allocation_failure, "test_transform_allocation_failure"},
-    {test_from_iterator_custom_alloc_failure, "test_from_iterator_custom_alloc_failure"},
+        switch (op)
+        {
+            case 0: // push_front
+            {
+                MAKE_INT(val, rand());
+                if (anv_dll_push_front(list, val) == 0)
+                    expected_size++;
+                else
+                    free(val);
+                break;
+            }
+            case 1: // push_back
+            {
+                MAKE_INT(val, rand());
+                if (anv_dll_push_back(list, val) == 0)
+                    expected_size++;
+                else
+                    free(val);
+                break;
+            }
+            case 2: // remove front
+            {
+                if (expected_size > 0)
+                {
+                    void* data = list->head->data;
+                    if (anv_dll_remove(list, data, int_cmp, true) == 0)
+                        expected_size--;
+                }
+                break;
+            }
+            case 3: // find random
+            {
+                if (expected_size > 0)
+                {
+                    int key = rand() % 1000;
+                    anv_dll_find(list, &key, int_cmp);
+                }
+                break;
+            }
+            case 4: // insert_at random position
+            {
+                if (expected_size > 0)
+                {
+                    const size_t pos = rand() % expected_size;
+                    MAKE_INT(val, rand());
+                    if (anv_dll_insert_at(list, pos, val) == 0)
+                        expected_size++;
+                    else
+                        free(val);
+                }
+                break;
+            }
+            default:
+                break;
+        }
 
-    // --- Performance (2 tests) ---
-    {test_stress, "test_stress"},
-    {test_performance, "test_performance"},
+        ASSERT_EQ(list->size, expected_size);
+    }
 
-    // --- Properties (3 tests) ---
-    {test_anv_dll_size_after_insert_and_remove, "test_anv_dll_size_after_insert_and_remove"},
-    {test_anv_dll_sort_is_idempotent, "test_anv_dll_sort_is_idempotent"},
-    {test_anv_dll_reverse_is_involution, "test_anv_dll_reverse_is_involution"},
-};
+    anv_dll_destroy(list, true);
+    return TEST_SUCCESS;
+}
+
+//==============================================================================
+// Main
+//==============================================================================
 
 int main(void)
 {
+    const ANVTestCase tests[] = {
+        // CRUD
+        TEST_REGISTER(test_create_destroy),
+        TEST_REGISTER(test_push_front),
+        TEST_REGISTER(test_push_back),
+        TEST_REGISTER(test_find),
+        TEST_REGISTER(test_remove),
+        TEST_REGISTER(test_remove_not_found),
+        TEST_REGISTER(test_nullptr_handling),
+        TEST_REGISTER(test_insert_at),
+        TEST_REGISTER(test_remove_at),
+        TEST_REGISTER(test_remove_at_head),
+        TEST_REGISTER(test_remove_at_last),
+        TEST_REGISTER(test_remove_at_invalid),
+        TEST_REGISTER(test_remove_at_empty),
+        TEST_REGISTER(test_remove_at_single_element),
+        TEST_REGISTER(test_remove_at_single_element_invalid_pos),
+        TEST_REGISTER(test_insert_at_out_of_bounds),
+        TEST_REGISTER(test_insert_remove_null_data),
+        TEST_REGISTER(test_mixed_operations_integrity),
+        TEST_REGISTER(test_size),
+        TEST_REGISTER(test_is_empty),
+        TEST_REGISTER(test_complex_data_type),
+        TEST_REGISTER(test_remove_all),
+        TEST_REGISTER(test_remove_front),
+        TEST_REGISTER(test_remove_back),
+
+        // Algorithms
+        TEST_REGISTER(test_sort_empty),
+        TEST_REGISTER(test_sort_already_sorted),
+        TEST_REGISTER(test_sort_reverse_order),
+        TEST_REGISTER(test_sort_with_duplicates),
+        TEST_REGISTER(test_sort_large_list),
+        TEST_REGISTER(test_sort_custom_compare),
+        TEST_REGISTER(test_sort_null_args),
+        TEST_REGISTER(test_sort_stability),
+        TEST_REGISTER(test_reverse),
+        TEST_REGISTER(test_merge),
+        TEST_REGISTER(test_splice),
+        TEST_REGISTER(test_equals),
+        TEST_REGISTER(test_filter),
+        TEST_REGISTER(test_filter_deep),
+        TEST_REGISTER(test_transform),
+        TEST_REGISTER(test_for_each),
+
+        // Iterator
+        TEST_REGISTER(test_basic_iteration),
+        TEST_REGISTER(test_empty_list_iterator),
+        TEST_REGISTER(test_iterator_with_modifications),
+        TEST_REGISTER(test_multiple_iterators),
+        TEST_REGISTER(test_reverse_iteration),
+        TEST_REGISTER(test_iterator_get),
+        TEST_REGISTER(test_bidirectional_iteration),
+        TEST_REGISTER(test_from_iterator),
+        TEST_REGISTER(test_iterator_invalid),
+        TEST_REGISTER(test_dll_copy_isolation),
+        TEST_REGISTER(test_dll_anv_copy_function_required),
+        TEST_REGISTER(test_dll_from_iterator_no_copy),
+        TEST_REGISTER(test_iterator_exhaustion_after_dll_creation),
+        TEST_REGISTER(test_dll_iterator_next_return_values),
+        TEST_REGISTER(test_dll_iterator_mixed_operations),
+        TEST_REGISTER(test_dll_iterator_order),
+        TEST_REGISTER(test_dll_iterator_reset),
+        TEST_REGISTER(test_dll_iterator_single_element),
+
+        // Memory
+        TEST_REGISTER(test_custom_allocator),
+        TEST_REGISTER(test_clear),
+        TEST_REGISTER(test_clear_empty),
+        TEST_REGISTER(test_clear_null),
+        TEST_REGISTER(test_copy_shallow),
+        TEST_REGISTER(test_copy_deep),
+        TEST_REGISTER(test_copy_complex_data),
+        TEST_REGISTER(test_copy_empty),
+        TEST_REGISTER(test_copy_null),
+        TEST_REGISTER(test_insert_allocation_failure),
+        TEST_REGISTER(test_copy_deep_allocation_failure),
+        TEST_REGISTER(test_transform_allocation_failure),
+        TEST_REGISTER(test_from_iterator_custom_alloc_failure),
+
+        // Performance
+        TEST_REGISTER(test_stress),
+        TEST_REGISTER(test_performance),
+
+        // Properties
+        TEST_REGISTER(test_anv_dll_size_after_insert_and_remove),
+        TEST_REGISTER(test_anv_dll_sort_is_idempotent),
+        TEST_REGISTER(test_anv_dll_reverse_is_involution),
+
+        // Fuzz Tests
+        TEST_REGISTER(test_dll_fuzz),
+    };
     return anv_run_tests("DoublyLinkedList", tests, sizeof(tests) / sizeof(tests[0]));
 }

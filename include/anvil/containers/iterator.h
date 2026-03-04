@@ -27,9 +27,9 @@ typedef struct ANVIterator ANVIterator;
  */
 typedef struct ANVIndexedElement
 {
-        size_t index;        // Zero-based index/position
-        void* element;       // Pointer to the element data
-        ANVAllocator alloc;  // Allocator for memory management
+    size_t index;       // Zero-based index/position
+    void* element;      // Pointer to the element data
+    ANVAllocator alloc; // Allocator for memory management
 } ANVIndexedElement;
 
 /**
@@ -37,26 +37,26 @@ typedef struct ANVIndexedElement
  */
 struct ANVIterator
 {
-        void* data_state;                       // Implementation-specific state data
-        ANVAllocator alloc;                     // Allocator for memory management
+    void* data_state;   // Implementation-specific state data
+    ANVAllocator alloc; // Allocator for memory management
 
-        // Element access
-        void* (*get)(const ANVIterator* it);    // Get current element without advancing
+    // Element access
+    void* (*get)(const ANVIterator* it); // Get current element without advancing
 
-        // Forward iteration
-        int (*has_next)(const ANVIterator* it); // Check if more elements exist
-        int (*next)(const ANVIterator* it);     // Advance to next position (returns 0 on success, -1 on failure)
+    // Forward iteration
+    int (*has_next)(const ANVIterator* it); // Check if more elements exist
+    int (*next)(const ANVIterator* it);     // Advance to next position (returns 0 on success, -1 on failure)
 
-        // Backward iteration
-        int (*has_prev)(const ANVIterator* it); // Check if previous elements exist
-        int (*prev)(const ANVIterator* it);     // Move back to previous position (returns 0 on success, -1 on failure)
+    // Backward iteration
+    int (*has_prev)(const ANVIterator* it); // Check if previous elements exist
+    int (*prev)(const ANVIterator* it);     // Move back to previous position (returns 0 on success, -1 on failure)
 
-        // Control operations
-        void (*reset)(const ANVIterator* it);   // Reset to starting position
-        int (*is_valid)(const ANVIterator* it); // Check if iterator is valid
+    // Control operations
+    void (*reset)(const ANVIterator* it);   // Reset to starting position
+    int (*is_valid)(const ANVIterator* it); // Check if iterator is valid
 
-        // Resource management
-        void (*destroy)(ANVIterator* it);       // Free iterator resources
+    // Resource management
+    void (*destroy)(ANVIterator* it); // Free iterator resources
 };
 
 //==============================================================================

@@ -21,10 +21,10 @@ extern "C" {
  */
 typedef struct ANVArrayList
 {
-        void** data;
-        size_t size;
-        size_t capacity;
-        ANVAllocator alloc;
+    void** data;
+    size_t size;
+    size_t capacity;
+    ANVAllocator alloc;
 } ANVArrayList;
 
 //==============================================================================

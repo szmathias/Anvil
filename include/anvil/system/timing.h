@@ -23,7 +23,6 @@ typedef enum ANVTime
     ANV_TIME_COUNT // Helper to track number of time units
 } ANVTime;
 
-
 /**
  * Get high-resolution timestamp in nanoseconds.
  * Uses the most accurate timer available on the platform.

@@ -23,9 +23,9 @@ extern "C" {
  */
 typedef struct ANVFile
 {
-    FILE *handle;           // Internal file handle (NULL when not actively reading/writing)
+    FILE* handle;           // Internal file handle (NULL when not actively reading/writing)
     ANVString path;         // Path to the file
-    uint8_t *contents;      // Buffer containing file contents (populated by anv_file_read)
+    uint8_t* contents;      // Buffer containing file contents (populated by anv_file_read)
     size_t size;            // Size of file contents in bytes
     ANVAllocator allocator; // Custom allocator for memory management
 } ANVFile;
@@ -41,7 +41,7 @@ typedef struct ANVFile
  * @param path Path to the file (must not be NULL)
  * @return Pointer to new ANVFile, or NULL on failure
  */
-ANV_API ANVFile* anv_file_create(ANVAllocator *alloc, const char* path);
+ANV_API ANVFile* anv_file_create(ANVAllocator* alloc, const char* path);
 
 /**
  * Destroy the file object and free all associated resources.

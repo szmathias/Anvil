@@ -4,7 +4,7 @@
 
 #include "anvil/io/file.h"
 
-ANV_API ANVFile* anv_file_create(ANVAllocator *alloc, const char* path)
+ANV_API ANVFile* anv_file_create(ANVAllocator* alloc, const char* path)
 {
     if (!alloc || !path)
     {

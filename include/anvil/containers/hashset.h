@@ -23,7 +23,7 @@ extern "C" {
  */
 typedef struct ANVHashSet
 {
-        ANVHashMap* map; // Underlying hash map
+    ANVHashMap* map; // Underlying hash map
 } ANVHashSet;
 
 //==============================================================================

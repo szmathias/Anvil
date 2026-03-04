@@ -12,17 +12,17 @@ extern "C" {
 #endif
 
 #ifdef ANV_PLATFORM_WINDOWS
-    #include <Windows.h>
+#include <Windows.h>
 
 typedef struct ANVMutex
 {
-        CRITICAL_SECTION cs;
-        volatile DWORD owner_thread_id;
-        volatile LONG lock_count;
+    CRITICAL_SECTION cs;
+    volatile DWORD owner_thread_id;
+    volatile LONG lock_count;
 } ANVMutex;
 
 #else
-    #include <pthread.h>
+#include <pthread.h>
 typedef pthread_mutex_t ANVMutex;
 #endif
 

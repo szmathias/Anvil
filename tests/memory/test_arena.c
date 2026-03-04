@@ -1,12 +1,9 @@
-//
-// Tests for arena allocator (memory/arena.h)
-//
-
-#include <string.h>
-#include <stdio.h>
+#include <anvil/testing.h>
 #include "memory/arena.h"
-#include "TestAssert.h"
-#include "TestRunner.h"
+
+//==============================================================================
+// CRUD Tests
+//==============================================================================
 
 int test_arena_create_destroy(void)
 {
@@ -15,7 +12,7 @@ int test_arena_create_destroy(void)
     ASSERT_EQ(arena.size, 1024);
     ASSERT_EQ(arena.used, 0);
 
-    ANVResult result = anv_arena_destroy(&arena);
+    const ANVResult result = anv_arena_destroy(&arena);
     ASSERT_EQ(result, ANV_RESULT_SUCCESS);
     ASSERT_NULL(arena.memory);
     ASSERT_EQ(arena.size, 0);
@@ -99,10 +96,10 @@ int test_arena_allocate_exhaustion(void)
     ANVArena arena = anv_arena_create(32);
 
     // Fill the arena
-    void* p1 = anv_arena_allocate(&arena, 16);
+    const void* p1 = anv_arena_allocate(&arena, 16);
     ASSERT_NOT_NULL(p1);
 
-    void* p2 = anv_arena_allocate(&arena, 16);
+    const void* p2 = anv_arena_allocate(&arena, 16);
     ASSERT_NOT_NULL(p2);
 
     // Arena should be full - next allocation fails
@@ -135,14 +132,18 @@ int test_arena_allocate_null(void)
     return TEST_SUCCESS;
 }
 
+//==============================================================================
+// Deallocation Tests
+//==============================================================================
+
 int test_arena_deallocate_lifo(void)
 {
     ANVArena arena = anv_arena_create(1024);
 
-    void* p1 = anv_arena_allocate(&arena, 16);
-    size_t used_after_p1 = arena.used;
+    const void* p1 = anv_arena_allocate(&arena, 16);
+    const size_t used_after_p1 = arena.used;
 
-    void* p2 = anv_arena_allocate(&arena, 32);
+    const void* p2 = anv_arena_allocate(&arena, 32);
     ASSERT_NOT_NULL(p2);
     ASSERT_GT(arena.used, used_after_p1);
 
@@ -173,11 +174,11 @@ int test_arena_deallocate_null(void)
 int test_arena_deallocate_out_of_range(void)
 {
     ANVArena arena = anv_arena_create(1024);
-    int dummy = 0;
+    const int dummy = 0;
 
-    void* p1 = anv_arena_allocate(&arena, 16);
+    const void* p1 = anv_arena_allocate(&arena, 16);
     ASSERT_NOT_NULL(p1);
-    size_t used_before = arena.used;
+    const size_t used_before = arena.used;
 
     // Try to deallocate a pointer outside the arena - should be ignored
     anv_arena_deallocate(&arena, &dummy);
@@ -186,6 +187,10 @@ int test_arena_deallocate_out_of_range(void)
     anv_arena_destroy(&arena);
     return TEST_SUCCESS;
 }
+
+//==============================================================================
+// Reset Tests
+//==============================================================================
 
 int test_arena_reset(void)
 {
@@ -198,7 +203,7 @@ int test_arena_reset(void)
     ASSERT_GT(arena.used, 0);
 
     // Reset
-    ANVResult result = anv_arena_reset(&arena);
+    const ANVResult result = anv_arena_reset(&arena);
     ASSERT_EQ(result, ANV_RESULT_SUCCESS);
     ASSERT_EQ(arena.used, 0);
     ASSERT_EQ(arena.size, 1024); // Size should remain
@@ -222,6 +227,10 @@ int test_arena_reset_null(void)
 
     return TEST_SUCCESS;
 }
+
+//==============================================================================
+// Boundary Tests
+//==============================================================================
 
 int test_arena_many_small_allocations(void)
 {
@@ -252,9 +261,9 @@ int test_arena_exact_fit(void)
     // Create an arena that fits exactly 2 aligned allocations
     ANVArena arena = anv_arena_create(16);
 
-    void* p1 = anv_arena_allocate(&arena, 8);
+    const void* p1 = anv_arena_allocate(&arena, 8);
     ASSERT_NOT_NULL(p1);
-    void* p2 = anv_arena_allocate(&arena, 8);
+    const void* p2 = anv_arena_allocate(&arena, 8);
     ASSERT_NOT_NULL(p2);
 
     // Should be exactly full
@@ -265,24 +274,35 @@ int test_arena_exact_fit(void)
     return TEST_SUCCESS;
 }
 
+//==============================================================================
+// Main
+//==============================================================================
+
 int main(void)
 {
     const ANVTestCase tests[] = {
-        {test_arena_create_destroy, "test_arena_create_destroy"},
-        {test_arena_create_zero_size, "test_arena_create_zero_size"},
-        {test_arena_destroy_null, "test_arena_destroy_null"},
-        {test_arena_allocate_basic, "test_arena_allocate_basic"},
-        {test_arena_allocate_alignment, "test_arena_allocate_alignment"},
-        {test_arena_allocate_exhaustion, "test_arena_allocate_exhaustion"},
-        {test_arena_allocate_zero_size, "test_arena_allocate_zero_size"},
-        {test_arena_allocate_null, "test_arena_allocate_null"},
-        {test_arena_deallocate_lifo, "test_arena_deallocate_lifo"},
-        {test_arena_deallocate_null, "test_arena_deallocate_null"},
-        {test_arena_deallocate_out_of_range, "test_arena_deallocate_out_of_range"},
-        {test_arena_reset, "test_arena_reset"},
-        {test_arena_reset_null, "test_arena_reset_null"},
-        {test_arena_many_small_allocations, "test_arena_many_small_allocations"},
-        {test_arena_exact_fit, "test_arena_exact_fit"},
+        // CRUD
+        TEST_REGISTER(test_arena_create_destroy),
+        TEST_REGISTER(test_arena_create_zero_size),
+        TEST_REGISTER(test_arena_destroy_null),
+        TEST_REGISTER(test_arena_allocate_basic),
+        TEST_REGISTER(test_arena_allocate_alignment),
+        TEST_REGISTER(test_arena_allocate_exhaustion),
+        TEST_REGISTER(test_arena_allocate_zero_size),
+        TEST_REGISTER(test_arena_allocate_null),
+
+        // Deallocation
+        TEST_REGISTER(test_arena_deallocate_lifo),
+        TEST_REGISTER(test_arena_deallocate_null),
+        TEST_REGISTER(test_arena_deallocate_out_of_range),
+
+        // Reset
+        TEST_REGISTER(test_arena_reset),
+        TEST_REGISTER(test_arena_reset_null),
+
+        // Boundary
+        TEST_REGISTER(test_arena_many_small_allocations),
+        TEST_REGISTER(test_arena_exact_fit),
     };
 
     return anv_run_tests("Arena", tests, sizeof(tests) / sizeof(tests[0]));

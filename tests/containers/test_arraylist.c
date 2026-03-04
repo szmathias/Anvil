@@ -1,18 +1,10 @@
-//
-// Consolidated ArrayList tests
-// Merged from: test_arraylist_algorithms.c, test_arraylist_boundary.c,
-//              test_arraylist_crud.c, test_arraylist_iterator.c,
-//              test_arraylist_memory.c, test_arraylist_properties.c
-//
-
-#include "containers/arraylist.h"
-#include "TestAssert.h"
-#include "TestHelpers.h"
-#include "TestRunner.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+
+#include <anvil/testing.h>
+#include "TestHelpers.h"
+#include "containers/arraylist.h"
 
 //==============================================================================
 // Static Helpers
@@ -59,12 +51,9 @@ int test_push_back(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
 
     ASSERT_EQ(anv_arraylist_push_back(list, a), 0);
     ASSERT_EQ(anv_arraylist_size(list), 1);
@@ -74,7 +63,6 @@ int test_push_back(void)
     ASSERT_EQ(anv_arraylist_push_back(list, c), 0);
     ASSERT_EQ(anv_arraylist_size(list), 3);
 
-    // Verify elements
     ASSERT_EQ(*(int*)anv_arraylist_get(list, 0), 1);
     ASSERT_EQ(*(int*)anv_arraylist_get(list, 1), 2);
     ASSERT_EQ(*(int*)anv_arraylist_get(list, 2), 3);
@@ -88,12 +76,9 @@ int test_push_front(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
 
     ASSERT_EQ(anv_arraylist_push_front(list, a), 0);
     ASSERT_EQ(anv_arraylist_push_front(list, b), 0);
@@ -114,14 +99,10 @@ int test_insert_at(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
-    int* d = malloc(sizeof(int));
-    *d = 4;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
+    MAKE_INT(d, 4);
 
     // Insert at beginning (empty list)
     ASSERT_EQ(anv_arraylist_insert(list, 0, a), 0);
@@ -150,31 +131,40 @@ int test_insert_at(void)
     return TEST_SUCCESS;
 }
 
-int test_get_set(void)
+int test_get(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
-    int* d = malloc(sizeof(int));
-    *d = 42;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
 
     anv_arraylist_push_back(list, a);
     anv_arraylist_push_back(list, b);
     anv_arraylist_push_back(list, c);
 
-    // Test get
     ASSERT_EQ(*(int*)anv_arraylist_get(list, 0), 1);
     ASSERT_EQ(*(int*)anv_arraylist_get(list, 1), 2);
     ASSERT_EQ(*(int*)anv_arraylist_get(list, 2), 3);
     ASSERT_NULL(anv_arraylist_get(list, 3)); // Out of bounds
 
-    // Test set
+    anv_arraylist_destroy(list, true);
+    return TEST_SUCCESS;
+}
+
+int test_set(void)
+{
+    ANVAllocator alloc = create_int_allocator();
+    ANVArrayList* list = anv_arraylist_create(&alloc, 0);
+
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(d, 42);
+
+    anv_arraylist_push_back(list, a);
+    anv_arraylist_push_back(list, b);
+
     ASSERT_EQ(anv_arraylist_set(list, 1, d, true), 0);
     ASSERT_EQ(*(int*)anv_arraylist_get(list, 1), 42);
     ASSERT_EQ(anv_arraylist_set(list, 5, d, false), -1); // Out of bounds
@@ -192,12 +182,9 @@ int test_front_back(void)
     ASSERT_NULL(anv_arraylist_front(list));
     ASSERT_NULL(anv_arraylist_back(list));
 
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
 
     // Single element
     anv_arraylist_push_back(list, a);
@@ -219,14 +206,10 @@ int test_remove_at(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
-    int* d = malloc(sizeof(int));
-    *d = 4;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
+    MAKE_INT(d, 4);
 
     anv_arraylist_push_back(list, a);
     anv_arraylist_push_back(list, b);
@@ -263,12 +246,9 @@ int test_pop_back_front(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
 
     anv_arraylist_push_back(list, a);
     anv_arraylist_push_back(list, b);
@@ -302,12 +282,9 @@ int test_find(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
 
     anv_arraylist_push_back(list, a);
     anv_arraylist_push_back(list, b);
@@ -330,12 +307,9 @@ int test_remove(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
 
     anv_arraylist_push_back(list, a);
     anv_arraylist_push_back(list, b);
@@ -359,12 +333,9 @@ int test_clear(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
-    int* c = malloc(sizeof(int));
-    *c = 3;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
 
     anv_arraylist_push_back(list, a);
     anv_arraylist_push_back(list, b);
@@ -388,8 +359,7 @@ int test_single_element_lifecycle(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* val = malloc(sizeof(int));
-    *val = 42;
+    MAKE_INT(val, 42);
 
     // Push, verify, remove
     ASSERT_EQ(anv_arraylist_push_back(list, val), 0);
@@ -412,9 +382,9 @@ int test_insert_at_boundaries(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* a = malloc(sizeof(int)); *a = 1;
-    int* b = malloc(sizeof(int)); *b = 2;
-    int* c = malloc(sizeof(int)); *c = 3;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
 
     // Insert at index 0 (empty list)
     ASSERT_EQ(anv_arraylist_insert(list, 0, a), 0);
@@ -430,7 +400,7 @@ int test_insert_at_boundaries(void)
     ASSERT_EQ(*(int*)anv_arraylist_get(list, 2), 3);
 
     // Insert at out-of-bounds index
-    int* d = malloc(sizeof(int)); *d = 4;
+    MAKE_INT(d, 4);
     ASSERT_NOT_EQ(anv_arraylist_insert(list, 100, d), 0);
     free(d);
 
@@ -448,7 +418,7 @@ int test_get_out_of_bounds(void)
     ASSERT_NULL(anv_arraylist_get(list, 1));
     ASSERT_NULL(anv_arraylist_get(list, SIZE_MAX));
 
-    int* val = malloc(sizeof(int)); *val = 42;
+    MAKE_INT(val, 42);
     anv_arraylist_push_back(list, val);
 
     // Valid index
@@ -472,9 +442,9 @@ int test_remove_at_boundaries(void)
     // Remove from empty list
     ASSERT_NOT_EQ(anv_arraylist_remove_at(list, 0, false), 0);
 
-    int* a = malloc(sizeof(int)); *a = 1;
-    int* b = malloc(sizeof(int)); *b = 2;
-    int* c = malloc(sizeof(int)); *c = 3;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
+    MAKE_INT(c, 3);
 
     anv_arraylist_push_back(list, a);
     anv_arraylist_push_back(list, b);
@@ -541,13 +511,12 @@ int test_capacity_growth(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 1);
 
-    size_t prev_capacity = anv_arraylist_capacity(list);
+    const size_t prev_capacity = anv_arraylist_capacity(list);
 
     // Push enough elements to force multiple capacity growths
     for (int i = 0; i < 100; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         ASSERT_EQ(anv_arraylist_push_back(list, val), 0);
     }
 
@@ -595,8 +564,7 @@ int test_forward_iterator(void)
     // Add numbers 1-5
     for (int i = 1; i <= 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -607,7 +575,7 @@ int test_forward_iterator(void)
     int expected = 1;
     while (iter.has_next(&iter))
     {
-        const int* val = (int*)iter.get(&iter);
+        const int* val = iter.get(&iter);
         ASSERT_NOT_NULL(val);
         ASSERT_EQ(*val, expected);
         expected++;
@@ -630,8 +598,7 @@ int test_reverse_iterator(void)
     // Add numbers 1-5
     for (int i = 1; i <= 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -642,7 +609,7 @@ int test_reverse_iterator(void)
     int expected = 5;
     while (iter.has_next(&iter))
     {
-        const int* val = (int*)iter.get(&iter);
+        const int* val = iter.get(&iter);
         ASSERT_NOT_NULL(val);
         ASSERT_EQ(*val, expected);
         expected--;
@@ -665,25 +632,24 @@ int test_iterator_get(void)
     // Add numbers 1-3
     for (int i = 1; i <= 3; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
     ANVIterator iter = anv_arraylist_iterator(list);
 
     // Test get without advancing
-    int* val = (int*)iter.get(&iter);
+    const int* val = iter.get(&iter);
     ASSERT_NOT_NULL(val);
     ASSERT_EQ(*val, 1);
 
     // Get again - should return same value
-    val = (int*)iter.get(&iter);
+    val = iter.get(&iter);
     ASSERT_EQ(*val, 1);
 
     // Now advance and test get
     iter.next(&iter);
-    val = (int*)iter.get(&iter);
+    val = iter.get(&iter);
     ASSERT_EQ(*val, 2);
 
     iter.destroy(&iter);
@@ -699,8 +665,7 @@ int test_iterator_prev(void)
     // Add numbers 1-3
     for (int i = 1; i <= 3; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -711,12 +676,12 @@ int test_iterator_prev(void)
     // Test has_prev and prev
     ASSERT(iter.has_prev(&iter));
     iter.prev(&iter);
-    const int* val = (int*)iter.get(&iter);
+    const int* val = iter.get(&iter);
     ASSERT_EQ(*val, 2);
 
     ASSERT(iter.has_prev(&iter));
     iter.prev(&iter);
-    val = (int*)iter.get(&iter);
+    val = iter.get(&iter);
     ASSERT_EQ(*val, 1);
 
     ASSERT(!iter.has_prev(&iter));
@@ -734,8 +699,7 @@ int test_iterator_reset(void)
     // Add numbers 1-3
     for (int i = 1; i <= 3; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -747,7 +711,7 @@ int test_iterator_reset(void)
 
     // Reset and verify back at beginning
     iter.reset(&iter);
-    int* val = (int*)iter.get(&iter);
+    const int* val = iter.get(&iter);
     ASSERT_EQ(*val, 1);
     ASSERT(iter.has_next(&iter));
 
@@ -778,8 +742,7 @@ int test_iterator_single_element(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* val = malloc(sizeof(int));
-    *val = 42;
+    MAKE_INT(val, 42);
     anv_arraylist_push_back(list, val);
 
     ANVIterator iter = anv_arraylist_iterator(list);
@@ -845,8 +808,7 @@ int test_iterator_modification(void)
     // Add initial data
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_arraylist_push_back(list, data), 0);
     }
 
@@ -854,13 +816,12 @@ int test_iterator_modification(void)
     ASSERT(iter.is_valid(&iter));
 
     // Get first element
-    void* first = iter.get(&iter);
-    ASSERT_EQ(*(int*)first, 0); // Should be first element (0*10)
+    const int* first = iter.get(&iter);
+    ASSERT_EQ(*first, 0); // Should be first element (0*10)
     iter.next(&iter);
 
     // Modify arraylist while iterator exists (implementation detail: iterator may become invalid)
-    int* new_data = malloc(sizeof(int));
-    *new_data = 999;
+    MAKE_INT(new_data, 999);
     ASSERT_EQ(anv_arraylist_push_back(list, new_data), 0);
 
     // Iterator should still be valid but may not reflect new state
@@ -1017,8 +978,7 @@ int test_arraylist_iterator_next_return_values(void)
     ASSERT_NOT_NULL(list);
 
     // Add single element
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
     ASSERT_EQ(anv_arraylist_push_back(list, data), 0);
 
     ANVIterator iter = anv_arraylist_iterator(list);
@@ -1051,8 +1011,7 @@ int test_arraylist_iterator_mixed_operations(void)
     // Add test data (will be in sequential order: 0, 10, 20)
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_arraylist_push_back(list, data), 0);
     }
 
@@ -1106,8 +1065,7 @@ int test_bidirectional_iteration(void)
     // Add numbers 1-5
     for (int i = 1; i <= 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1145,8 +1103,7 @@ int test_arraylist_iterator_order(void)
     const int values[] = {100, 200, 300, 400, 500};
     for (int i = 0; i < 5; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = values[i];
+        MAKE_INT(data, values[i]);
         ASSERT_EQ(anv_arraylist_push_back(list, data), 0);
     }
 
@@ -1182,8 +1139,7 @@ int test_sort(void)
     for (int i = 0; i < 6; i++)
     {
         const int values[] = {5, 2, 8, 1, 9, 3};
-        int* val = malloc(sizeof(int));
-        *val = values[i];
+        MAKE_INT(val, values[i]);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1220,8 +1176,7 @@ int test_sort_single_element(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* val = malloc(sizeof(int));
-    *val = 42;
+    MAKE_INT(val, 42);
     anv_arraylist_push_back(list, val);
 
     ASSERT_EQ(anv_arraylist_sort(list, int_cmp), 0);
@@ -1240,8 +1195,7 @@ int test_sort_already_sorted(void)
     // Add already sorted elements
     for (int i = 1; i <= 10; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1266,8 +1220,7 @@ int test_sort_reverse_sorted(void)
     // Add reverse sorted elements
     for (int i = 10; i >= 1; i--)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1292,8 +1245,7 @@ int test_reverse(void)
     // Add elements 1, 2, 3, 4, 5
     for (int i = 1; i <= 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1329,8 +1281,7 @@ int test_reverse_single_element(void)
     ANVAllocator alloc = create_int_allocator();
     ANVArrayList* list = anv_arraylist_create(&alloc, 0);
 
-    int* val = malloc(sizeof(int));
-    *val = 42;
+    MAKE_INT(val, 42);
     anv_arraylist_push_back(list, val);
 
     ASSERT_EQ(anv_arraylist_reverse(list), 0);
@@ -1349,8 +1300,7 @@ int test_filter(void)
     // Add numbers 1-10
     for (int i = 1; i <= 10; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1381,8 +1331,7 @@ int test_filter_deep(void)
     // Add numbers 1-10
     for (int i = 1; i <= 10; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1432,8 +1381,7 @@ int test_transform(void)
     // Add numbers 1-5
     for (int i = 1; i <= 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1464,8 +1412,7 @@ int test_for_each(void)
     // Add numbers 1-5
     for (int i = 1; i <= 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1493,10 +1440,8 @@ int test_reserve(void)
     ASSERT_EQ(anv_arraylist_size(list), 0);
 
     // Add some elements
-    int* a = malloc(sizeof(int));
-    *a = 1;
-    int* b = malloc(sizeof(int));
-    *b = 2;
+    MAKE_INT(a, 1);
+    MAKE_INT(b, 2);
     anv_arraylist_push_back(list, a);
     anv_arraylist_push_back(list, b);
 
@@ -1528,8 +1473,7 @@ int test_shrink_to_fit(void)
     // Add some elements (less than capacity)
     for (int i = 0; i < 10; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1574,8 +1518,7 @@ int test_growth_pattern(void)
     // Test automatic growth
     for (int i = 0; i < 100; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
 
         const size_t current_capacity = anv_arraylist_capacity(list);
@@ -1623,8 +1566,7 @@ int test_large_capacity(void)
     // Fill it up
     for (int i = 0; i < 1000; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1647,8 +1589,7 @@ int test_memory_cleanup_on_destroy(void)
     // Add elements
     for (int i = 0; i < 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1667,8 +1608,7 @@ int test_memory_cleanup_on_clear(void)
     // Add elements
     for (int i = 0; i < 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
     }
 
@@ -1692,8 +1632,7 @@ int test_capacity_consistency(void)
     // Capacity should always be >= size
     for (int i = 0; i < 50; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
 
         ASSERT_GTE(anv_arraylist_capacity(list), anv_arraylist_size(list));
@@ -1726,10 +1665,8 @@ int test_equals(void)
     // Add same elements to both
     for (int i = 1; i <= 3; i++)
     {
-        int* val1 = malloc(sizeof(int));
-        int* val2 = malloc(sizeof(int));
-        *val1 = i;
-        *val2 = i;
+        MAKE_INT(val1, i);
+        MAKE_INT(val2, i);
         anv_arraylist_push_back(list1, val1);
         anv_arraylist_push_back(list2, val2);
     }
@@ -1737,8 +1674,7 @@ int test_equals(void)
     ASSERT_EQ(anv_arraylist_equals(list1, list2, int_cmp), 1);
 
     // Add different element to list2
-    int* val = malloc(sizeof(int));
-    *val = 99;
+    MAKE_INT(val, 99);
     anv_arraylist_push_back(list2, val);
 
     ASSERT_EQ(anv_arraylist_equals(list1, list2, int_cmp), 0);
@@ -1754,12 +1690,9 @@ int test_equals_different_sizes(void)
     ANVArrayList* list1 = anv_arraylist_create(&alloc, 0);
     ANVArrayList* list2 = anv_arraylist_create(&alloc, 0);
 
-    int* val1 = malloc(sizeof(int));
-    *val1 = 1;
-    int* val2 = malloc(sizeof(int));
-    *val2 = 1;
-    int* val3 = malloc(sizeof(int));
-    *val3 = 2;
+    MAKE_INT(val1, 1);
+    MAKE_INT(val2, 1);
+    MAKE_INT(val3, 2);
 
     anv_arraylist_push_back(list1, val1);
     anv_arraylist_push_back(list2, val2);
@@ -1780,8 +1713,7 @@ int test_copy_shallow(void)
     // Add numbers 1-3
     for (int i = 1; i <= 3; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(original, val);
     }
 
@@ -1809,8 +1741,7 @@ int test_copy_deep(void)
     // Add numbers 1-3
     for (int i = 1; i <= 3; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(original, val);
     }
 
@@ -1845,8 +1776,7 @@ int test_boundary_conditions(void)
     ASSERT_EQ(anv_arraylist_pop_front(list, false), -1);
 
     // Test invalid indices
-    int* val = malloc(sizeof(int));
-    *val = 42;
+    MAKE_INT(val, 42);
     anv_arraylist_push_back(list, val);
 
     ASSERT_NULL(anv_arraylist_get(list, 1));
@@ -1889,8 +1819,7 @@ int test_size_consistency(void)
     // Add elements and verify size
     for (int i = 0; i < 10; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_arraylist_push_back(list, val);
         ASSERT_EQ(anv_arraylist_size(list), (size_t)i + 1);
         ASSERT(!anv_arraylist_is_empty(list));
@@ -1923,14 +1852,12 @@ int test_data_integrity_after_operations(void)
     // Add initial data
     for (int i = 0; i < 10; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i * 10; // 0, 10, 20, ..., 90
+        MAKE_INT(val, i * 10); // 0, 10, 20, ..., 90
         anv_arraylist_push_back(list, val);
     }
 
     // Insert in middle
-    int* val = malloc(sizeof(int));
-    *val = 99;
+    MAKE_INT(val, 99);
     anv_arraylist_insert(list, 5, val);
 
     // Verify data integrity
@@ -1967,8 +1894,7 @@ int test_large_data_set(void)
     // Add large number of elements
     for (int i = 0; i < NUM_ELEMENTS; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         ASSERT_EQ(anv_arraylist_push_back(list, val), 0);
     }
 
@@ -1993,94 +1919,191 @@ int test_large_data_set(void)
 }
 
 //==============================================================================
-// Main - Combined Test Runner (71 tests total)
+// Fuzz Tests
+//==============================================================================
+
+int test_arraylist_fuzz(void)
+{
+    srand((unsigned int)42); // Deterministic seed for reproducibility
+    ANVAllocator alloc = create_int_allocator();
+    ANVArrayList* list = anv_arraylist_create(&alloc, 0);
+    ASSERT_NOT_NULL(list);
+
+    size_t expected_size = 0;
+
+    for (int i = 0; i < 100000; i++)
+    {
+        const unsigned op = rand() % 6;
+
+        switch (op)
+        {
+            case 0: // push_back
+            {
+                MAKE_INT(val, rand());
+                if (anv_arraylist_push_back(list, val) == 0)
+                    expected_size++;
+                else
+                    free(val);
+                break;
+            }
+            case 1: // push_front
+            {
+                MAKE_INT(val, rand());
+                if (anv_arraylist_push_front(list, val) == 0)
+                    expected_size++;
+                else
+                    free(val);
+                break;
+            }
+            case 2: // pop_back
+            {
+                if (expected_size > 0)
+                {
+                    if (anv_arraylist_pop_back(list, true) == 0)
+                        expected_size--;
+                }
+                break;
+            }
+            case 3: // pop_front
+            {
+                if (expected_size > 0)
+                {
+                    if (anv_arraylist_pop_front(list, true) == 0)
+                        expected_size--;
+                }
+                break;
+            }
+            case 4: // get random index
+            {
+                if (expected_size > 0)
+                {
+                    const size_t idx = rand() % expected_size;
+                    void* data = anv_arraylist_get(list, idx);
+                    ASSERT_NOT_NULL(data);
+                }
+                // Out of bounds should return NULL
+                ASSERT_NULL(anv_arraylist_get(list, expected_size + 1));
+                break;
+            }
+            case 5: // insert at random position
+            {
+                if (expected_size > 0)
+                {
+                    const size_t idx = rand() % expected_size;
+                    MAKE_INT(val, rand());
+                    if (anv_arraylist_insert(list, idx, val) == 0)
+                        expected_size++;
+                    else
+                        free(val);
+                }
+                break;
+            }
+            default:
+                break;
+        }
+
+        // Invariant: size must always match our tracking
+        ASSERT_EQ(anv_arraylist_size(list), expected_size);
+        ASSERT_EQ(anv_arraylist_is_empty(list), expected_size == 0 ? 1 : 0);
+    }
+
+    anv_arraylist_destroy(list, true);
+    return TEST_SUCCESS;
+}
+
+//==============================================================================
+// Main
 //==============================================================================
 
 int main(void)
 {
     const ANVTestCase tests[] = {
-        // CRUD Tests (12)
-        {test_create_destroy, "test_create_destroy"},
-        {test_create_with_capacity, "test_create_with_capacity"},
-        {test_push_back, "test_push_back"},
-        {test_push_front, "test_push_front"},
-        {test_insert_at, "test_insert_at"},
-        {test_get_set, "test_get_set"},
-        {test_front_back, "test_front_back"},
-        {test_remove_at, "test_remove_at"},
-        {test_pop_back_front, "test_pop_back_front"},
-        {test_find, "test_find"},
-        {test_remove, "test_remove"},
-        {test_clear, "test_clear"},
+        // CRUD Tests
+        TEST_REGISTER(test_create_destroy),
+        TEST_REGISTER(test_create_with_capacity),
+        TEST_REGISTER(test_push_back),
+        TEST_REGISTER(test_push_front),
+        TEST_REGISTER(test_insert_at),
+        TEST_REGISTER(test_get),
+        TEST_REGISTER(test_set),
+        TEST_REGISTER(test_front_back),
+        TEST_REGISTER(test_remove_at),
+        TEST_REGISTER(test_pop_back_front),
+        TEST_REGISTER(test_find),
+        TEST_REGISTER(test_remove),
+        TEST_REGISTER(test_clear),
 
-        // Boundary Tests (10)
-        {test_single_element_lifecycle, "test_single_element_lifecycle"},
-        {test_insert_at_boundaries, "test_insert_at_boundaries"},
-        {test_get_out_of_bounds, "test_get_out_of_bounds"},
-        {test_remove_at_boundaries, "test_remove_at_boundaries"},
-        {test_pop_empty_list, "test_pop_empty_list"},
-        {test_clear_empty_list, "test_clear_empty_list"},
-        {test_front_back_empty, "test_front_back_empty"},
-        {test_capacity_growth, "test_capacity_growth"},
-        {test_null_data, "test_null_data"},
-        {test_null_list_operations, "test_null_list_operations"},
+        // Boundary Tests
+        TEST_REGISTER(test_single_element_lifecycle),
+        TEST_REGISTER(test_insert_at_boundaries),
+        TEST_REGISTER(test_get_out_of_bounds),
+        TEST_REGISTER(test_remove_at_boundaries),
+        TEST_REGISTER(test_pop_empty_list),
+        TEST_REGISTER(test_clear_empty_list),
+        TEST_REGISTER(test_front_back_empty),
+        TEST_REGISTER(test_capacity_growth),
+        TEST_REGISTER(test_null_data),
+        TEST_REGISTER(test_null_list_operations),
 
-        // Iterator Tests (18)
-        {test_forward_iterator, "test_forward_iterator"},
-        {test_reverse_iterator, "test_reverse_iterator"},
-        {test_iterator_get, "test_iterator_get"},
-        {test_iterator_prev, "test_iterator_prev"},
-        {test_iterator_reset, "test_iterator_reset"},
-        {test_iterator_empty_list, "test_iterator_empty_list"},
-        {test_iterator_single_element, "test_iterator_single_element"},
-        {test_from_iterator, "test_from_iterator"},
-        {test_iterator_invalid, "test_iterator_invalid"},
-        {test_iterator_modification, "test_iterator_modification"},
-        {test_arraylist_copy_isolation, "test_arraylist_copy_isolation"},
-        {test_arraylist_anv_copy_function_required, "test_arraylist_anv_copy_function_required"},
-        {test_arraylist_from_iterator_no_copy, "test_arraylist_from_iterator_no_copy"},
-        {test_iterator_exhaustion_after_arraylist_creation, "test_iterator_exhaustion_after_arraylist_creation"},
-        {test_arraylist_iterator_next_return_values, "test_arraylist_iterator_next_return_values"},
-        {test_arraylist_iterator_mixed_operations, "test_arraylist_iterator_mixed_operations"},
-        {test_bidirectional_iteration, "test_bidirectional_iteration"},
-        {test_arraylist_iterator_order, "test_arraylist_iterator_order"},
+        // Iterator Tests
+        TEST_REGISTER(test_forward_iterator),
+        TEST_REGISTER(test_reverse_iterator),
+        TEST_REGISTER(test_iterator_get),
+        TEST_REGISTER(test_iterator_prev),
+        TEST_REGISTER(test_iterator_reset),
+        TEST_REGISTER(test_iterator_empty_list),
+        TEST_REGISTER(test_iterator_single_element),
+        TEST_REGISTER(test_from_iterator),
+        TEST_REGISTER(test_iterator_invalid),
+        TEST_REGISTER(test_iterator_modification),
+        TEST_REGISTER(test_arraylist_copy_isolation),
+        TEST_REGISTER(test_arraylist_anv_copy_function_required),
+        TEST_REGISTER(test_arraylist_from_iterator_no_copy),
+        TEST_REGISTER(test_iterator_exhaustion_after_arraylist_creation),
+        TEST_REGISTER(test_arraylist_iterator_next_return_values),
+        TEST_REGISTER(test_arraylist_iterator_mixed_operations),
+        TEST_REGISTER(test_bidirectional_iteration),
+        TEST_REGISTER(test_arraylist_iterator_order),
 
-        // Algorithm Tests (13)
-        {test_sort, "test_sort"},
-        {test_sort_empty, "test_sort_empty"},
-        {test_sort_single_element, "test_sort_single_element"},
-        {test_sort_already_sorted, "test_sort_already_sorted"},
-        {test_sort_reverse_sorted, "test_sort_reverse_sorted"},
-        {test_reverse, "test_reverse"},
-        {test_reverse_empty, "test_reverse_empty"},
-        {test_reverse_single_element, "test_reverse_single_element"},
-        {test_filter, "test_filter"},
-        {test_filter_deep, "test_filter_deep"},
-        {test_filter_deep_empty, "test_filter_deep_empty"},
-        {test_transform, "test_transform"},
-        {test_for_each, "test_for_each"},
+        // Algorithm Tests
+        TEST_REGISTER(test_sort),
+        TEST_REGISTER(test_sort_empty),
+        TEST_REGISTER(test_sort_single_element),
+        TEST_REGISTER(test_sort_already_sorted),
+        TEST_REGISTER(test_sort_reverse_sorted),
+        TEST_REGISTER(test_reverse),
+        TEST_REGISTER(test_reverse_empty),
+        TEST_REGISTER(test_reverse_single_element),
+        TEST_REGISTER(test_filter),
+        TEST_REGISTER(test_filter_deep),
+        TEST_REGISTER(test_filter_deep_empty),
+        TEST_REGISTER(test_transform),
+        TEST_REGISTER(test_for_each),
 
-        // Memory Tests (9)
-        {test_reserve, "test_reserve"},
-        {test_shrink_to_fit, "test_shrink_to_fit"},
-        {test_shrink_empty_list, "test_shrink_empty_list"},
-        {test_growth_pattern, "test_growth_pattern"},
-        {test_memory_allocation_failure, "test_memory_allocation_failure"},
-        {test_large_capacity, "test_large_capacity"},
-        {test_memory_cleanup_on_destroy, "test_memory_cleanup_on_destroy"},
-        {test_memory_cleanup_on_clear, "test_memory_cleanup_on_clear"},
-        {test_capacity_consistency, "test_capacity_consistency"},
+        // Memory Tests
+        TEST_REGISTER(test_reserve),
+        TEST_REGISTER(test_shrink_to_fit),
+        TEST_REGISTER(test_shrink_empty_list),
+        TEST_REGISTER(test_growth_pattern),
+        TEST_REGISTER(test_memory_allocation_failure),
+        TEST_REGISTER(test_large_capacity),
+        TEST_REGISTER(test_memory_cleanup_on_destroy),
+        TEST_REGISTER(test_memory_cleanup_on_clear),
+        TEST_REGISTER(test_capacity_consistency),
 
-        // Properties Tests (9)
-        {test_equals, "test_equals"},
-        {test_equals_different_sizes, "test_equals_different_sizes"},
-        {test_copy_shallow, "test_copy_shallow"},
-        {test_copy_deep, "test_copy_deep"},
-        {test_boundary_conditions, "test_boundary_conditions"},
-        {test_null_parameters, "test_null_parameters"},
-        {test_size_consistency, "test_size_consistency"},
-        {test_data_integrity_after_operations, "test_data_integrity_after_operations"},
-        {test_large_data_set, "test_large_data_set"},
+        // Properties Tests
+        TEST_REGISTER(test_equals),
+        TEST_REGISTER(test_equals_different_sizes),
+        TEST_REGISTER(test_copy_shallow),
+        TEST_REGISTER(test_copy_deep),
+        TEST_REGISTER(test_boundary_conditions),
+        TEST_REGISTER(test_null_parameters),
+        TEST_REGISTER(test_size_consistency),
+        TEST_REGISTER(test_data_integrity_after_operations),
+        TEST_REGISTER(test_large_data_set),
+
+        // Fuzz Tests
+        TEST_REGISTER(test_arraylist_fuzz),
     };
 
     return anv_run_tests("ArrayList", tests, sizeof(tests) / sizeof(tests[0]));

@@ -2,7 +2,6 @@
 // HashMap.c
 //
 
-
 #include <string.h>
 
 #include "hashmap.h"
@@ -71,7 +70,7 @@ static int resize_map(ANVHashMap* map, const size_t new_bucket_count)
     }
 
     ANVHashMapNode** new_buckets = anv_alloc_allocate(&map->alloc,
-                                                    new_bucket_count * sizeof(ANVHashMapNode*));
+                                                      new_bucket_count * sizeof(ANVHashMapNode*));
     if (!new_buckets)
     {
         return -1;
@@ -644,9 +643,12 @@ static void* hashmap_iterator_get(const ANVIterator* it)
 
     state->current_pair = (ANVPair)
     {
-        .first = state->current_node->key,
-        .second = state->current_node->value,
-        .alloc = state->map->alloc
+        .
+        first = state->current_node->key,
+        .
+        second = state->current_node->value,
+        .
+        alloc = state->map->alloc
     };
 
     return &state->current_pair;

@@ -1,12 +1,9 @@
-//
-// Tests for stack frame allocator (memory/stack_frame.h)
-//
-
-#include <string.h>
-#include <stdio.h>
+#include <anvil/testing.h>
 #include "memory/stack_frame.h"
-#include "TestAssert.h"
-#include "TestRunner.h"
+
+//==============================================================================
+// Allocation Tests
+//==============================================================================
 
 int test_stackframe_allocate_basic(void)
 {
@@ -56,16 +53,16 @@ int test_stackframe_allocate_exhaustion(void)
     size_t allocated = 0;
     while (allocated + 256 <= ANV_STACK_FRAME_SIZE)
     {
-        void* p = anv_stackframe_allocate(&frame, 256);
+        const void* p = anv_stackframe_allocate(&frame, 256);
         ASSERT_NOT_NULL(p);
         allocated += 256;
     }
 
     // Allocate remaining space
-    size_t remaining = ANV_STACK_FRAME_SIZE - frame.top;
+    const size_t remaining = ANV_STACK_FRAME_SIZE - frame.top;
     if (remaining > 0)
     {
-        void* p = anv_stackframe_allocate(&frame, remaining);
+        const void* p = anv_stackframe_allocate(&frame, remaining);
         ASSERT_NOT_NULL(p);
     }
 
@@ -93,12 +90,16 @@ int test_stackframe_allocate_null(void)
     return TEST_SUCCESS;
 }
 
+//==============================================================================
+// Deallocation Tests
+//==============================================================================
+
 int test_stackframe_deallocate_lifo(void)
 {
     ANVStackFrame frame = {0};
 
     void* p1 = anv_stackframe_allocate(&frame, 16);
-    size_t top_after_p1 = frame.top;
+    const size_t top_after_p1 = frame.top;
 
     void* p2 = anv_stackframe_allocate(&frame, 32);
     ASSERT_NOT_NULL(p2);
@@ -131,9 +132,9 @@ int test_stackframe_deallocate_out_of_range(void)
     ANVStackFrame frame = {0};
     int dummy = 0;
 
-    void* p1 = anv_stackframe_allocate(&frame, 16);
+    const void* p1 = anv_stackframe_allocate(&frame, 16);
     ASSERT_NOT_NULL(p1);
-    size_t top_before = frame.top;
+    const size_t top_before = frame.top;
 
     // Try to deallocate a pointer outside the frame
     anv_stackframe_deallocate(&frame, &dummy);
@@ -141,6 +142,10 @@ int test_stackframe_deallocate_out_of_range(void)
 
     return TEST_SUCCESS;
 }
+
+//==============================================================================
+// Reset Tests
+//==============================================================================
 
 int test_stackframe_reset(void)
 {
@@ -170,11 +175,15 @@ int test_stackframe_reset_null(void)
     return TEST_SUCCESS;
 }
 
+//==============================================================================
+// Reuse Tests
+//==============================================================================
+
 int test_stackframe_reuse_after_dealloc(void)
 {
     ANVStackFrame frame = {0};
 
-    void* p1 = anv_stackframe_allocate(&frame, 64);
+    const void* p1 = anv_stackframe_allocate(&frame, 64);
     ASSERT_NOT_NULL(p1);
 
     void* p2 = anv_stackframe_allocate(&frame, 64);
@@ -212,21 +221,32 @@ int test_stackframe_many_allocations(void)
     return TEST_SUCCESS;
 }
 
+//==============================================================================
+// Main
+//==============================================================================
+
 int main(void)
 {
     const ANVTestCase tests[] = {
-        {test_stackframe_allocate_basic, "test_stackframe_allocate_basic"},
-        {test_stackframe_allocate_alignment, "test_stackframe_allocate_alignment"},
-        {test_stackframe_allocate_exhaustion, "test_stackframe_allocate_exhaustion"},
-        {test_stackframe_allocate_zero_size, "test_stackframe_allocate_zero_size"},
-        {test_stackframe_allocate_null, "test_stackframe_allocate_null"},
-        {test_stackframe_deallocate_lifo, "test_stackframe_deallocate_lifo"},
-        {test_stackframe_deallocate_null, "test_stackframe_deallocate_null"},
-        {test_stackframe_deallocate_out_of_range, "test_stackframe_deallocate_out_of_range"},
-        {test_stackframe_reset, "test_stackframe_reset"},
-        {test_stackframe_reset_null, "test_stackframe_reset_null"},
-        {test_stackframe_reuse_after_dealloc, "test_stackframe_reuse_after_dealloc"},
-        {test_stackframe_many_allocations, "test_stackframe_many_allocations"},
+        // Allocation
+        TEST_REGISTER(test_stackframe_allocate_basic),
+        TEST_REGISTER(test_stackframe_allocate_alignment),
+        TEST_REGISTER(test_stackframe_allocate_exhaustion),
+        TEST_REGISTER(test_stackframe_allocate_zero_size),
+        TEST_REGISTER(test_stackframe_allocate_null),
+
+        // Deallocation
+        TEST_REGISTER(test_stackframe_deallocate_lifo),
+        TEST_REGISTER(test_stackframe_deallocate_null),
+        TEST_REGISTER(test_stackframe_deallocate_out_of_range),
+
+        // Reset
+        TEST_REGISTER(test_stackframe_reset),
+        TEST_REGISTER(test_stackframe_reset_null),
+
+        // Reuse
+        TEST_REGISTER(test_stackframe_reuse_after_dealloc),
+        TEST_REGISTER(test_stackframe_many_allocations),
     };
 
     return anv_run_tests("StackFrame", tests, sizeof(tests) / sizeof(tests[0]));

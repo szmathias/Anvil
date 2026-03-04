@@ -32,9 +32,9 @@ typedef int (*key_equals_func)(const void* key1, const void* key2);
  */
 typedef struct ANVHashMapNode
 {
-        void* key;                   // Pointer to key data
-        void* value;                 // Pointer to value data
-        struct ANVHashMapNode* next; // Next node in chain
+    void* key;                   // Pointer to key data
+    void* value;                 // Pointer to value data
+    struct ANVHashMapNode* next; // Next node in chain
 } ANVHashMapNode;
 
 /**
@@ -43,13 +43,13 @@ typedef struct ANVHashMapNode
  */
 typedef struct ANVHashMap
 {
-        ANVHashMapNode** buckets;   // Array of bucket heads
-        size_t bucket_count;        // Number of buckets
-        size_t size;                // Number of key-value pairs
-        double max_load_factor;     // Maximum load factor before resize
-        anv_hash_func hash;         // Hash function for keys
-        key_equals_func key_equals; // Key equality function
-        ANVAllocator alloc;         // Custom allocator
+    ANVHashMapNode** buckets;   // Array of bucket heads
+    size_t bucket_count;        // Number of buckets
+    size_t size;                // Number of key-value pairs
+    double max_load_factor;     // Maximum load factor before resize
+    anv_hash_func hash;         // Hash function for keys
+    key_equals_func key_equals; // Key equality function
+    ANVAllocator alloc;         // Custom allocator
 } ANVHashMap;
 
 //==============================================================================

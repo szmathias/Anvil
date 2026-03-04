@@ -19,19 +19,19 @@ extern "C" {
 // Node of doubly linked list
 typedef struct ANVDoublyLinkedNode
 {
-        void* data;                       // Pointer to user data
-        struct ANVDoublyLinkedNode* next; // Pointer to next node
-        struct ANVDoublyLinkedNode* prev; // Pointer to previous node
+    void* data;                       // Pointer to user data
+    struct ANVDoublyLinkedNode* next; // Pointer to next node
+    struct ANVDoublyLinkedNode* prev; // Pointer to previous node
 } ANVDoublyLinkedNode;
 
 // Doubly linked list structure
 typedef struct ANVDoublyLinkedList
 {
-        ANVDoublyLinkedNode* head; // Pointer to first node
-        ANVDoublyLinkedNode* tail; // Pointer to last node
-        size_t size;               // Number of nodes in list
+    ANVDoublyLinkedNode* head; // Pointer to first node
+    ANVDoublyLinkedNode* tail; // Pointer to last node
+    size_t size;               // Number of nodes in list
 
-        ANVAllocator alloc;
+    ANVAllocator alloc;
 } ANVDoublyLinkedList;
 
 //==============================================================================
@@ -44,7 +44,7 @@ typedef struct ANVDoublyLinkedList
  * @param alloc Custom allocator
  * @return Pointer to new DoublyLinkedList, or NULL on failure.
  */
-ANV_API ANVDoublyLinkedList* anv_dll_create(ANVAllocator* alloc);
+ANV_API ANVDoublyLinkedList* anv_dll_create(ANVAllocator * alloc);
 
 /**
  * Destroy the list and free all nodes.

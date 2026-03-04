@@ -1,29 +1,13 @@
-//
-// Consolidated Binary Search Tree tests
-//
-// Merged from:
-//   test_bst_crud.c
-//   test_bst_algorithms.c
-//   test_bst_iterator.c
-//   test_bst_memory.c
-//   test_bst_properties.c
-//
-
-#include <limits.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#include "containers/binarysearchtree.h"
-#include "TestAssert.h"
+#include <anvil/testing.h>
 #include "TestHelpers.h"
-#include "TestRunner.h"
+#include "containers/binarysearchtree.h"
 
 //==============================================================================
-// Helper functions and globals – Algorithms
+// Static Helpers
 //==============================================================================
 
-// Global arrays to collect traversal results
 static int traversal_results[20];
 static int traversal_index;
 
@@ -36,44 +20,28 @@ void collect_int(void* data)
     }
 }
 
-// Reset traversal collection
 void reset_traversal(void)
 {
     traversal_index = 0;
     memset(traversal_results, 0, sizeof(traversal_results));
 }
 
-//==============================================================================
-// Helper functions and globals – Properties
-//==============================================================================
-
-// Global variables for collecting traversal results
 static int invariant_results[11];
 static int invariant_index = 0;
 
 static int desc_results[5];
 static int desc_index = 0;
 
-// Helper functions for collecting traversal results
-void collect_for_invariant(void* elem) {
+void collect_for_invariant(void* elem)
+{
     invariant_results[invariant_index++] = *(int*)elem;
 }
 
-void collect_desc(void* elem) {
+void collect_desc(void* elem)
+{
     desc_results[desc_index++] = *(int*)elem;
 }
 
-//==============================================================================
-// Helper functions – Memory
-//==============================================================================
-
-void print_tree(void* data)
-{
-    if (data)
-    {
-        printf("%d ", *(int*)data);
-    }
-}
 
 //==============================================================================
 // CRUD Tests
@@ -128,12 +96,9 @@ int test_bst_insert(void)
     ANVAllocator alloc = create_int_allocator();
     ANVBinarySearchTree* bst = anv_bst_create(&alloc, int_cmp);
 
-    int* data1 = malloc(sizeof(int));
-    int* data2 = malloc(sizeof(int));
-    int* data3 = malloc(sizeof(int));
-    *data1 = 50;
-    *data2 = 30;
-    *data3 = 70;
+    MAKE_INT(data1, 50);
+    MAKE_INT(data2, 30);
+    MAKE_INT(data3, 70);
 
     // Test inserting root
     ASSERT_EQ(anv_bst_insert(bst, data1), 0);
@@ -152,10 +117,9 @@ int test_bst_insert(void)
     ASSERT_EQ(anv_bst_height(bst), 2);
 
     // Test duplicate insertion
-    int* duplicate = malloc(sizeof(int));
-    *duplicate = 50;
+    MAKE_INT(duplicate, 50);
     ASSERT_EQ(anv_bst_insert(bst, duplicate), 1); // Should return 1 for duplicate
-    ASSERT_EQ(anv_bst_size(bst), 3); // Size should not change
+    ASSERT_EQ(anv_bst_size(bst), 3);              // Size should not change
     free(duplicate);
 
     // Test NULL data insertion
@@ -294,8 +258,7 @@ int test_bst_clear(void)
     // Add some elements
     for (int i = 0; i < 10; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_bst_insert(bst, data), 0);
     }
 
@@ -311,8 +274,7 @@ int test_bst_clear(void)
     ASSERT_NULL(anv_bst_max(bst));
 
     // Tree should still be usable after clear
-    int* new_data = malloc(sizeof(int));
-    *new_data = 999;
+    MAKE_INT(new_data, 999);
     ASSERT_EQ(anv_bst_insert(bst, new_data), 0);
     ASSERT_EQ(anv_bst_size(bst), 1);
     ASSERT_EQ(*(int*)anv_bst_min(bst), 999);
@@ -407,7 +369,7 @@ int test_bst_inorder_traversal(void)
     for (int i = 0; i < 7; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -439,7 +401,7 @@ int test_bst_preorder_traversal(void)
     for (int i = 0; i < 7; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -471,7 +433,7 @@ int test_bst_postorder_traversal(void)
     for (int i = 0; i < 7; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -519,8 +481,7 @@ int test_bst_traversal_single_node(void)
     ANVAllocator alloc = create_int_allocator();
     ANVBinarySearchTree* bst = anv_bst_create(&alloc, int_cmp);
 
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
     ASSERT_EQ(anv_bst_insert(bst, data), 0);
 
     // All traversals should visit the single node
@@ -549,8 +510,7 @@ int test_bst_traversal_null_params(void)
     ANVAllocator alloc = create_int_allocator();
     ANVBinarySearchTree* bst = anv_bst_create(&alloc, int_cmp);
 
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
     ASSERT_EQ(anv_bst_insert(bst, data), 0);
 
     // Test with NULL tree
@@ -586,7 +546,7 @@ int test_bst_traversal_linear(void)
     for (int i = 0; i < 5; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -634,7 +594,7 @@ int test_bst_traversal_after_removal(void)
     for (int i = 0; i < 9; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -684,7 +644,7 @@ int test_bst_iterator_inorder(void)
     for (int i = 0; i < 7; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -725,7 +685,7 @@ int test_bst_iterator_preorder(void)
     for (int i = 0; i < 7; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -766,7 +726,7 @@ int test_bst_iterator_postorder(void)
     for (int i = 0; i < 7; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -816,8 +776,7 @@ int test_bst_iterator_single_node(void)
     ANVAllocator alloc = create_int_allocator();
     ANVBinarySearchTree* bst = anv_bst_create(&alloc, int_cmp);
 
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
     ASSERT_EQ(anv_bst_insert(bst, data), 0);
 
     // Test all iterator types
@@ -858,7 +817,7 @@ int test_bst_iterator_reset(void)
     for (int i = 0; i < 3; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -898,8 +857,7 @@ int test_bst_iterator_backward(void)
     ANVAllocator alloc = create_int_allocator();
     ANVBinarySearchTree* bst = anv_bst_create(&alloc, int_cmp);
 
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
     ASSERT_EQ(anv_bst_insert(bst, data), 0);
 
     ANVIterator it = anv_bst_iterator(bst);
@@ -920,13 +878,13 @@ int test_bst_from_iterator(void)
     ANVBinarySearchTree* source_bst = anv_bst_create(&alloc, int_cmp);
 
     // Create source tree with known values
-    int values[] = {50, 30, 70, 20, 40};
+    const int values[] = {50, 30, 70, 20, 40};
     int* data[5];
 
     for (int i = 0; i < 5; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(source_bst, data[i]), 0);
     }
 
@@ -955,7 +913,7 @@ int test_bst_iterator_null_params(void)
     ANVAllocator alloc = create_int_allocator();
 
     // Test creating iterator with NULL tree
-    ANVIterator it = anv_bst_iterator(NULL);
+    const ANVIterator it = anv_bst_iterator(NULL);
     ASSERT(!it.is_valid(&it));
 
     // Test anv_bst_from_iterator with NULL parameters
@@ -985,7 +943,7 @@ int test_bst_iterator_complex(void)
     for (int i = 0; i < 11; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -998,7 +956,7 @@ int test_bst_iterator_complex(void)
     {
         void* current = it.get(&it);
         ASSERT_NOT_NULL(current);
-        int curr_value = *(int*)current;
+        const int curr_value = *(int*)current;
 
         // Verify sorted order
         ASSERT(curr_value > prev_value);
@@ -1029,8 +987,7 @@ int test_bst_custom_allocator(void)
     // Insert some data
     for (int i = 0; i < 10; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_bst_insert(bst, data), 0);
     }
 
@@ -1071,8 +1028,7 @@ int test_bst_clear_memory(void)
     // Insert dynamically allocated data
     for (int i = 0; i < 5; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_bst_insert(bst, data), 0);
     }
 
@@ -1086,8 +1042,7 @@ int test_bst_clear_memory(void)
     // Insert more data
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i + 100;
+        MAKE_INT(data, i + 100);
         ASSERT_EQ(anv_bst_insert(bst, data), 0);
     }
 
@@ -1107,20 +1062,20 @@ int test_bst_remove_memory(void)
     for (int i = 0; i < 5; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = (i + 1) * 10;
+        *data[i] = (i + 1) * 10;
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
     ASSERT_EQ(anv_bst_size(bst), 5);
 
     // Remove with freeing data
-    int remove_val = 30;
+    const int remove_val = 30;
     ASSERT_EQ(anv_bst_remove(bst, &remove_val, true), 0);
     ASSERT_EQ(anv_bst_size(bst), 4);
     ASSERT(!anv_bst_contains(bst, &remove_val));
 
     // Remove without freeing data (for static reference)
-    int static_val = 20;
+    const int static_val = 20;
     ASSERT_EQ(anv_bst_remove(bst, &static_val, true), 0);
     ASSERT_EQ(anv_bst_size(bst), 3);
 
@@ -1139,8 +1094,7 @@ int test_bst_large_dataset(void)
     // Insert large number of elements
     for (int i = 0; i < NUM_ELEMENTS; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_bst_insert(bst, data), 0);
     }
 
@@ -1200,8 +1154,7 @@ int test_bst_iterator_memory(void)
     // Insert data
     for (int i = 0; i < 10; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_bst_insert(bst, data), 0);
     }
 
@@ -1215,17 +1168,20 @@ int test_bst_iterator_memory(void)
     ASSERT(it3.is_valid(&it3));
 
     // Use iterators briefly
-    if (it1.has_next(&it1)) {
+    if (it1.has_next(&it1))
+    {
         it1.get(&it1);
         it1.next(&it1);
     }
 
-    if (it2.has_next(&it2)) {
+    if (it2.has_next(&it2))
+    {
         it2.get(&it2);
         it2.next(&it2);
     }
 
-    if (it3.has_next(&it3)) {
+    if (it3.has_next(&it3))
+    {
         it3.get(&it3);
         it3.next(&it3);
     }
@@ -1248,8 +1204,7 @@ int test_bst_from_iterator_memory(void)
     // Create source data
     for (int i = 0; i < 5; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_bst_insert(source_bst, data), 0);
     }
 
@@ -1281,8 +1236,7 @@ int test_bst_memory_edge_cases(void)
     ANVBinarySearchTree* bst = anv_bst_create(&alloc, int_cmp);
 
     // Test with single element
-    int* single_data = malloc(sizeof(int));
-    *single_data = 42;
+    MAKE_INT(single_data, 42);
     ASSERT_EQ(anv_bst_insert(bst, single_data), 0);
 
     // Clear and verify empty
@@ -1290,8 +1244,7 @@ int test_bst_memory_edge_cases(void)
     ASSERT(anv_bst_is_empty(bst));
 
     // Insert again after clear
-    int* new_data = malloc(sizeof(int));
-    *new_data = 100;
+    MAKE_INT(new_data, 100);
     ASSERT_EQ(anv_bst_insert(bst, new_data), 0);
     ASSERT_EQ(anv_bst_size(bst), 1);
 
@@ -1310,8 +1263,7 @@ int test_bst_destruction_states(void)
 
     // Test destroying single node tree
     ANVBinarySearchTree* single_bst = anv_bst_create(&alloc, int_cmp);
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
     anv_bst_insert(single_bst, data);
     anv_bst_destroy(single_bst, true);
 
@@ -1319,8 +1271,7 @@ int test_bst_destruction_states(void)
     ANVBinarySearchTree* cleared_bst = anv_bst_create(&alloc, int_cmp);
     for (int i = 0; i < 5; i++)
     {
-        int* val = malloc(sizeof(int));
-        *val = i;
+        MAKE_INT(val, i);
         anv_bst_insert(cleared_bst, val);
     }
     anv_bst_clear(cleared_bst, true);
@@ -1346,7 +1297,7 @@ int test_bst_invariant_property(void)
     for (int i = 0; i < 11; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -1357,7 +1308,7 @@ int test_bst_invariant_property(void)
     // Check that results are in ascending order
     for (int i = 1; i < 11; i++)
     {
-        ASSERT(invariant_results[i-1] < invariant_results[i]);
+        ASSERT(invariant_results[i - 1] < invariant_results[i]);
     }
 
     anv_bst_destroy(bst, true);
@@ -1374,26 +1325,22 @@ int test_bst_height_calculation(void)
     ASSERT_EQ(anv_bst_height(bst), 0);
 
     // Single node tree
-    int* data1 = malloc(sizeof(int));
-    *data1 = 50;
+    MAKE_INT(data1, 50);
     anv_bst_insert(bst, data1);
     ASSERT_EQ(anv_bst_height(bst), 1);
 
     // Add left child - height should be 2
-    int* data2 = malloc(sizeof(int));
-    *data2 = 30;
+    MAKE_INT(data2, 30);
     anv_bst_insert(bst, data2);
     ASSERT_EQ(anv_bst_height(bst), 2);
 
     // Add right child - height still 2
-    int* data3 = malloc(sizeof(int));
-    *data3 = 70;
+    MAKE_INT(data3, 70);
     anv_bst_insert(bst, data3);
     ASSERT_EQ(anv_bst_height(bst), 2);
 
     // Add deeper left node - height becomes 3
-    int* data4 = malloc(sizeof(int));
-    *data4 = 20;
+    MAKE_INT(data4, 20);
     anv_bst_insert(bst, data4);
     ASSERT_EQ(anv_bst_height(bst), 3);
 
@@ -1410,8 +1357,7 @@ int test_bst_degenerate_tree(void)
     // Insert in ascending order to create right-skewed tree
     for (int i = 1; i <= 10; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_bst_insert(bst, data), 0);
     }
 
@@ -1443,7 +1389,7 @@ int test_bst_perfect_tree(void)
     for (int i = 0; i < 7; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -1464,12 +1410,9 @@ int test_bst_duplicate_handling(void)
     ANVAllocator alloc = create_int_allocator();
     ANVBinarySearchTree* bst = anv_bst_create(&alloc, int_cmp);
 
-    int* data1 = malloc(sizeof(int));
-    int* data2 = malloc(sizeof(int));
-    int* data3 = malloc(sizeof(int));
-    *data1 = 50;
-    *data2 = 50; // Duplicate
-    *data3 = 50; // Another duplicate
+    MAKE_INT(data1, 50);
+    MAKE_INT(data2, 50); // Duplicate
+    MAKE_INT(data3, 50); // Another duplicate
 
     // First insert should succeed
     ASSERT_EQ(anv_bst_insert(bst, data1), 0);
@@ -1496,13 +1439,13 @@ int test_bst_negative_numbers(void)
     ANVAllocator alloc = create_int_allocator();
     ANVBinarySearchTree* bst = anv_bst_create(&alloc, int_cmp);
 
-    int values[] = {0, -10, 10, -5, 5, -15, 15};
+    const int values[] = {0, -10, 10, -5, 5, -15, 15};
     int* data[7];
 
     for (int i = 0; i < 7; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -1527,8 +1470,7 @@ int test_bst_root_removal_cases(void)
 
     // Case 1: Root with no children
     ANVBinarySearchTree* bst1 = anv_bst_create(&alloc, int_cmp);
-    int* root1 = malloc(sizeof(int));
-    *root1 = 50;
+    MAKE_INT(root1, 50);
     anv_bst_insert(bst1, root1);
 
     int remove_val = 50;
@@ -1539,10 +1481,8 @@ int test_bst_root_removal_cases(void)
 
     // Case 2: Root with only left child
     ANVBinarySearchTree* bst2 = anv_bst_create(&alloc, int_cmp);
-    int* root2 = malloc(sizeof(int));
-    int* left2 = malloc(sizeof(int));
-    *root2 = 50;
-    *left2 = 30;
+    MAKE_INT(root2, 50);
+    MAKE_INT(left2, 30);
     anv_bst_insert(bst2, root2);
     anv_bst_insert(bst2, left2);
 
@@ -1554,10 +1494,8 @@ int test_bst_root_removal_cases(void)
 
     // Case 3: Root with only right child
     ANVBinarySearchTree* bst3 = anv_bst_create(&alloc, int_cmp);
-    int* root3 = malloc(sizeof(int));
-    int* right3 = malloc(sizeof(int));
-    *root3 = 50;
-    *right3 = 70;
+    MAKE_INT(root3, 50);
+    MAKE_INT(right3, 70);
     anv_bst_insert(bst3, root3);
     anv_bst_insert(bst3, right3);
 
@@ -1603,14 +1541,14 @@ int test_bst_complex_operations(void)
     for (int i = 0; i < 11; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = initial_values[i];
+        *data[i] = initial_values[i];
         anv_bst_insert(bst, data[i]);
     }
 
     ASSERT_EQ(anv_bst_size(bst), 11);
 
     // Remove some leaf nodes
-    int remove_values[] = {10, 45, 25};
+    const int remove_values[] = {10, 45, 25};
     for (int i = 0; i < 3; i++)
     {
         ASSERT_EQ(anv_bst_remove(bst, &remove_values[i], true), 0);
@@ -1624,7 +1562,7 @@ int test_bst_complex_operations(void)
     for (int i = 0; i < 3; i++)
     {
         new_data[i] = malloc(sizeof(int));
-        *(new_data[i]) = new_values[i];
+        *new_data[i] = new_values[i];
         ASSERT_EQ(anv_bst_insert(bst, new_data[i]), 0);
     }
 
@@ -1650,7 +1588,7 @@ int test_bst_custom_comparison(void)
     for (int i = 0; i < 5; i++)
     {
         data[i] = malloc(sizeof(int));
-        *(data[i]) = values[i];
+        *data[i] = values[i];
         ASSERT_EQ(anv_bst_insert(bst, data[i]), 0);
     }
 
@@ -1665,7 +1603,7 @@ int test_bst_custom_comparison(void)
     // Should be in descending order: 80, 70, 50, 30, 20
     for (int i = 1; i < 5; i++)
     {
-        ASSERT(desc_results[i-1] > desc_results[i]);
+        ASSERT(desc_results[i - 1] > desc_results[i]);
     }
 
     anv_bst_destroy(bst, true);
@@ -1679,12 +1617,9 @@ int test_bst_boundary_conditions(void)
     ANVBinarySearchTree* bst = anv_bst_create(&alloc, int_cmp);
 
     // Test with extreme values
-    int* min_int = malloc(sizeof(int));
-    int* max_int = malloc(sizeof(int));
-    int* zero = malloc(sizeof(int));
-    *min_int = INT_MIN;
-    *max_int = INT_MAX;
-    *zero = 0;
+    MAKE_INT(min_int, INT_MIN);
+    MAKE_INT(max_int, INT_MAX);
+    MAKE_INT(zero, 0);
 
     ASSERT_EQ(anv_bst_insert(bst, zero), 0);
     ASSERT_EQ(anv_bst_insert(bst, min_int), 0);
@@ -1704,69 +1639,210 @@ int test_bst_boundary_conditions(void)
 }
 
 //==============================================================================
-// Test runner
+// Fuzz Tests
 //==============================================================================
 
-const ANVTestCase tests[] = {
-    // CRUD Tests (9)
-    {test_bst_create_destroy, "test_bst_create_destroy"},
-    {test_bst_null_parameters, "test_bst_null_parameters"},
-    {test_bst_insert, "test_bst_insert"},
-    {test_bst_contains, "test_bst_contains"},
-    {test_bst_min_max, "test_bst_min_max"},
-    {test_bst_remove, "test_bst_remove"},
-    {test_bst_clear, "test_bst_clear"},
-    {test_bst_property, "test_bst_property"},
-    {test_bst_string_data, "test_bst_string_data"},
+// Helper: verify BST ordering invariant via in-order traversal
+static int fuzz_inorder_results[2000];
+static int fuzz_inorder_index;
 
-    // Algorithms Tests (8)
-    {test_bst_inorder_traversal, "test_bst_inorder_traversal"},
-    {test_bst_preorder_traversal, "test_bst_preorder_traversal"},
-    {test_bst_postorder_traversal, "test_bst_postorder_traversal"},
-    {test_bst_traversal_empty, "test_bst_traversal_empty"},
-    {test_bst_traversal_single_node, "test_bst_traversal_single_node"},
-    {test_bst_traversal_null_params, "test_bst_traversal_null_params"},
-    {test_bst_traversal_linear, "test_bst_traversal_linear"},
-    {test_bst_traversal_after_removal, "test_bst_traversal_after_removal"},
+static void fuzz_collect_inorder(void* data)
+{
+    if (data && fuzz_inorder_index < 2000)
+    {
+        fuzz_inorder_results[fuzz_inorder_index++] = *(int*)data;
+    }
+}
 
-    // Iterator Tests (10)
-    {test_bst_iterator_inorder, "test_bst_iterator_inorder"},
-    {test_bst_iterator_preorder, "test_bst_iterator_preorder"},
-    {test_bst_iterator_postorder, "test_bst_iterator_postorder"},
-    {test_bst_iterator_empty, "test_bst_iterator_empty"},
-    {test_bst_iterator_single_node, "test_bst_iterator_single_node"},
-    {test_bst_iterator_reset, "test_bst_iterator_reset"},
-    {test_bst_iterator_backward, "test_bst_iterator_backward"},
-    {test_bst_from_iterator, "test_bst_from_iterator"},
-    {test_bst_iterator_null_params, "test_bst_iterator_null_params"},
-    {test_bst_iterator_complex, "test_bst_iterator_complex"},
+static int verify_bst_sorted(const ANVBinarySearchTree* bst)
+{
+    fuzz_inorder_index = 0;
+    memset(fuzz_inorder_results, 0, sizeof(fuzz_inorder_results));
+    anv_bst_inorder(bst, fuzz_collect_inorder);
+    for (int i = 1; i < fuzz_inorder_index; i++)
+    {
+        if (fuzz_inorder_results[i] < fuzz_inorder_results[i - 1])
+            return 0; // Not sorted
+    }
+    return 1;
+}
 
-    // Memory Tests (10)
-    {test_bst_custom_allocator, "test_bst_custom_allocator"},
-    {test_bst_no_free_data, "test_bst_no_free_data"},
-    {test_bst_clear_memory, "test_bst_clear_memory"},
-    {test_bst_remove_memory, "test_bst_remove_memory"},
-    {test_bst_large_dataset, "test_bst_large_dataset"},
-    {test_bst_person_memory, "test_bst_person_memory"},
-    {test_bst_iterator_memory, "test_bst_iterator_memory"},
-    {test_bst_from_iterator_memory, "test_bst_from_iterator_memory"},
-    {test_bst_memory_edge_cases, "test_bst_memory_edge_cases"},
-    {test_bst_destruction_states, "test_bst_destruction_states"},
+int test_bst_fuzz(void)
+{
+    srand((unsigned int)42);
+    ANVAllocator alloc = create_int_allocator();
+    ANVBinarySearchTree* bst = anv_bst_create(&alloc, int_cmp);
+    ASSERT_NOT_NULL(bst);
 
-    // Properties Tests (10)
-    {test_bst_invariant_property, "test_bst_invariant_property"},
-    {test_bst_height_calculation, "test_bst_height_calculation"},
-    {test_bst_degenerate_tree, "test_bst_degenerate_tree"},
-    {test_bst_perfect_tree, "test_bst_perfect_tree"},
-    {test_bst_duplicate_handling, "test_bst_duplicate_handling"},
-    {test_bst_negative_numbers, "test_bst_negative_numbers"},
-    {test_bst_root_removal_cases, "test_bst_root_removal_cases"},
-    {test_bst_complex_operations, "test_bst_complex_operations"},
-    {test_bst_custom_comparison, "test_bst_custom_comparison"},
-    {test_bst_boundary_conditions, "test_bst_boundary_conditions"},
-};
+    size_t expected_size = 0;
+
+    for (int i = 0; i < 50000; i++)
+    {
+        const unsigned op = rand() % 3;
+        const int val = rand() % 1000;
+
+        switch (op)
+        {
+            case 0: // insert
+            {
+                MAKE_INT(data, val);
+                const int rc = anv_bst_insert(bst, data);
+                if (rc == 0)
+                    expected_size++;
+                else
+                    free(data); // duplicate or error
+                break;
+            }
+            case 1: // remove
+            {
+                if (anv_bst_contains(bst, &val))
+                {
+                    ASSERT_EQ(anv_bst_remove(bst, &val, true), 0);
+                    expected_size--;
+                }
+                break;
+            }
+            case 2: // contains
+            {
+                anv_bst_contains(bst, &val);
+                break;
+            }
+            default:
+                break;
+        }
+
+        ASSERT_EQ(anv_bst_size(bst), expected_size);
+
+        // Verify BST ordering every 5000 operations
+        if (i % 5000 == 0)
+        {
+            ASSERT_TRUE(verify_bst_sorted(bst));
+            // min <= max when non-empty
+            if (expected_size > 0)
+            {
+                const int* min_v = anv_bst_min(bst);
+                const int* max_v = anv_bst_max(bst);
+                ASSERT_NOT_NULL(min_v);
+                ASSERT_NOT_NULL(max_v);
+                ASSERT_LTE(*min_v, *max_v);
+            }
+        }
+    }
+
+    // Final ordering check
+    ASSERT_TRUE(verify_bst_sorted(bst));
+
+    anv_bst_destroy(bst, true);
+    return TEST_SUCCESS;
+}
+
+//==============================================================================
+// Memory Failure Tests (Step 4 - BST)
+//==============================================================================
+
+int test_bst_failing_allocator_create(void)
+{
+    // Allocation fails immediately - create should fail
+    set_alloc_fail_countdown(0);
+    ANVAllocator failing_alloc = create_failing_int_allocator();
+    ANVBinarySearchTree* bst = anv_bst_create(&failing_alloc, int_cmp);
+    ASSERT_NULL(bst);
+    return TEST_SUCCESS;
+}
+
+int test_bst_failing_allocator_insert(void)
+{
+    ANVAllocator failing_alloc = create_failing_int_allocator();
+
+    // Allow create to succeed, then fail on insert
+    set_alloc_fail_countdown(1);
+    ANVBinarySearchTree* bst = anv_bst_create(&failing_alloc, int_cmp);
+    if (!bst)
+        return TEST_SKIPPED; // Create itself may need >1 alloc
+
+    MAKE_INT(data, 42);
+    const int rc = anv_bst_insert(bst, data);
+    if (rc != 0)
+    {
+        free(data);
+    }
+    // Should not crash regardless of outcome
+
+    anv_bst_destroy(bst, true);
+    return TEST_SUCCESS;
+}
+
+//==============================================================================
+// Main
+//==============================================================================
 
 int main(void)
 {
+    const ANVTestCase tests[] = {
+        // CRUD Tests
+        TEST_REGISTER(test_bst_create_destroy),
+        TEST_REGISTER(test_bst_null_parameters),
+        TEST_REGISTER(test_bst_insert),
+        TEST_REGISTER(test_bst_contains),
+        TEST_REGISTER(test_bst_min_max),
+        TEST_REGISTER(test_bst_remove),
+        TEST_REGISTER(test_bst_clear),
+        TEST_REGISTER(test_bst_property),
+        TEST_REGISTER(test_bst_string_data),
+
+        // Algorithms Tests
+        TEST_REGISTER(test_bst_inorder_traversal),
+        TEST_REGISTER(test_bst_preorder_traversal),
+        TEST_REGISTER(test_bst_postorder_traversal),
+        TEST_REGISTER(test_bst_traversal_empty),
+        TEST_REGISTER(test_bst_traversal_single_node),
+        TEST_REGISTER(test_bst_traversal_null_params),
+        TEST_REGISTER(test_bst_traversal_linear),
+        TEST_REGISTER(test_bst_traversal_after_removal),
+
+        // Iterator Tests
+        TEST_REGISTER(test_bst_iterator_inorder),
+        TEST_REGISTER(test_bst_iterator_preorder),
+        TEST_REGISTER(test_bst_iterator_postorder),
+        TEST_REGISTER(test_bst_iterator_empty),
+        TEST_REGISTER(test_bst_iterator_single_node),
+        TEST_REGISTER(test_bst_iterator_reset),
+        TEST_REGISTER(test_bst_iterator_backward),
+        TEST_REGISTER(test_bst_from_iterator),
+        TEST_REGISTER(test_bst_iterator_null_params),
+        TEST_REGISTER(test_bst_iterator_complex),
+
+        // Memory Tests
+        TEST_REGISTER(test_bst_custom_allocator),
+        TEST_REGISTER(test_bst_no_free_data),
+        TEST_REGISTER(test_bst_clear_memory),
+        TEST_REGISTER(test_bst_remove_memory),
+        TEST_REGISTER(test_bst_large_dataset),
+        TEST_REGISTER(test_bst_person_memory),
+        TEST_REGISTER(test_bst_iterator_memory),
+        TEST_REGISTER(test_bst_from_iterator_memory),
+        TEST_REGISTER(test_bst_memory_edge_cases),
+        TEST_REGISTER(test_bst_destruction_states),
+
+        // Properties Tests
+        TEST_REGISTER(test_bst_invariant_property),
+        TEST_REGISTER(test_bst_height_calculation),
+        TEST_REGISTER(test_bst_degenerate_tree),
+        TEST_REGISTER(test_bst_perfect_tree),
+        TEST_REGISTER(test_bst_duplicate_handling),
+        TEST_REGISTER(test_bst_negative_numbers),
+        TEST_REGISTER(test_bst_root_removal_cases),
+        TEST_REGISTER(test_bst_complex_operations),
+        TEST_REGISTER(test_bst_custom_comparison),
+        TEST_REGISTER(test_bst_boundary_conditions),
+
+        // Fuzz Tests
+        TEST_REGISTER(test_bst_fuzz),
+
+        // Memory Failure Tests
+        TEST_REGISTER(test_bst_failing_allocator_create),
+        TEST_REGISTER(test_bst_failing_allocator_insert),
+    };
+
     return anv_run_tests("BST", tests, sizeof(tests) / sizeof(tests[0]));
 }
