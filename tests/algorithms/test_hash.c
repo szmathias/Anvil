@@ -234,4 +234,3 @@ int main(void)
 
     return anv_run_tests("Hash Functions", tests, sizeof(tests) / sizeof(tests[0]));
 }
-

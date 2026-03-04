@@ -1938,66 +1938,66 @@ int test_arraylist_fuzz(void)
         switch (op)
         {
             case 0: // push_back
-            {
-                MAKE_INT(val, rand());
-                if (anv_arraylist_push_back(list, val) == 0)
-                    expected_size++;
-                else
-                    free(val);
-                break;
-            }
-            case 1: // push_front
-            {
-                MAKE_INT(val, rand());
-                if (anv_arraylist_push_front(list, val) == 0)
-                    expected_size++;
-                else
-                    free(val);
-                break;
-            }
-            case 2: // pop_back
-            {
-                if (expected_size > 0)
                 {
-                    if (anv_arraylist_pop_back(list, true) == 0)
-                        expected_size--;
-                }
-                break;
-            }
-            case 3: // pop_front
-            {
-                if (expected_size > 0)
-                {
-                    if (anv_arraylist_pop_front(list, true) == 0)
-                        expected_size--;
-                }
-                break;
-            }
-            case 4: // get random index
-            {
-                if (expected_size > 0)
-                {
-                    const size_t idx = rand() % expected_size;
-                    void* data = anv_arraylist_get(list, idx);
-                    ASSERT_NOT_NULL(data);
-                }
-                // Out of bounds should return NULL
-                ASSERT_NULL(anv_arraylist_get(list, expected_size + 1));
-                break;
-            }
-            case 5: // insert at random position
-            {
-                if (expected_size > 0)
-                {
-                    const size_t idx = rand() % expected_size;
                     MAKE_INT(val, rand());
-                    if (anv_arraylist_insert(list, idx, val) == 0)
+                    if (anv_arraylist_push_back(list, val) == 0)
                         expected_size++;
                     else
                         free(val);
+                    break;
                 }
-                break;
-            }
+            case 1: // push_front
+                {
+                    MAKE_INT(val, rand());
+                    if (anv_arraylist_push_front(list, val) == 0)
+                        expected_size++;
+                    else
+                        free(val);
+                    break;
+                }
+            case 2: // pop_back
+                {
+                    if (expected_size > 0)
+                    {
+                        if (anv_arraylist_pop_back(list, true) == 0)
+                            expected_size--;
+                    }
+                    break;
+                }
+            case 3: // pop_front
+                {
+                    if (expected_size > 0)
+                    {
+                        if (anv_arraylist_pop_front(list, true) == 0)
+                            expected_size--;
+                    }
+                    break;
+                }
+            case 4: // get random index
+                {
+                    if (expected_size > 0)
+                    {
+                        const size_t idx = rand() % expected_size;
+                        void* data = anv_arraylist_get(list, idx);
+                        ASSERT_NOT_NULL(data);
+                    }
+                    // Out of bounds should return NULL
+                    ASSERT_NULL(anv_arraylist_get(list, expected_size + 1));
+                    break;
+                }
+            case 5: // insert at random position
+                {
+                    if (expected_size > 0)
+                    {
+                        const size_t idx = rand() % expected_size;
+                        MAKE_INT(val, rand());
+                        if (anv_arraylist_insert(list, idx, val) == 0)
+                            expected_size++;
+                        else
+                            free(val);
+                    }
+                    break;
+                }
             default:
                 break;
         }

@@ -1098,13 +1098,14 @@ int test_queue_front_back_consistency(void)
 // Property Tests
 //==============================================================================
 
+#define num_elements 100
 // Test FIFO property extensively
 int test_queue_fifo_property(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVQueue* queue = anv_queue_create(&alloc);
 
-    #define num_elements 100
+
     int* values[num_elements];
 
     // Enqueue elements in order
@@ -1130,6 +1131,7 @@ int test_queue_fifo_property(void)
     anv_queue_destroy(queue, false);
     return TEST_SUCCESS;
 }
+#undef num_elements
 
 // Test queue size consistency
 int test_queue_size_consistency(void)
@@ -1397,37 +1399,37 @@ int test_queue_fuzz(void)
         switch (op)
         {
             case 0: // enqueue
-            {
-                MAKE_INT(val, rand());
-                if (anv_queue_enqueue(queue, val) == 0)
-                    expected_size++;
-                else
-                    free(val);
-                break;
-            }
+                {
+                    MAKE_INT(val, rand());
+                    if (anv_queue_enqueue(queue, val) == 0)
+                        expected_size++;
+                    else
+                        free(val);
+                    break;
+                }
             case 1: // dequeue
-            {
-                if (expected_size > 0)
                 {
-                    if (anv_queue_dequeue(queue, true) == 0)
-                        expected_size--;
+                    if (expected_size > 0)
+                    {
+                        if (anv_queue_dequeue(queue, true) == 0)
+                            expected_size--;
+                    }
+                    break;
                 }
-                break;
-            }
             case 2: // front/back
-            {
-                if (expected_size > 0)
                 {
-                    ASSERT_NOT_NULL(anv_queue_front(queue));
-                    ASSERT_NOT_NULL(anv_queue_back(queue));
+                    if (expected_size > 0)
+                    {
+                        ASSERT_NOT_NULL(anv_queue_front(queue));
+                        ASSERT_NOT_NULL(anv_queue_back(queue));
+                    }
+                    else
+                    {
+                        ASSERT_NULL(anv_queue_front(queue));
+                        ASSERT_NULL(anv_queue_back(queue));
+                    }
+                    break;
                 }
-                else
-                {
-                    ASSERT_NULL(anv_queue_front(queue));
-                    ASSERT_NULL(anv_queue_back(queue));
-                }
-                break;
-            }
             default:
                 break;
         }

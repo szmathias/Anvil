@@ -6,7 +6,6 @@
 #include "common/allocator.h"
 #include "containers/hashset.h"
 
-
 //==============================================================================
 // Constants
 //==============================================================================
@@ -1947,31 +1946,31 @@ int test_hashset_fuzz(void)
         switch (op)
         {
             case 0: // add
-            {
-                MAKE_INT(val, rand() % 500);
-                const int already = anv_hashset_contains(set, val);
-                const int rc = anv_hashset_add(set, val);
-                if (rc == 0 && !already)
-                    expected_size++;
-                else
-                    free(val); // duplicate or failure — free the unused value
-                break;
-            }
+                {
+                    MAKE_INT(val, rand() % 500);
+                    const int already = anv_hashset_contains(set, val);
+                    const int rc = anv_hashset_add(set, val);
+                    if (rc == 0 && !already)
+                        expected_size++;
+                    else
+                        free(val); // duplicate or failure — free the unused value
+                    break;
+                }
             case 1: // remove
-            {
-                int key = rand() % 500;
-                const int had = anv_hashset_contains(set, &key);
-                const int rc = anv_hashset_remove(set, &key, true);
-                if (rc == 0 && had)
-                    expected_size--;
-                break;
-            }
+                {
+                    int key = rand() % 500;
+                    const int had = anv_hashset_contains(set, &key);
+                    const int rc = anv_hashset_remove(set, &key, true);
+                    if (rc == 0 && had)
+                        expected_size--;
+                    break;
+                }
             case 2: // contains
-            {
-                int key = rand() % 500;
-                anv_hashset_contains(set, &key); // exercise, ignore result
-                break;
-            }
+                {
+                    int key = rand() % 500;
+                    anv_hashset_contains(set, &key); // exercise, ignore result
+                    break;
+                }
             default:
                 break;
         }
@@ -2068,4 +2067,3 @@ int main(void)
 
     return anv_run_tests("HashSet", tests, sizeof(tests) / sizeof(tests[0]));
 }
-

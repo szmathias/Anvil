@@ -2430,55 +2430,55 @@ static int test_dll_fuzz(void)
         switch (op)
         {
             case 0: // push_front
-            {
-                MAKE_INT(val, rand());
-                if (anv_dll_push_front(list, val) == 0)
-                    expected_size++;
-                else
-                    free(val);
-                break;
-            }
-            case 1: // push_back
-            {
-                MAKE_INT(val, rand());
-                if (anv_dll_push_back(list, val) == 0)
-                    expected_size++;
-                else
-                    free(val);
-                break;
-            }
-            case 2: // remove front
-            {
-                if (expected_size > 0)
                 {
-                    void* data = list->head->data;
-                    if (anv_dll_remove(list, data, int_cmp, true) == 0)
-                        expected_size--;
-                }
-                break;
-            }
-            case 3: // find random
-            {
-                if (expected_size > 0)
-                {
-                    int key = rand() % 1000;
-                    anv_dll_find(list, &key, int_cmp);
-                }
-                break;
-            }
-            case 4: // insert_at random position
-            {
-                if (expected_size > 0)
-                {
-                    const size_t pos = rand() % expected_size;
                     MAKE_INT(val, rand());
-                    if (anv_dll_insert_at(list, pos, val) == 0)
+                    if (anv_dll_push_front(list, val) == 0)
                         expected_size++;
                     else
                         free(val);
+                    break;
                 }
-                break;
-            }
+            case 1: // push_back
+                {
+                    MAKE_INT(val, rand());
+                    if (anv_dll_push_back(list, val) == 0)
+                        expected_size++;
+                    else
+                        free(val);
+                    break;
+                }
+            case 2: // remove front
+                {
+                    if (expected_size > 0)
+                    {
+                        void* data = list->head->data;
+                        if (anv_dll_remove(list, data, int_cmp, true) == 0)
+                            expected_size--;
+                    }
+                    break;
+                }
+            case 3: // find random
+                {
+                    if (expected_size > 0)
+                    {
+                        int key = rand() % 1000;
+                        anv_dll_find(list, &key, int_cmp);
+                    }
+                    break;
+                }
+            case 4: // insert_at random position
+                {
+                    if (expected_size > 0)
+                    {
+                        const size_t pos = rand() % expected_size;
+                        MAKE_INT(val, rand());
+                        if (anv_dll_insert_at(list, pos, val) == 0)
+                            expected_size++;
+                        else
+                            free(val);
+                    }
+                    break;
+                }
             default:
                 break;
         }

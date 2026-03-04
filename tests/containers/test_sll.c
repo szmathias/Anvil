@@ -6,7 +6,6 @@
 #include "common/allocator.h"
 #include "containers/singlylinkedlist.h"
 
-
 //==============================================================================
 // Test Fixture — empty SLL with int allocator
 //==============================================================================
@@ -20,7 +19,8 @@ typedef struct SLLFixture
 static void* sll_setup(void)
 {
     SLLFixture* f = malloc(sizeof(SLLFixture));
-    if (!f) return NULL;
+    if (!f)
+        return NULL;
     f->alloc = create_int_allocator();
     f->list = anv_sll_create(&f->alloc);
     return f;
@@ -31,7 +31,8 @@ static void sll_teardown(void* ctx)
     SLLFixture* f = ctx;
     if (f)
     {
-        if (f->list) anv_sll_destroy(f->list, true);
+        if (f->list)
+            anv_sll_destroy(f->list, true);
         free(f);
     }
 }
@@ -2202,55 +2203,55 @@ int test_sll_fuzz(void)
         switch (op)
         {
             case 0: // push_front
-            {
-                MAKE_INT(val, rand());
-                if (anv_sll_push_front(list, val) == 0)
-                    expected_size++;
-                else
-                    free(val);
-                break;
-            }
-            case 1: // push_back
-            {
-                MAKE_INT(val, rand());
-                if (anv_sll_push_back(list, val) == 0)
-                    expected_size++;
-                else
-                    free(val);
-                break;
-            }
-            case 2: // remove front
-            {
-                if (expected_size > 0)
                 {
-                    void* data = list->head->data;
-                    if (anv_sll_remove(list, data, int_cmp, true) == 0)
-                        expected_size--;
-                }
-                break;
-            }
-            case 3: // find random
-            {
-                if (expected_size > 0)
-                {
-                    int key = rand() % 1000;
-                    anv_sll_find(list, &key, int_cmp); // just exercise, ignore result
-                }
-                break;
-            }
-            case 4: // insert_at random position
-            {
-                if (expected_size > 0)
-                {
-                    const size_t pos = rand() % expected_size;
                     MAKE_INT(val, rand());
-                    if (anv_sll_insert_at(list, pos, val) == 0)
+                    if (anv_sll_push_front(list, val) == 0)
                         expected_size++;
                     else
                         free(val);
+                    break;
                 }
-                break;
-            }
+            case 1: // push_back
+                {
+                    MAKE_INT(val, rand());
+                    if (anv_sll_push_back(list, val) == 0)
+                        expected_size++;
+                    else
+                        free(val);
+                    break;
+                }
+            case 2: // remove front
+                {
+                    if (expected_size > 0)
+                    {
+                        void* data = list->head->data;
+                        if (anv_sll_remove(list, data, int_cmp, true) == 0)
+                            expected_size--;
+                    }
+                    break;
+                }
+            case 3: // find random
+                {
+                    if (expected_size > 0)
+                    {
+                        int key = rand() % 1000;
+                        anv_sll_find(list, &key, int_cmp); // just exercise, ignore result
+                    }
+                    break;
+                }
+            case 4: // insert_at random position
+                {
+                    if (expected_size > 0)
+                    {
+                        const size_t pos = rand() % expected_size;
+                        MAKE_INT(val, rand());
+                        if (anv_sll_insert_at(list, pos, val) == 0)
+                            expected_size++;
+                        else
+                            free(val);
+                    }
+                    break;
+                }
             default:
                 break;
         }
