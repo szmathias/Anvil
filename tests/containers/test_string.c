@@ -1,18 +1,9 @@
-//
-// Consolidated string tests
-// Merged from: test_string_algorithms.c, test_string_crud.c,
-//              test_string_fuzz.c, test_string_memory.c, test_string_properties.c
-//
-
-#include "containers/dynamicstring.h"
-#include "TestAssert.h"
-#include "TestRunner.h"
-
-#include <stdio.h>
-#include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdint.h>
+
+#include <anvil/testing.h>
+#include "TestAssert.h"
 
 #ifdef ANV_PLATFORM_WINDOWS
 #include <io.h>
@@ -21,9 +12,9 @@
 #include <unistd.h>
 #endif
 
-/* ========================================================================== */
-/*  Fuzz helpers                                                              */
-/* ========================================================================== */
+//==============================================================================
+// Fuzz Helpers
+//==============================================================================
 
 #define NUM_FUZZ_OPERATIONS 100000
 
@@ -36,14 +27,14 @@ static unsigned fuzz_rand_range(const unsigned bound)
 {
     if (bound == 0)
         return 0u;
-    return (unsigned)(rand() % bound);
+    return rand() % bound;
 }
 
-static size_t fuzz_rand_size(size_t bound)
+static size_t fuzz_rand_size(const size_t bound)
 {
     if (bound == 0)
         return 0;
-    return (size_t)(rand() % (bound));
+    return rand() % bound;
 }
 
 static void ensure_seeded(void)
@@ -58,7 +49,7 @@ static void ensure_seeded(void)
 
 static void perform_random_operation(ANVString* str)
 {
-    const int op = fuzz_rand_range(8);
+    const unsigned op = fuzz_rand_range(8);
 
     switch (op)
     {
@@ -102,9 +93,9 @@ static void perform_random_operation(ANVString* str)
     }
 }
 
-/* ========================================================================== */
-/*  Algorithm tests (from test_string_algorithms.c)                           */
-/* ========================================================================== */
+//==============================================================================
+// Algorithm Tests
+//==============================================================================
 
 int test_find_and_compare(void)
 {
@@ -683,7 +674,7 @@ int test_invalid_values(void)
 int test_str_free_split_basic(void)
 {
     const size_t count = 3;
-    ANVString* arr = (ANVString*)malloc(sizeof(ANVString) * count);
+    ANVString* arr = malloc(sizeof(ANVString) * count);
     arr[0] = anv_str_create_from_cstring("one");
     arr[1] = anv_str_create_from_cstring("two");
     arr[2] = anv_str_create_from_cstring("three");
@@ -700,7 +691,7 @@ int test_str_free_split_nullptr(void)
 
 int test_str_free_split_zero_count(void)
 {
-    ANVString* arr = (ANVString*)malloc(sizeof(ANVString) * 2);
+    ANVString* arr = malloc(sizeof(ANVString) * 2);
     arr[0] = anv_str_create_from_cstring("a");
     arr[1] = anv_str_create_from_cstring("b");
     anv_str_destroy_split(&arr, 0); // Should only free the array pointer
@@ -768,9 +759,9 @@ int test_str_split_and_free_split(void)
     return TEST_SUCCESS;
 }
 
-/* ========================================================================== */
-/*  CRUD tests (from test_string_crud.c)                                      */
-/* ========================================================================== */
+//==============================================================================
+// CRUD Tests
+//==============================================================================
 
 int test_create_and_assign(void)
 {
@@ -1101,9 +1092,9 @@ int test_insert_string_at_0_and_size(void)
     return TEST_SUCCESS;
 }
 
-/* ========================================================================== */
-/*  Fuzz tests (from test_string_fuzz.c)                                      */
-/* ========================================================================== */
+//==============================================================================
+// Fuzz Tests
+//==============================================================================
 
 int test_string_fuzz(void)
 {
@@ -1120,9 +1111,9 @@ int test_string_fuzz(void)
     return TEST_SUCCESS;
 }
 
-/* ========================================================================== */
-/*  Memory tests (from test_string_memory.c)                                  */
-/* ========================================================================== */
+//==============================================================================
+// Memory Tests
+//==============================================================================
 
 int test_reserve_and_shrink(void)
 {
@@ -1175,9 +1166,9 @@ int test_reserve_and_shrink_optimal(void)
     return TEST_SUCCESS;
 }
 
-/* ========================================================================== */
-/*  Property tests (from test_string_properties.c)                            */
-/* ========================================================================== */
+//==============================================================================
+// Properties Tests
+//==============================================================================
 
 // Property: The size of a string should never exceed its capacity.
 int test_string_size_and_capacity(void)
@@ -1235,122 +1226,121 @@ int test_string_case_conversion_reversibility(void)
     return TEST_SUCCESS;
 }
 
-/* ========================================================================== */
-/*  Test registry and main                                                    */
-/* ========================================================================== */
-
-const ANVTestCase tests[] = {
-    /* -- Algorithm tests (58) -- */
-    {test_find_and_compare, "test_find_and_compare"},
-    {test_trim_and_case, "test_trim_and_case"},
-    {test_substr, "test_substr"},
-    {test_substr_out_of_bounds, "test_substr_out_of_bounds"},
-    {test_embedded_null, "test_embedded_null"},
-    {test_trim_all_whitespace, "test_trim_all_whitespace"},
-    {test_compare_different_lengths, "test_compare_different_lengths"},
-    {test_compare_different_contents, "test_compare_different_contents"},
-    {test_find_first_of_no_match, "test_find_first_of_no_match"},
-    {test_find_first_of_multiple_matches, "test_find_first_of_multiple_matches"},
-    {test_remove_extra_ws, "test_remove_extra_ws"},
-    {test_to_lower_upper_already, "test_to_lower_upper_already"},
-    {test_substr_create_zero_count, "test_substr_create_zero_count"},
-    {test_compare_string_equality, "test_compare_string_equality"},
-    {test_substr_create_cstring_cases, "test_substr_create_cstring_cases"},
-    {test_compare_cstring_prefix_suffix, "test_compare_cstring_prefix_suffix"},
-    {test_getline_ch_simulated, "test_getline_ch_simulated"},
-    {test_getline_cstring_simulated, "test_getline_cstring_simulated"},
-    {test_find_cstring_empty_search, "test_find_cstring_empty_search"},
-    {test_find_string_empty_search, "test_find_string_empty_search"},
-    {test_substr_create_string_count_exceeds, "test_substr_create_string_count_exceeds"},
-    {test_substr_create_string_pos_at_size, "test_substr_create_string_pos_at_size"},
-    {test_substr_create_string_pos_gt_size, "test_substr_create_string_pos_gt_size"},
-    {test_substr_cstring_pos_at_length, "test_substr_cstring_pos_at_length"},
-    {test_substr_cstring_pos_gt_length, "test_substr_cstring_pos_gt_length"},
-    {test_compare_string_empty, "test_compare_string_empty"},
-    {test_compare_cstring_empty, "test_compare_cstring_empty"},
-    {test_getline_ch_empty_file, "test_getline_ch_empty_file"},
-    {test_getline_cstring_empty_file, "test_getline_cstring_empty_file"},
-    {test_trim_front_already_trimmed, "test_trim_front_already_trimmed"},
-    {test_trim_back_already_trimmed, "test_trim_back_already_trimmed"},
-    {test_remove_extra_ws_only_spaces, "test_remove_extra_ws_only_spaces"},
-    {test_to_lower_empty, "test_to_lower_empty"},
-    {test_to_upper_empty, "test_to_upper_empty"},
-    {test_substr_create_string_zero_count_zero_pos, "test_substr_create_string_zero_count_zero_pos"},
-    {test_substr_create_cstring_zero_count_zero_pos, "test_substr_create_cstring_zero_count_zero_pos"},
-    {test_substr_string_zero_count_zero_pos, "test_substr_string_zero_count_zero_pos"},
-    {test_substr_cstring_zero_count_zero_pos, "test_substr_cstring_zero_count_zero_pos"},
-    {test_compare_string_one_empty, "test_compare_string_one_empty"},
-    {test_compare_cstring_one_empty, "test_compare_cstring_one_empty"},
-    {test_getline_ch_delim_not_present, "test_getline_ch_delim_not_present"},
-    {test_getline_cstring_delim_not_present, "test_getline_cstring_delim_not_present"},
-    {test_trim_front_back_only_ws, "test_trim_front_back_only_ws"},
-    {test_remove_extra_ws_tabs_newlines, "test_remove_extra_ws_tabs_newlines"},
-    {test_to_lower_upper_mixed, "test_to_lower_upper_mixed"},
-    {test_find_first_of_empty_value, "test_find_first_of_empty_value"},
-    {test_find_cstring_at_end, "test_find_cstring_at_end"},
-    {test_find_string_at_end, "test_find_string_at_end"},
-    {test_substr_create_string_count_0_pos_end, "test_substr_create_string_count_0_pos_end"},
-    {test_substr_create_cstring_count_0_pos_end, "test_substr_create_cstring_count_0_pos_end"},
-    {test_null_pointer_handling, "test_null_pointer_handling"},
-    {test_invalid_values, "test_invalid_values"},
-    {test_str_free_split_basic, "test_str_free_split_basic"},
-    {test_str_free_split_nullptr, "test_str_free_split_nullptr"},
-    {test_str_free_split_zero_count, "test_str_free_split_zero_count"},
-    {test_str_split_basic, "test_str_split_basic"},
-    {test_str_split_no_delim, "test_str_split_no_delim"},
-    {test_str_split_empty_string, "test_str_split_empty_string"},
-    {test_str_split_nullptr, "test_str_split_nullptr"},
-    {test_str_split_and_free_split, "test_str_split_and_free_split"},
-
-    /* -- CRUD tests (31) -- */
-    {test_create_and_assign, "test_create_and_assign"},
-    {test_append_and_insert, "test_append_and_insert"},
-    {test_push_pop_erase, "test_push_pop_erase"},
-    {test_empty_string, "test_empty_string"},
-    {test_assign_empty_cstring, "test_assign_empty_cstring"},
-    {test_append_empty_cstring, "test_append_empty_cstring"},
-    {test_insert_at_bounds, "test_insert_at_bounds"},
-    {test_erase_out_of_bounds, "test_erase_out_of_bounds"},
-    {test_self_assign_and_append, "test_self_assign_and_append"},
-    {test_clear_non_empty, "test_clear_non_empty"},
-    {test_pop_back_empty, "test_pop_back_empty"},
-    {test_erase_empty, "test_erase_empty"},
-    {test_assign_char, "test_assign_char"},
-    {test_insert_char_positions, "test_insert_char_positions"},
-    {test_append_char_multiple, "test_append_char_multiple"},
-    {test_clear_already_empty, "test_clear_already_empty"},
-    {test_assign_string_different, "test_assign_string_different"},
-    {test_insert_cstring_empty, "test_insert_cstring_empty"},
-    {test_insert_string_empty, "test_insert_string_empty"},
-    {test_append_string_empty, "test_append_string_empty"},
-    {test_push_back_null_char, "test_push_back_null_char"},
-    {test_append_char_null_char, "test_append_char_null_char"},
-    {test_insert_char_out_of_bounds, "test_insert_char_out_of_bounds"},
-    {test_insert_cstring_out_of_bounds, "test_insert_cstring_out_of_bounds"},
-    {test_insert_string_out_of_bounds, "test_insert_string_out_of_bounds"},
-    {test_erase_at_size, "test_erase_at_size"},
-    {test_assign_string_self, "test_assign_string_self"},
-    {test_append_string_self, "test_append_string_self"},
-    {test_insert_char_at_0_and_size, "test_insert_char_at_0_and_size"},
-    {test_insert_cstring_at_0_and_size, "test_insert_cstring_at_0_and_size"},
-    {test_insert_string_at_0_and_size, "test_insert_string_at_0_and_size"},
-
-    /* -- Fuzz tests (1) -- */
-    {test_string_fuzz, "test_string_fuzz"},
-
-    /* -- Memory tests (4) -- */
-    {test_reserve_and_shrink, "test_reserve_and_shrink"},
-    {test_buffer_growth, "test_buffer_growth"},
-    {test_large_string, "test_large_string"},
-    {test_reserve_and_shrink_optimal, "test_reserve_and_shrink_optimal"},
-
-    /* -- Property tests (3) -- */
-    {test_string_size_and_capacity, "test_string_size_and_capacity"},
-    {test_string_idempotent_trim, "test_string_idempotent_trim"},
-    {test_string_case_conversion_reversibility, "test_string_case_conversion_reversibility"},
-};
+//==============================================================================
+// Main
+//==============================================================================
 
 int main(void)
 {
+    const ANVTestCase tests[] = {
+        // Algorithm tests
+        TEST_REGISTER(test_find_and_compare),
+        TEST_REGISTER(test_trim_and_case),
+        TEST_REGISTER(test_substr),
+        TEST_REGISTER(test_substr_out_of_bounds),
+        TEST_REGISTER(test_embedded_null),
+        TEST_REGISTER(test_trim_all_whitespace),
+        TEST_REGISTER(test_compare_different_lengths),
+        TEST_REGISTER(test_compare_different_contents),
+        TEST_REGISTER(test_find_first_of_no_match),
+        TEST_REGISTER(test_find_first_of_multiple_matches),
+        TEST_REGISTER(test_remove_extra_ws),
+        TEST_REGISTER(test_to_lower_upper_already),
+        TEST_REGISTER(test_substr_create_zero_count),
+        TEST_REGISTER(test_compare_string_equality),
+        TEST_REGISTER(test_substr_create_cstring_cases),
+        TEST_REGISTER(test_compare_cstring_prefix_suffix),
+        TEST_REGISTER(test_getline_ch_simulated),
+        TEST_REGISTER(test_getline_cstring_simulated),
+        TEST_REGISTER(test_find_cstring_empty_search),
+        TEST_REGISTER(test_find_string_empty_search),
+        TEST_REGISTER(test_substr_create_string_count_exceeds),
+        TEST_REGISTER(test_substr_create_string_pos_at_size),
+        TEST_REGISTER(test_substr_create_string_pos_gt_size),
+        TEST_REGISTER(test_substr_cstring_pos_at_length),
+        TEST_REGISTER(test_substr_cstring_pos_gt_length),
+        TEST_REGISTER(test_compare_string_empty),
+        TEST_REGISTER(test_compare_cstring_empty),
+        TEST_REGISTER(test_getline_ch_empty_file),
+        TEST_REGISTER(test_getline_cstring_empty_file),
+        TEST_REGISTER(test_trim_front_already_trimmed),
+        TEST_REGISTER(test_trim_back_already_trimmed),
+        TEST_REGISTER(test_remove_extra_ws_only_spaces),
+        TEST_REGISTER(test_to_lower_empty),
+        TEST_REGISTER(test_to_upper_empty),
+        TEST_REGISTER(test_substr_create_string_zero_count_zero_pos),
+        TEST_REGISTER(test_substr_create_cstring_zero_count_zero_pos),
+        TEST_REGISTER(test_substr_string_zero_count_zero_pos),
+        TEST_REGISTER(test_substr_cstring_zero_count_zero_pos),
+        TEST_REGISTER(test_compare_string_one_empty),
+        TEST_REGISTER(test_compare_cstring_one_empty),
+        TEST_REGISTER(test_getline_ch_delim_not_present),
+        TEST_REGISTER(test_getline_cstring_delim_not_present),
+        TEST_REGISTER(test_trim_front_back_only_ws),
+        TEST_REGISTER(test_remove_extra_ws_tabs_newlines),
+        TEST_REGISTER(test_to_lower_upper_mixed),
+        TEST_REGISTER(test_find_first_of_empty_value),
+        TEST_REGISTER(test_find_cstring_at_end),
+        TEST_REGISTER(test_find_string_at_end),
+        TEST_REGISTER(test_substr_create_string_count_0_pos_end),
+        TEST_REGISTER(test_substr_create_cstring_count_0_pos_end),
+        TEST_REGISTER(test_null_pointer_handling),
+        TEST_REGISTER(test_invalid_values),
+        TEST_REGISTER(test_str_free_split_basic),
+        TEST_REGISTER(test_str_free_split_nullptr),
+        TEST_REGISTER(test_str_free_split_zero_count),
+        TEST_REGISTER(test_str_split_basic),
+        TEST_REGISTER(test_str_split_no_delim),
+        TEST_REGISTER(test_str_split_empty_string),
+        TEST_REGISTER(test_str_split_nullptr),
+        TEST_REGISTER(test_str_split_and_free_split),
+
+        // CRUD tests
+        TEST_REGISTER(test_create_and_assign),
+        TEST_REGISTER(test_append_and_insert),
+        TEST_REGISTER(test_push_pop_erase),
+        TEST_REGISTER(test_empty_string),
+        TEST_REGISTER(test_assign_empty_cstring),
+        TEST_REGISTER(test_append_empty_cstring),
+        TEST_REGISTER(test_insert_at_bounds),
+        TEST_REGISTER(test_erase_out_of_bounds),
+        TEST_REGISTER(test_self_assign_and_append),
+        TEST_REGISTER(test_clear_non_empty),
+        TEST_REGISTER(test_pop_back_empty),
+        TEST_REGISTER(test_erase_empty),
+        TEST_REGISTER(test_assign_char),
+        TEST_REGISTER(test_insert_char_positions),
+        TEST_REGISTER(test_append_char_multiple),
+        TEST_REGISTER(test_clear_already_empty),
+        TEST_REGISTER(test_assign_string_different),
+        TEST_REGISTER(test_insert_cstring_empty),
+        TEST_REGISTER(test_insert_string_empty),
+        TEST_REGISTER(test_append_string_empty),
+        TEST_REGISTER(test_push_back_null_char),
+        TEST_REGISTER(test_append_char_null_char),
+        TEST_REGISTER(test_insert_char_out_of_bounds),
+        TEST_REGISTER(test_insert_cstring_out_of_bounds),
+        TEST_REGISTER(test_insert_string_out_of_bounds),
+        TEST_REGISTER(test_erase_at_size),
+        TEST_REGISTER(test_assign_string_self),
+        TEST_REGISTER(test_append_string_self),
+        TEST_REGISTER(test_insert_char_at_0_and_size),
+        TEST_REGISTER(test_insert_cstring_at_0_and_size),
+        TEST_REGISTER(test_insert_string_at_0_and_size),
+
+        // Fuzz tests
+        TEST_REGISTER(test_string_fuzz),
+
+        // Memory tests
+        TEST_REGISTER(test_reserve_and_shrink),
+        TEST_REGISTER(test_buffer_growth),
+        TEST_REGISTER(test_large_string),
+        TEST_REGISTER(test_reserve_and_shrink_optimal),
+
+        // Property tests
+        TEST_REGISTER(test_string_size_and_capacity),
+        TEST_REGISTER(test_string_idempotent_trim),
+        TEST_REGISTER(test_string_case_conversion_reversibility),
+    };
     return anv_run_tests("DString", tests, sizeof(tests) / sizeof(tests[0]));
 }

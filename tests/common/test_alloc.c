@@ -1,21 +1,15 @@
-//
-// Consolidated allocator tests
-// Merged from: test_alloc_advanced.c, test_alloc_custom.c
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "TestAssert.h"
-#include "TestHelpers.h"
-#include "TestRunner.h"
 #include "common.h"
+#include <anvil/testing.h>
+#include "TestHelpers.h"
 #include "containers/arraylist.h"
 #include "containers/singlylinkedlist.h"
 
 //==============================================================================
-// Pool Allocator Implementation (from test_alloc_advanced.c)
+// Pool Allocator Implementation
 //==============================================================================
 
 #define POOL_BLOCK_SIZE 64
@@ -94,7 +88,7 @@ static void pool_reset(void)
 }
 
 //==============================================================================
-// Debug Allocator Implementation (from test_alloc_advanced.c)
+// Debug Allocator Implementation
 //==============================================================================
 
 #define MAX_ALLOCATIONS 100
@@ -169,26 +163,6 @@ static void debug_reset(void)
     peak_allocated = 0;
 }
 
-static void debug_report(void)
-{
-    printf("=== Debug Allocator Report ===\n");
-    printf("Active allocations: %d\n", allocation_count);
-    printf("Total allocated: %zu bytes\n", total_allocated);
-    printf("Peak allocated: %zu bytes\n", peak_allocated);
-
-    if (allocation_count > 0)
-    {
-        printf("Memory leaks detected:\n");
-        for (int i = 0; i < allocation_count; i++)
-        {
-            printf("  %p: %zu bytes (from %s:%d)\n",
-                   allocations[i].ptr, allocations[i].size,
-                   allocations[i].file, allocations[i].line);
-        }
-    }
-    printf("===============================\n");
-}
-
 static void* debug_int_copy(const void* data)
 {
     const int* original = data;
@@ -201,7 +175,7 @@ static void* debug_int_copy(const void* data)
 }
 
 //==============================================================================
-// Arena Allocator Implementation (from test_alloc_custom.c)
+// Arena Allocator Implementation
 //==============================================================================
 
 typedef struct
@@ -265,7 +239,7 @@ static void arena_destroy(void)
 }
 
 //==============================================================================
-// Static Stack Allocator Implementation (from test_alloc_custom.c)
+// Static Stack Allocator Implementation
 //==============================================================================
 
 #define STACK_SIZE 4096
@@ -310,7 +284,7 @@ static void stack_reset(void)
 }
 
 //==============================================================================
-// Counting Allocator Implementation (from test_alloc_custom.c)
+// Counting Allocator Implementation
 //==============================================================================
 
 static size_t alloc_count = 0;
@@ -349,7 +323,7 @@ static void* counting_int_copy(const void* data)
 }
 
 //==============================================================================
-// Advanced Allocator Tests (from test_alloc_advanced.c)
+// Advanced Allocator Tests
 //==============================================================================
 
 int test_pool_allocator_integration(void)
@@ -656,7 +630,7 @@ int test_allocator_anv_copy_function_variants(void)
 }
 
 //==============================================================================
-// Custom Allocator Tests (from test_alloc_custom.c)
+// Custom Allocator Tests
 //==============================================================================
 
 int test_default_allocator(void)
@@ -905,32 +879,31 @@ int test_stack_allocator_lifo_behavior(void)
 }
 
 //==============================================================================
-// Main test runner
-// Total: 16 tests (7 from test_alloc_advanced.c + 9 from test_alloc_custom.c)
+// Main
 //==============================================================================
 
 int main(void)
 {
     const ANVTestCase tests[] = {
-        // Advanced Allocator Tests (from test_alloc_advanced.c) -- 7 tests
-        {test_pool_allocator_integration, "Pool Allocator Integration"},
-        {test_debug_allocator_tracking, "Debug Allocator Tracking"},
-        {test_failing_allocator_error_handling, "Failing Allocator Error Handling"},
-        {test_allocator_with_linked_list, "Allocator with Linked List"},
-        {test_allocator_stress_test, "Allocator Stress Test"},
-        {test_mixed_allocator_scenarios, "Mixed Allocator Scenarios"},
-        {test_allocator_anv_copy_function_variants, "Copy Function Variants"},
+        // Allocator Tests
+        TEST_REGISTER(test_pool_allocator_integration),
+        TEST_REGISTER(test_debug_allocator_tracking),
+        TEST_REGISTER(test_failing_allocator_error_handling),
+        TEST_REGISTER(test_allocator_with_linked_list),
+        TEST_REGISTER(test_allocator_stress_test),
+        TEST_REGISTER(test_mixed_allocator_scenarios),
+        TEST_REGISTER(test_allocator_anv_copy_function_variants),
 
-        // Custom Allocator Tests (from test_alloc_custom.c) -- 9 tests
-        {test_default_allocator, "Default Allocator"},
-        {test_arena_allocator, "Arena Allocator"},
-        {test_stack_allocator, "Stack Allocator"},
-        {test_counting_allocator, "Counting Allocator"},
-        {test_custom_anv_copy_functions, "Custom Copy Functions"},
-        {test_allocator_edge_cases, "Allocator Edge Cases"},
-        {test_allocator_with_null_functions, "Allocator with NULL Functions"},
-        {test_arena_memory_alignment, "Arena Memory Alignment"},
-        {test_stack_allocator_lifo_behavior, "Stack LIFO Behavior"},
+        // Custom Allocator Tests
+        TEST_REGISTER(test_default_allocator),
+        TEST_REGISTER(test_arena_allocator),
+        TEST_REGISTER(test_stack_allocator),
+        TEST_REGISTER(test_counting_allocator),
+        TEST_REGISTER(test_custom_anv_copy_functions),
+        TEST_REGISTER(test_allocator_edge_cases),
+        TEST_REGISTER(test_allocator_with_null_functions),
+        TEST_REGISTER(test_arena_memory_alignment),
+        TEST_REGISTER(test_stack_allocator_lifo_behavior),
     };
 
     return anv_run_tests("Alloc", tests, sizeof(tests) / sizeof(tests[0]));

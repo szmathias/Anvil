@@ -12,11 +12,11 @@ extern "C" {
 #endif
 
 #ifdef ANV_PLATFORM_WINDOWS
-    #include <Windows.h>
-    typedef HANDLE ANVThread;
+#include <Windows.h>
+typedef HANDLE ANVThread;
 #else
-    #include <pthread.h>
-    typedef pthread_t ANVThread;
+#include <pthread.h>
+typedef pthread_t ANVThread;
 #endif
 
 /**

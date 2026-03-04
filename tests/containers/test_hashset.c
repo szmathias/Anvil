@@ -1,35 +1,24 @@
-//
-// HashSet consolidated test file
-//
-// Merged from 7 source files:
-//   test_hashset.c (legacy), test_hashset_crud.c, test_hashset_algorithms.c,
-//   test_hashset_iterator.c, test_hashset_memory.c, test_hashset_performance.c,
-//   test_hashset_properties.c
-//
-
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
-#include "containers/hashset.h"
-#include "containers/iterator.h"
-#include "TestAssert.h"
-#include "TestHelpers.h"
-#include "TestRunner.h"
 
-// ============================================================================
-// Performance test constants
-// ============================================================================
+#include <anvil/testing.h>
+#include "TestHelpers.h"
+#include "common/allocator.h"
+#include "containers/hashset.h"
+
+
+//==============================================================================
+// Constants
+//==============================================================================
 
 #define LARGE_SET_SIZE 10000
 #define MEDIUM_SET_SIZE 1000
 #define SMALL_SET_SIZE 100
 
-// ============================================================================
-// Static helper functions
-// ============================================================================
+//==============================================================================
+// Static Helpers
+//==============================================================================
 
-// Helper function to create a set with string elements (from algorithms)
 static ANVHashSet* create_string_set(ANVAllocator* alloc, char** elements, const size_t count)
 {
     ANVHashSet* set = anv_hashset_create(alloc, anv_hash_string, anv_key_equals_string, 0);
@@ -47,22 +36,20 @@ static ANVHashSet* create_string_set(ANVAllocator* alloc, char** elements, const
     return set;
 }
 
-// Global counter for testing (from properties)
+// Global counter for testing
 static int visit_count = 0;
 
-// Action function that counts visits (from properties)
+// Action function that counts visits
 static void count_action(void* key)
 {
     (void)key; // Unused
     visit_count++;
 }
 
-// ============================================================================
-// CRUD tests
-// ============================================================================
+//==============================================================================
+// CRUD Tests
+//==============================================================================
 
-// Test basic hash set creation and destruction
-// [KEPT from CRUD - identical to legacy version]
 int test_hashset_create_destroy(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -76,9 +63,6 @@ int test_hashset_create_destroy(void)
     return TEST_SUCCESS;
 }
 
-// Test basic add and contains operations
-// [KEPT from legacy - more thorough: 3 keys, initial non-containment checks,
-//  verifies all still present at end. Discarded CRUD version (2 keys only)]
 int test_hashset_add_contains(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -116,9 +100,6 @@ int test_hashset_add_contains(void)
     return TEST_SUCCESS;
 }
 
-// Test adding duplicate keys (from CRUD)
-// [Legacy test_hashset_duplicates discarded - semantically covered by this
-//  plus test_hashset_uniqueness in properties section]
 int test_hashset_duplicate_add(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -141,7 +122,6 @@ int test_hashset_duplicate_add(void)
 }
 
 // Test add_check function
-// [KEPT from legacy - identical logic to CRUD, more descriptive key name]
 int test_hashset_add_check(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -164,9 +144,6 @@ int test_hashset_add_check(void)
     return TEST_SUCCESS;
 }
 
-// Test remove operations
-// [KEPT from legacy - more thorough: 3 keys, middle element removal,
-//  verifies both remaining individually. Discarded CRUD version (2 keys only)]
 int test_hashset_remove(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -203,7 +180,6 @@ int test_hashset_remove(void)
     return TEST_SUCCESS;
 }
 
-// Test remove_get operations (from CRUD)
 int test_hashset_remove_get(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -231,9 +207,6 @@ int test_hashset_remove_get(void)
     return TEST_SUCCESS;
 }
 
-// Test clear operations
-// [KEPT from CRUD - explicitly verifies elements are gone with contains checks.
-//  Discarded legacy version (tested re-add after clear but lacked explicit contains checks)]
 int test_hashset_clear(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -259,7 +232,6 @@ int test_hashset_clear(void)
     return TEST_SUCCESS;
 }
 
-// Test NULL parameter handling (from CRUD)
 int test_hashset_null_params(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -288,7 +260,6 @@ int test_hashset_null_params(void)
     return TEST_SUCCESS;
 }
 
-// Test invalid creation parameters (from CRUD)
 int test_hashset_invalid_creation(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -305,13 +276,10 @@ int test_hashset_invalid_creation(void)
     return TEST_SUCCESS;
 }
 
-// ============================================================================
-// Algorithm tests (set operations)
-// ============================================================================
+//==============================================================================
+// Algorithm Tests
+//==============================================================================
 
-// Test union operation
-// [KEPT from algorithms - tests 5-element union with helper function.
-//  Discarded legacy version (4-element union, inline setup)]
 int test_hashset_union(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -339,9 +307,6 @@ int test_hashset_union(void)
     return TEST_SUCCESS;
 }
 
-// Test intersection operation
-// [KEPT from algorithms - larger sets (4 elements each), checks all 6 distinct elements.
-//  Discarded legacy version (3 elements each, fewer checks)]
 int test_hashset_intersection(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -370,9 +335,6 @@ int test_hashset_intersection(void)
     return TEST_SUCCESS;
 }
 
-// Test difference operation
-// [KEPT from algorithms - larger sets (4 elements each), checks all 6 distinct elements.
-//  Discarded legacy version (3+2 elements, fewer checks)]
 int test_hashset_difference(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -401,9 +363,6 @@ int test_hashset_difference(void)
     return TEST_SUCCESS;
 }
 
-// Test subset operation
-// [KEPT from algorithms - tests 4 sets including empty set as subset.
-//  Discarded legacy version (3 sets, no empty set test)]
 int test_hashset_is_subset(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -437,7 +396,6 @@ int test_hashset_is_subset(void)
     return TEST_SUCCESS;
 }
 
-// Test empty set operations (from algorithms)
 int test_hashset_empty_operations(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -478,7 +436,6 @@ int test_hashset_empty_operations(void)
     return TEST_SUCCESS;
 }
 
-// Test NULL parameter handling for set operations (from algorithms)
 int test_hashset_operations_null_params(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -508,7 +465,6 @@ int test_hashset_operations_null_params(void)
     return TEST_SUCCESS;
 }
 
-// Test set operations with identical sets (from algorithms)
 int test_hashset_identical_operations(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -544,13 +500,10 @@ int test_hashset_identical_operations(void)
     return TEST_SUCCESS;
 }
 
-// ============================================================================
-// Iterator tests
-// ============================================================================
+//==============================================================================
+// Iterator Tests
+//==============================================================================
 
-// Test basic iterator functionality (from iterator)
-// [Legacy test_hashset_iterator discarded - fully subsumed by this version
-//  which tests 5 keys, checks is_valid, and verifies exhaustion behavior]
 static int test_hashset_iterator_basic(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -608,7 +561,6 @@ static int test_hashset_iterator_basic(void)
     return TEST_SUCCESS;
 }
 
-// Test iterator with empty set (from iterator)
 static int test_hashset_iterator_empty(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -626,7 +578,6 @@ static int test_hashset_iterator_empty(void)
     return TEST_SUCCESS;
 }
 
-// Test iterator with modifications (from iterator)
 static int test_hashset_iterator_with_modifications(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -669,7 +620,6 @@ static int test_hashset_iterator_with_modifications(void)
     return TEST_SUCCESS;
 }
 
-// Test multiple iterators (from iterator)
 static int test_hashset_iterator_multiple(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -727,7 +677,6 @@ static int test_hashset_iterator_multiple(void)
     return TEST_SUCCESS;
 }
 
-// Test iterator get function (from iterator)
 static int test_hashset_iterator_get(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -758,7 +707,6 @@ static int test_hashset_iterator_get(void)
     return TEST_SUCCESS;
 }
 
-// Test iterator backward operations (should not be supported) (from iterator)
 static int test_hashset_iterator_backward(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -777,7 +725,6 @@ static int test_hashset_iterator_backward(void)
     return TEST_SUCCESS;
 }
 
-// Test creating hashset from iterator (from iterator)
 static int test_hashset_from_iterator(void)
 {
     ANVAllocator alloc = create_string_allocator();
@@ -812,7 +759,6 @@ static int test_hashset_from_iterator(void)
     return TEST_SUCCESS;
 }
 
-// Test iterator with invalid hashset (from iterator)
 static int test_hashset_iterator_invalid(void)
 {
     const ANVIterator iter = anv_hashset_iterator(NULL);
@@ -820,7 +766,6 @@ static int test_hashset_iterator_invalid(void)
     return TEST_SUCCESS;
 }
 
-// Test copy isolation - verify that copied elements are independent (from iterator)
 static int test_hashset_copy_isolation(void)
 {
     ANVAllocator alloc = create_string_allocator();
@@ -856,7 +801,6 @@ static int test_hashset_copy_isolation(void)
     return TEST_SUCCESS;
 }
 
-// Test that should_copy=true fails when allocator has no copy function (from iterator)
 static int test_hashset_anv_copy_function_required(void)
 {
     ANVAllocator alloc = anv_alloc_default();
@@ -877,7 +821,6 @@ static int test_hashset_anv_copy_function_required(void)
     return TEST_SUCCESS;
 }
 
-// Test that should_copy=false uses elements directly without copying (from iterator)
 static int test_hashset_from_iterator_no_copy(void)
 {
     ANVAllocator alloc = create_string_allocator();
@@ -907,7 +850,6 @@ static int test_hashset_from_iterator_no_copy(void)
     return TEST_SUCCESS;
 }
 
-// Test that iterator is exhausted after being consumed by anv_hashset_from_iterator (from iterator)
 static int test_hashset_iterator_exhaustion_after_creation(void)
 {
     ANVAllocator alloc = create_string_allocator();
@@ -946,7 +888,6 @@ static int test_hashset_iterator_exhaustion_after_creation(void)
     return TEST_SUCCESS;
 }
 
-// Test next() return values for proper error handling (from iterator)
 static int test_hashset_iterator_next_return_values(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -975,7 +916,6 @@ static int test_hashset_iterator_next_return_values(void)
     return TEST_SUCCESS;
 }
 
-// Test various combinations of get/next/has_next calls for consistency (from iterator)
 static int test_hashset_iterator_mixed_operations(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1029,7 +969,6 @@ static int test_hashset_iterator_mixed_operations(void)
     return TEST_SUCCESS;
 }
 
-// Test reset functionality (from iterator)
 static int test_hashset_iterator_reset(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1070,7 +1009,6 @@ static int test_hashset_iterator_reset(void)
     return TEST_SUCCESS;
 }
 
-// Test single element iterator behavior (from iterator)
 static int test_hashset_iterator_single_element(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1096,7 +1034,6 @@ static int test_hashset_iterator_single_element(void)
     return TEST_SUCCESS;
 }
 
-// Test from_iterator with NULL parameters (from iterator)
 static int test_hashset_from_iterator_null_params(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1120,11 +1057,10 @@ static int test_hashset_from_iterator_null_params(void)
     return TEST_SUCCESS;
 }
 
-// ============================================================================
-// Memory tests
-// ============================================================================
+//==============================================================================
+// Memory Tests
+//==============================================================================
 
-// Test memory allocation and deallocation (from memory)
 int test_hashset_memory_basic(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1138,7 +1074,6 @@ int test_hashset_memory_basic(void)
     return TEST_SUCCESS;
 }
 
-// Test memory with key freeing (from memory)
 int test_hashset_memory_with_key_freeing(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1164,7 +1099,6 @@ int test_hashset_memory_with_key_freeing(void)
     return TEST_SUCCESS;
 }
 
-// Test memory with copy operations (from memory)
 int test_hashset_memory_copy(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1189,7 +1123,6 @@ int test_hashset_memory_copy(void)
     return TEST_SUCCESS;
 }
 
-// Test memory with deep copy operations (from memory)
 int test_hashset_memory_deep_copy(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1222,7 +1155,6 @@ int test_hashset_memory_deep_copy(void)
     return TEST_SUCCESS;
 }
 
-// Test memory with get_elements operation (from memory)
 int test_hashset_memory_get_elements(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1247,7 +1179,6 @@ int test_hashset_memory_get_elements(void)
     return TEST_SUCCESS;
 }
 
-// Test memory with iterator operations (from memory)
 int test_hashset_memory_iterator(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1278,7 +1209,6 @@ int test_hashset_memory_iterator(void)
     return TEST_SUCCESS;
 }
 
-// Test memory with set operations (from memory)
 int test_hashset_memory_set_operations(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1315,7 +1245,6 @@ int test_hashset_memory_set_operations(void)
     return TEST_SUCCESS;
 }
 
-// Test memory operations without leaks (from memory)
 int test_hashset_memory_no_leaks(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1363,11 +1292,10 @@ int test_hashset_memory_no_leaks(void)
     return TEST_SUCCESS;
 }
 
-// ============================================================================
-// Properties tests
-// ============================================================================
+//==============================================================================
+// Properties Tests
+//==============================================================================
 
-// Test load factor properties (from properties)
 int test_hashset_load_factor(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1395,7 +1323,6 @@ int test_hashset_load_factor(void)
     return TEST_SUCCESS;
 }
 
-// Test size consistency (from properties)
 int test_hashset_size_consistency(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1431,7 +1358,6 @@ int test_hashset_size_consistency(void)
     return TEST_SUCCESS;
 }
 
-// Test uniqueness property (from properties)
 int test_hashset_uniqueness(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1462,7 +1388,6 @@ int test_hashset_uniqueness(void)
     return TEST_SUCCESS;
 }
 
-// Test for_each functionality (from properties)
 int test_hashset_for_each(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1484,7 +1409,6 @@ int test_hashset_for_each(void)
     return TEST_SUCCESS;
 }
 
-// Test get_elements completeness (from properties)
 int test_hashset_get_elements_completeness(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1521,9 +1445,6 @@ int test_hashset_get_elements_completeness(void)
     return TEST_SUCCESS;
 }
 
-// Test copy preservation of properties (from properties)
-// [Legacy test_hashset_copy discarded - fully covered by this function
-//  which tests the same assertions plus verifies independence after modification]
 int test_hashset_copy_properties(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1561,7 +1482,6 @@ int test_hashset_copy_properties(void)
     return TEST_SUCCESS;
 }
 
-// Test set operation result properties (from properties)
 int test_hashset_operation_properties(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1602,7 +1522,6 @@ int test_hashset_operation_properties(void)
     return TEST_SUCCESS;
 }
 
-// Test iterator consistency (from properties)
 int test_hashset_iterator_consistency(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1614,7 +1533,6 @@ int test_hashset_iterator_consistency(void)
         ASSERT_EQ(anv_hashset_add(set, keys[i]), 0);
     }
 
-    // Create iterator and count elements
     ANVIterator it = anv_hashset_iterator(set);
     int iter_count = 0;
     while (it.has_next(&it))
@@ -1629,7 +1547,6 @@ int test_hashset_iterator_consistency(void)
         iter_count++;
     }
 
-    // Iterator should visit all elements exactly once
     ASSERT_EQ((size_t)iter_count, anv_hashset_size(set));
 
     it.destroy(&it);
@@ -1637,11 +1554,10 @@ int test_hashset_iterator_consistency(void)
     return TEST_SUCCESS;
 }
 
-// ============================================================================
-// Performance tests
-// ============================================================================
+//==============================================================================
+// Performance Tests
+//==============================================================================
 
-// Test performance of add operations (from performance)
 int test_hashset_add_performance(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1668,7 +1584,6 @@ int test_hashset_add_performance(void)
     return TEST_SUCCESS;
 }
 
-// Test performance of contains operations (from performance)
 int test_hashset_contains_performance(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1710,7 +1625,6 @@ int test_hashset_contains_performance(void)
     return TEST_SUCCESS;
 }
 
-// Test performance of remove operations (from performance)
 int test_hashset_remove_performance(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1745,7 +1659,6 @@ int test_hashset_remove_performance(void)
     return TEST_SUCCESS;
 }
 
-// Test performance of set operations (from performance)
 int test_hashset_set_operations_performance(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1801,7 +1714,6 @@ int test_hashset_set_operations_performance(void)
     return TEST_SUCCESS;
 }
 
-// Test performance of iterator operations (from performance)
 int test_hashset_iterator_performance(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1843,7 +1755,6 @@ int test_hashset_iterator_performance(void)
     return TEST_SUCCESS;
 }
 
-// Test performance of copy operations (from performance)
 int test_hashset_copy_performance(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1886,7 +1797,6 @@ int test_hashset_copy_performance(void)
     return TEST_SUCCESS;
 }
 
-// Test load factor impact on performance (from performance)
 int test_hashset_load_factor_performance(void)
 {
     ANVAllocator alloc = create_int_allocator();
@@ -1929,81 +1839,233 @@ int test_hashset_load_factor_performance(void)
     return TEST_SUCCESS;
 }
 
-// ============================================================================
-// Main test runner
-// ============================================================================
+//==============================================================================
+// Stress & Collision Tests
+//==============================================================================
+
+// Custom hash that always returns the same bucket — forces worst-case chaining
+static size_t collision_hash_set(const void* key)
+{
+    (void)key;
+    return 7; // Every key hashes to the same bucket
+}
+
+int test_hashset_collision_stress(void)
+{
+    ANVAllocator alloc = create_int_allocator();
+    ANVHashSet* set = anv_hashset_create(&alloc, collision_hash_set, anv_key_equals_int, 4);
+    ASSERT_NOT_NULL(set);
+
+    const int N = 200;
+    int* keys[200];
+
+    // Insert N items that all collide
+    for (int i = 0; i < N; i++)
+    {
+        keys[i] = malloc(sizeof(int));
+        *keys[i] = i;
+        ASSERT_EQ(anv_hashset_add(set, keys[i]), 0);
+    }
+    ASSERT_EQ(anv_hashset_size(set), (size_t)N);
+
+    // All items should be found despite collisions
+    for (int i = 0; i < N; i++)
+    {
+        ASSERT(anv_hashset_contains(set, keys[i]));
+    }
+
+    // Remove half
+    for (int i = 0; i < N / 2; i++)
+    {
+        ASSERT_EQ(anv_hashset_remove(set, keys[i], true), 0);
+    }
+    ASSERT_EQ(anv_hashset_size(set), (size_t)(N / 2));
+
+    // Remaining half still present
+    for (int i = N / 2; i < N; i++)
+    {
+        ASSERT(anv_hashset_contains(set, keys[i]));
+    }
+
+    // Removed half should not be found
+    for (int i = 0; i < N / 2; i++)
+    {
+        ASSERT(!anv_hashset_contains(set, &i));
+    }
+
+    anv_hashset_destroy(set, true);
+    return TEST_SUCCESS;
+}
+
+int test_hashset_high_load_factor_stress(void)
+{
+    ANVAllocator alloc = create_int_allocator();
+    // Very small initial capacity to force many resizes
+    ANVHashSet* set = anv_hashset_create(&alloc, anv_hash_int, anv_key_equals_int, 2);
+    ASSERT_NOT_NULL(set);
+
+    const int N = 10000;
+
+    for (int i = 0; i < N; i++)
+    {
+        int* key = malloc(sizeof(int));
+        *key = i;
+        ASSERT_EQ(anv_hashset_add(set, key), 0);
+    }
+    ASSERT_EQ(anv_hashset_size(set), (size_t)N);
+
+    // Verify all items after many resizes
+    for (int i = 0; i < N; i++)
+    {
+        ASSERT(anv_hashset_contains(set, &i));
+    }
+
+    // Load factor should be reasonable
+    ASSERT_LT(anv_hashset_load_factor(set), 1.0);
+
+    anv_hashset_destroy(set, true);
+    return TEST_SUCCESS;
+}
+
+//==============================================================================
+// Fuzz Tests
+//==============================================================================
+
+int test_hashset_fuzz(void)
+{
+    srand((unsigned int)42);
+    ANVAllocator alloc = create_int_allocator();
+    ANVHashSet* set = anv_hashset_create(&alloc, anv_hash_int, anv_key_equals_int, 16);
+    ASSERT_NOT_NULL(set);
+
+    size_t expected_size = 0;
+
+    for (int i = 0; i < 50000; i++)
+    {
+        const unsigned op = rand() % 3;
+
+        switch (op)
+        {
+            case 0: // add
+            {
+                MAKE_INT(val, rand() % 500);
+                const int already = anv_hashset_contains(set, val);
+                const int rc = anv_hashset_add(set, val);
+                if (rc == 0 && !already)
+                    expected_size++;
+                else
+                    free(val); // duplicate or failure — free the unused value
+                break;
+            }
+            case 1: // remove
+            {
+                int key = rand() % 500;
+                const int had = anv_hashset_contains(set, &key);
+                const int rc = anv_hashset_remove(set, &key, true);
+                if (rc == 0 && had)
+                    expected_size--;
+                break;
+            }
+            case 2: // contains
+            {
+                int key = rand() % 500;
+                anv_hashset_contains(set, &key); // exercise, ignore result
+                break;
+            }
+            default:
+                break;
+        }
+
+        ASSERT_EQ(anv_hashset_size(set), expected_size);
+    }
+
+    anv_hashset_destroy(set, true);
+    return TEST_SUCCESS;
+}
+
+//==============================================================================
+// Main
+//==============================================================================
 
 int main(void)
 {
     const ANVTestCase tests[] = {
-        // --- CRUD tests ---
-        {test_hashset_create_destroy, "test_hashset_create_destroy"},
-        {test_hashset_add_contains, "test_hashset_add_contains"},
-        {test_hashset_duplicate_add, "test_hashset_duplicate_add"},
-        {test_hashset_add_check, "test_hashset_add_check"},
-        {test_hashset_remove, "test_hashset_remove"},
-        {test_hashset_remove_get, "test_hashset_remove_get"},
-        {test_hashset_clear, "test_hashset_clear"},
-        {test_hashset_null_params, "test_hashset_null_params"},
-        {test_hashset_invalid_creation, "test_hashset_invalid_creation"},
+        // CRUD tests
+        TEST_REGISTER(test_hashset_create_destroy),
+        TEST_REGISTER(test_hashset_add_contains),
+        TEST_REGISTER(test_hashset_duplicate_add),
+        TEST_REGISTER(test_hashset_add_check),
+        TEST_REGISTER(test_hashset_remove),
+        TEST_REGISTER(test_hashset_remove_get),
+        TEST_REGISTER(test_hashset_clear),
+        TEST_REGISTER(test_hashset_null_params),
+        TEST_REGISTER(test_hashset_invalid_creation),
 
-        // --- Algorithm tests (set operations) ---
-        {test_hashset_union, "test_hashset_union"},
-        {test_hashset_intersection, "test_hashset_intersection"},
-        {test_hashset_difference, "test_hashset_difference"},
-        {test_hashset_is_subset, "test_hashset_is_subset"},
-        {test_hashset_empty_operations, "test_hashset_empty_operations"},
-        {test_hashset_operations_null_params, "test_hashset_operations_null_params"},
-        {test_hashset_identical_operations, "test_hashset_identical_operations"},
+        // Algorithm tests
+        TEST_REGISTER(test_hashset_union),
+        TEST_REGISTER(test_hashset_intersection),
+        TEST_REGISTER(test_hashset_difference),
+        TEST_REGISTER(test_hashset_is_subset),
+        TEST_REGISTER(test_hashset_empty_operations),
+        TEST_REGISTER(test_hashset_operations_null_params),
+        TEST_REGISTER(test_hashset_identical_operations),
 
-        // --- Iterator tests ---
-        {test_hashset_iterator_basic, "test_hashset_iterator_basic"},
-        {test_hashset_iterator_empty, "test_hashset_iterator_empty"},
-        {test_hashset_iterator_with_modifications, "test_hashset_iterator_with_modifications"},
-        {test_hashset_iterator_multiple, "test_hashset_iterator_multiple"},
-        {test_hashset_iterator_get, "test_hashset_iterator_get"},
-        {test_hashset_iterator_backward, "test_hashset_iterator_backward"},
-        {test_hashset_from_iterator, "test_hashset_from_iterator"},
-        {test_hashset_iterator_invalid, "test_hashset_iterator_invalid"},
-        {test_hashset_copy_isolation, "test_hashset_copy_isolation"},
-        {test_hashset_anv_copy_function_required, "test_hashset_anv_copy_function_required"},
-        {test_hashset_from_iterator_no_copy, "test_hashset_from_iterator_no_copy"},
-        {test_hashset_iterator_exhaustion_after_creation, "test_hashset_iterator_exhaustion_after_creation"},
-        {test_hashset_iterator_next_return_values, "test_hashset_iterator_next_return_values"},
-        {test_hashset_iterator_mixed_operations, "test_hashset_iterator_mixed_operations"},
-        {test_hashset_iterator_reset, "test_hashset_iterator_reset"},
-        {test_hashset_iterator_single_element, "test_hashset_iterator_single_element"},
-        {test_hashset_from_iterator_null_params, "test_hashset_from_iterator_null_params"},
+        // Iterator tests
+        TEST_REGISTER(test_hashset_iterator_basic),
+        TEST_REGISTER(test_hashset_iterator_empty),
+        TEST_REGISTER(test_hashset_iterator_with_modifications),
+        TEST_REGISTER(test_hashset_iterator_multiple),
+        TEST_REGISTER(test_hashset_iterator_get),
+        TEST_REGISTER(test_hashset_iterator_backward),
+        TEST_REGISTER(test_hashset_from_iterator),
+        TEST_REGISTER(test_hashset_iterator_invalid),
+        TEST_REGISTER(test_hashset_copy_isolation),
+        TEST_REGISTER(test_hashset_anv_copy_function_required),
+        TEST_REGISTER(test_hashset_from_iterator_no_copy),
+        TEST_REGISTER(test_hashset_iterator_exhaustion_after_creation),
+        TEST_REGISTER(test_hashset_iterator_next_return_values),
+        TEST_REGISTER(test_hashset_iterator_mixed_operations),
+        TEST_REGISTER(test_hashset_iterator_reset),
+        TEST_REGISTER(test_hashset_iterator_single_element),
+        TEST_REGISTER(test_hashset_from_iterator_null_params),
 
-        // --- Memory tests ---
-        {test_hashset_memory_basic, "test_hashset_memory_basic"},
-        {test_hashset_memory_with_key_freeing, "test_hashset_memory_with_key_freeing"},
-        {test_hashset_memory_copy, "test_hashset_memory_copy"},
-        {test_hashset_memory_deep_copy, "test_hashset_memory_deep_copy"},
-        {test_hashset_memory_get_elements, "test_hashset_memory_get_elements"},
-        {test_hashset_memory_iterator, "test_hashset_memory_iterator"},
-        {test_hashset_memory_set_operations, "test_hashset_memory_set_operations"},
-        {test_hashset_memory_no_leaks, "test_hashset_memory_no_leaks"},
+        // Memory tests
+        TEST_REGISTER(test_hashset_memory_basic),
+        TEST_REGISTER(test_hashset_memory_with_key_freeing),
+        TEST_REGISTER(test_hashset_memory_copy),
+        TEST_REGISTER(test_hashset_memory_deep_copy),
+        TEST_REGISTER(test_hashset_memory_get_elements),
+        TEST_REGISTER(test_hashset_memory_iterator),
+        TEST_REGISTER(test_hashset_memory_set_operations),
+        TEST_REGISTER(test_hashset_memory_no_leaks),
 
-        // --- Properties tests ---
-        {test_hashset_load_factor, "test_hashset_load_factor"},
-        {test_hashset_size_consistency, "test_hashset_size_consistency"},
-        {test_hashset_uniqueness, "test_hashset_uniqueness"},
-        {test_hashset_for_each, "test_hashset_for_each"},
-        {test_hashset_get_elements_completeness, "test_hashset_get_elements_completeness"},
-        {test_hashset_copy_properties, "test_hashset_copy_properties"},
-        {test_hashset_operation_properties, "test_hashset_operation_properties"},
-        {test_hashset_iterator_consistency, "test_hashset_iterator_consistency"},
+        // Properties tests
+        TEST_REGISTER(test_hashset_load_factor),
+        TEST_REGISTER(test_hashset_size_consistency),
+        TEST_REGISTER(test_hashset_uniqueness),
+        TEST_REGISTER(test_hashset_for_each),
+        TEST_REGISTER(test_hashset_get_elements_completeness),
+        TEST_REGISTER(test_hashset_copy_properties),
+        TEST_REGISTER(test_hashset_operation_properties),
+        TEST_REGISTER(test_hashset_iterator_consistency),
 
-        // --- Performance tests ---
-        {test_hashset_add_performance, "test_hashset_add_performance"},
-        {test_hashset_contains_performance, "test_hashset_contains_performance"},
-        {test_hashset_remove_performance, "test_hashset_remove_performance"},
-        {test_hashset_set_operations_performance, "test_hashset_set_operations_performance"},
-        {test_hashset_iterator_performance, "test_hashset_iterator_performance"},
-        {test_hashset_copy_performance, "test_hashset_copy_performance"},
-        {test_hashset_load_factor_performance, "test_hashset_load_factor_performance"},
+        // Performance tests
+        TEST_REGISTER(test_hashset_add_performance),
+        TEST_REGISTER(test_hashset_contains_performance),
+        TEST_REGISTER(test_hashset_remove_performance),
+        TEST_REGISTER(test_hashset_set_operations_performance),
+        TEST_REGISTER(test_hashset_iterator_performance),
+        TEST_REGISTER(test_hashset_copy_performance),
+        TEST_REGISTER(test_hashset_load_factor_performance),
+
+        // Stress & Collision
+        TEST_REGISTER(test_hashset_collision_stress),
+        TEST_REGISTER(test_hashset_high_load_factor_stress),
+
+        // Fuzz Tests
+        TEST_REGISTER(test_hashset_fuzz),
     };
 
     return anv_run_tests("HashSet", tests, sizeof(tests) / sizeof(tests[0]));
 }
+

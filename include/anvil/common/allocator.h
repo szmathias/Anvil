@@ -17,10 +17,10 @@ extern "C" {
  */
 typedef struct ANVAllocator
 {
-        void* (*allocate)(size_t size);
-        void (*deallocate)(void* ptr);
-        void (*data_free)(void* ptr);
-        void* (*copy)(const void* data);
+    void* (*allocate)(size_t size);
+    void (*deallocate)(void* ptr);
+    void (*data_free)(void* ptr);
+    void* (*copy)(const void* data);
 } ANVAllocator;
 
 //==============================================================================

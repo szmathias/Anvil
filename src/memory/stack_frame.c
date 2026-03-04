@@ -6,7 +6,7 @@
 
 #include <string.h>
 
-ANV_API void *anv_stackframe_allocate(ANVStackFrame* frame, const size_t size)
+ANV_API void* anv_stackframe_allocate(ANVStackFrame* frame, const size_t size)
 {
     if (!frame || size == 0)
     {
@@ -32,7 +32,7 @@ ANV_API void anv_stackframe_deallocate(ANVStackFrame* frame, void* ptr)
         return;
     }
 
-    const uint8_t *byte_ptr = ptr;
+    const uint8_t* byte_ptr = ptr;
     if (byte_ptr >= frame->memory && byte_ptr < frame->memory + ANV_STACK_FRAME_SIZE)
     {
         if (byte_ptr < frame->memory + frame->top)

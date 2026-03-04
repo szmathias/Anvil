@@ -334,7 +334,7 @@ ANV_API int anv_hashset_is_subset(const ANVHashSet* subset, const ANVHashSet* su
         return 1;
     }
 
-   ANVIterator it = anv_hashmap_iterator(subset->map);
+    ANVIterator it = anv_hashmap_iterator(subset->map);
     while (it.has_next(&it))
     {
         const ANVPair* pair = it.get(&it);

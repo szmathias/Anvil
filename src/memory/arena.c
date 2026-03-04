@@ -20,7 +20,7 @@ ANV_API ANVArena anv_arena_create(const size_t size)
     return arena;
 }
 
-ANV_API ANVResult anv_arena_destroy(ANVArena *arena)
+ANV_API ANVResult anv_arena_destroy(ANVArena* arena)
 {
     if (!arena || !arena->memory)
     {
@@ -35,7 +35,7 @@ ANV_API ANVResult anv_arena_destroy(ANVArena *arena)
     return ANV_RESULT_SUCCESS;
 }
 
-ANV_API void *anv_arena_allocate(ANVArena *arena, const size_t size)
+ANV_API void* anv_arena_allocate(ANVArena* arena, const size_t size)
 {
     if (!arena || !arena->memory || size == 0)
     {
@@ -54,16 +54,16 @@ ANV_API void *anv_arena_allocate(ANVArena *arena, const size_t size)
     return ptr;
 }
 
-ANV_API void anv_arena_deallocate(ANVArena *arena, const void *ptr)
+ANV_API void anv_arena_deallocate(ANVArena* arena, const void* ptr)
 {
     if (!arena || !arena->memory || !ptr)
     {
         return;
     }
 
-    const uint8_t *alloc_ptr = ptr;
-    const uint8_t *arena_start = arena->memory;
-    const uint8_t *arena_end = arena->memory + arena->used;
+    const uint8_t* alloc_ptr = ptr;
+    const uint8_t* arena_start = arena->memory;
+    const uint8_t* arena_end = arena->memory + arena->used;
 
     if (alloc_ptr >= arena_start && alloc_ptr < arena_end)
     {
@@ -75,7 +75,7 @@ ANV_API void anv_arena_deallocate(ANVArena *arena, const void *ptr)
     }
 }
 
-ANV_API ANVResult anv_arena_reset(ANVArena *arena)
+ANV_API ANVResult anv_arena_reset(ANVArena* arena)
 {
     if (!arena || !arena->memory)
     {

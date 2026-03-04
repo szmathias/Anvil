@@ -1,23 +1,80 @@
-//
-// Created by zack on 8/30/25.
-//
-
-#include "TestHelpers.h"
-#include "TestRunner.h"
-
 #include <stdlib.h>
 #include <string.h>
+
+#include <anvil/testing.h>
+#include "TestAssert.h"
+#include "TestHelpers.h"
+
+//==============================================================================
+// Automatic test framework hook registration
+//==============================================================================
+
+// Register the failing-allocator reset as a between-test hook so that
+// anv_run_tests() (which lives in the Anvil DLL) can call it.
+#if defined(_MSC_VER)
+// MSVC: use CRT initializer table
+#pragma section(".CRT$XCU", read)
+static void __cdecl anv_test_auto_init(void)
+{
+    anv_test_set_between_hook(reset_alloc_fail_state);
+}
+__declspec(allocate(".CRT$XCU")) static void (__cdecl *anv_test_auto_init_ptr)(void) = anv_test_auto_init;
+#elif defined(__GNUC__) || defined(__clang__)
+__attribute__((constructor))
+static void anv_test_auto_init(void)
+{
+    anv_test_set_between_hook(reset_alloc_fail_state);
+}
+#else
+// Fallback: user must call anv_test_set_between_hook(reset_alloc_fail_state) manually
+#endif
+
+//==============================================================================
+// Integer Allocation Helpers
+//==============================================================================
+
+int* make_int(const int value)
+{
+    int* p = malloc(sizeof(int));
+    if (p)
+    {
+        *p = value;
+    }
+    return p;
+}
+
+int** make_int_array(const int* values, const int count)
+{
+    int** arr = malloc(sizeof(int*) * count);
+    if (!arr) return NULL;
+    for (int i = 0; i < count; i++)
+    {
+        arr[i] = make_int(values[i]);
+        if (!arr[i])
+        {
+            // Cleanup on failure
+            for (int j = 0; j < i; j++) free(arr[j]);
+            free(arr);
+            return NULL;
+        }
+    }
+    return arr;
+}
+
+//==============================================================================
+// Comparison Functions
+//==============================================================================
 
 // Integer comparison function
 int int_cmp(const void* a, const void* b)
 {
-    return (*(int*)a) - (*(int*)b);
+    return *(int*)a - *(int*)b;
 }
 
 // Custom comparison function for descending order
 int int_cmp_desc(const void* a, const void* b)
 {
-    return (*(int*)b) - (*(int*)a);
+    return *(int*)b - *(int*)a;
 }
 
 // Person comparison function
@@ -28,19 +85,33 @@ int person_cmp(const void* a, const void* b)
     return strcmp(p1->name, p2->name);
 }
 
-// Integer free function
+// String comparison function
+int string_cmp(const void* a, const void* b)
+{
+    return strcmp(a, b);
+}
+
+// A copy function that always fails (returns NULL)
+void* failing_copy_func(const void* data)
+{
+    (void)data;
+    return NULL;
+}
+
 void int_free(void* a)
 {
     free(a);
 }
 
-// Person free function
 void person_free(void* p)
 {
     free(p);
 }
 
-// Custom allocator for testing
+//==============================================================================
+// Allocator Functions
+//==============================================================================
+
 void* test_calloc(const size_t size)
 {
     return calloc(1, size);
@@ -105,14 +176,14 @@ Person* create_person(const char* name, const int age)
 // Predicate function that returns non-zero for even numbers
 bool is_even(const void* data)
 {
-    return (*(int*)data % 2 == 0) ? 1 : 0;
+    return *(int*)data % 2 == 0 ? 1 : 0;
 }
 
 // Predicate: is odd
 bool is_odd(const void* data)
 {
     const int* value = data;
-    return (*value % 2 != 0);
+    return *value % 2 != 0;
 }
 
 // Predicate: is greater than 5
@@ -126,35 +197,35 @@ bool is_greater_than_five(const void* data)
 bool is_greater_than_10(const void* data)
 {
     const int* value = data;
-    return (*value > 10);
+    return *value > 10;
 }
 
 // Predicate: is greater than 20
 bool is_greater_than_20(const void* data)
 {
     const int* value = data;
-    return (*value > 20);
+    return *value > 20;
 }
 
 // Predicate: is divisible by 3
 bool is_divisible_by_3(const void* data)
 {
     const int* value = data;
-    return (*value % 3 == 0);
+    return *value % 3 == 0;
 }
 
 // Predicate: is divisible by 4
 bool is_divisible_by_4(const void* data)
 {
     const int* value = data;
-    return (*value % 4 == 0);
+    return *value % 4 == 0;
 }
 
 // Predicate: is divisible by 6
 bool is_divisible_by_six(const void* data)
 {
     const int* value = data;
-    return (*value % 6 == 0);
+    return *value % 6 == 0;
 }
 
 // Transform function that doubles a number
@@ -175,7 +246,7 @@ void* square_func(const void* data)
     int* result = malloc(sizeof(int));
     if (result)
     {
-        *result = (*original) * (*original);
+        *result = *original * *original;
     }
     return result;
 }
@@ -185,7 +256,7 @@ void* add_one(const void* data)
 {
     const int* original = data;
     int* result = malloc(sizeof(int));
-    *result = (*original) + 1;
+    *result = *original + 1;
     return result;
 }
 
@@ -194,7 +265,7 @@ void* add_five(const void* data)
 {
     const int* original = data;
     int* result = malloc(sizeof(int));
-    *result = (*original) + 5;
+    *result = *original + 5;
     return result;
 }
 
@@ -203,7 +274,7 @@ void* add_ten_func(const void* data)
 {
     const int* original = data;
     int* result = malloc(sizeof(int));
-    *result = (*original) + 10;
+    *result = *original + 10;
     return result;
 }
 
@@ -212,7 +283,7 @@ void* multiply_by_three(const void* data)
 {
     const int* original = data;
     int* result = malloc(sizeof(int));
-    *result = (*original) * 3;
+    *result = *original * 3;
     return result;
 }
 
@@ -274,6 +345,12 @@ void set_alloc_fail_countdown(const int count)
     alloc_fail_countdown = count;
 }
 
+// Reset the failing allocator to a clean state (never fail)
+void reset_alloc_fail_state(void)
+{
+    alloc_fail_countdown = -1;
+}
+
 ANVAllocator create_failing_int_allocator(void)
 {
     return anv_alloc_custom(failing_alloc, failing_free, failing_free, failing_int_copy);
@@ -292,48 +369,4 @@ ANVAllocator create_person_allocator(void)
 ANVAllocator create_string_allocator(void)
 {
     return anv_alloc_custom(test_calloc, test_dealloc, free, string_copy);
-}
-
-// Reset the failing allocator to a clean state (never fail)
-void reset_alloc_fail_state(void)
-{
-    alloc_fail_countdown = -1;
-}
-
-//==============================================================================
-// Standardized test runner
-//==============================================================================
-
-int anv_run_tests(const char* suite_name, const ANVTestCase* tests, const int count)
-{
-    int passed = 0;
-    int failed = 0;
-    int skipped = 0;
-
-    for (int i = 0; i < count; i++)
-    {
-        // Reset failing allocator state between tests to prevent leakage
-        reset_alloc_fail_state();
-
-        const int result = tests[i].func();
-        if (result == TEST_SUCCESS)
-        {
-            passed++;
-        }
-        else if (result == TEST_SKIPPED)
-        {
-            printf("[SKIP] %s\n", tests[i].name);
-            skipped++;
-        }
-        else
-        {
-            printf("[FAIL] %s\n", tests[i].name);
-            failed++;
-        }
-    }
-
-    printf("\n%s: %d passed, %d failed, %d skipped (of %d)\n",
-           suite_name, passed, failed, skipped, count);
-
-    return failed > 0 ? 1 : 0;
 }

@@ -22,9 +22,9 @@ extern "C" {
  */
 typedef struct ANVPair
 {
-        void* first;         // Pointer to first element data
-        void* second;        // Pointer to second element data
-        ANVAllocator alloc; // Custom allocator
+    void* first;        // Pointer to first element data
+    void* second;       // Pointer to second element data
+    ANVAllocator alloc; // Custom allocator
 } ANVPair;
 
 /**

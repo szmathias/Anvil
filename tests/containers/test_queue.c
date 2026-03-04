@@ -1,10 +1,10 @@
-#include "TestAssert.h"
-#include "TestHelpers.h"
-#include "TestRunner.h"
-#include "containers/arraylist.h"
-#include "containers/queue.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <anvil/testing.h>
+#include "TestHelpers.h"
+#include "containers/arraylist.h"
+#include "containers/queue.h"
 
 //==============================================================================
 // CRUD Tests
@@ -24,10 +24,8 @@ int test_queue_create_destroy(void)
     return TEST_SUCCESS;
 }
 
-// Test NULL parameter handling
 int test_queue_null_parameters(void)
 {
-    // Creating with NULL allocator should fail
     ASSERT_NULL(anv_queue_create(NULL));
 
     // Operations on NULL queue should be safe
@@ -46,18 +44,14 @@ int test_queue_null_parameters(void)
     return TEST_SUCCESS;
 }
 
-// Test basic enqueue and dequeue operations
 int test_queue_enqueue_dequeue(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVQueue* queue = anv_queue_create(&alloc);
 
-    int* data1 = malloc(sizeof(int));
-    int* data2 = malloc(sizeof(int));
-    int* data3 = malloc(sizeof(int));
-    *data1 = 10;
-    *data2 = 20;
-    *data3 = 30;
+    MAKE_INT(data1, 10);
+    MAKE_INT(data2, 20);
+    MAKE_INT(data3, 30);
 
     // Test enqueuing elements
     ASSERT_EQ(anv_queue_enqueue(queue, data1), 0);
@@ -105,10 +99,8 @@ int test_queue_dequeue_data(void)
     ANVAllocator alloc = create_int_allocator();
     ANVQueue* queue = anv_queue_create(&alloc);
 
-    int* data1 = malloc(sizeof(int));
-    int* data2 = malloc(sizeof(int));
-    *data1 = 42;
-    *data2 = 84;
+    MAKE_INT(data1, 42);
+    MAKE_INT(data2, 84);
 
     ASSERT_EQ(anv_queue_enqueue(queue, data1), 0);
     ASSERT_EQ(anv_queue_enqueue(queue, data2), 0);
@@ -143,8 +135,7 @@ int test_queue_clear(void)
     // Add some elements
     for (int i = 0; i < 5; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -158,8 +149,7 @@ int test_queue_clear(void)
     ASSERT_NULL(anv_queue_back(queue));
 
     // Queue should still be usable after clear
-    int* new_data = malloc(sizeof(int));
-    *new_data = 999;
+    MAKE_INT(new_data, 999);
     ASSERT_EQ(anv_queue_enqueue(queue, new_data), 0);
     ASSERT_EQ(anv_queue_size(queue), 1);
     ASSERT_EQ(*(int*)anv_queue_front(queue), 999);
@@ -194,8 +184,7 @@ int test_queue_equals(void)
     ASSERT_EQ(anv_queue_equals(queue1, queue2, int_cmp), 1);
 
     // Add different element to one queue
-    int* diff_data = malloc(sizeof(int));
-    *diff_data = 999;
+    MAKE_INT(diff_data, 999);
     ASSERT_EQ(anv_queue_enqueue(queue1, diff_data), 0);
 
     ASSERT_EQ(anv_queue_equals(queue1, queue2, int_cmp), 0);
@@ -219,8 +208,7 @@ int test_queue_fifo_behavior(void)
     // Enqueue numbers 0-9
     for (int i = 0; i < 10; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -253,8 +241,7 @@ int test_queue_iterator(void)
     for (int i = 0; i < 5; i++)
     {
         const int values[] = {10, 20, 30, 40, 50};
-        int* data = malloc(sizeof(int));
-        *data = values[i];
+        MAKE_INT(data, values[i]);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -357,8 +344,7 @@ int test_queue_iterator_modification(void)
     // Add initial data
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -371,8 +357,7 @@ int test_queue_iterator_modification(void)
     it.next(&it);
 
     // Modify queue while iterator exists (implementation detail: iterator may become invalid)
-    int* new_data = malloc(sizeof(int));
-    *new_data = 999;
+    MAKE_INT(new_data, 999);
     ASSERT_EQ(anv_queue_enqueue(queue, new_data), 0);
 
     // Iterator should still be valid but may not reflect new state
@@ -535,8 +520,7 @@ int test_queue_iterator_next_return_values(void)
     ASSERT_NOT_NULL(queue);
 
     // Add single element
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
     ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
 
     ANVIterator it = anv_queue_iterator(queue);
@@ -569,8 +553,7 @@ int test_queue_iterator_mixed_operations(void)
     // Add test data (will be in FIFO order: 0, 10, 20)
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -626,8 +609,7 @@ int test_queue_iterator_order(void)
     const int values[] = {100, 200, 300, 400, 500};
     for (int i = 0; i < 5; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = values[i];
+        MAKE_INT(data, values[i]);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -659,8 +641,7 @@ int test_queue_iterator_get(void)
     // Add test data
     for (int i = 1; i <= 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -745,8 +726,7 @@ int test_queue_copy_deep(void)
 
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = original_values[i];
+        MAKE_INT(data, original_values[i]);
         ASSERT_EQ(anv_queue_enqueue(original, data), 0);
     }
 
@@ -783,8 +763,7 @@ int test_queue_for_each(void)
     // Add some test data
     for (int i = 1; i <= 5; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -867,8 +846,7 @@ int test_queue_mixed_operations(void)
     // Mix enqueue and dequeue operations
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -881,8 +859,7 @@ int test_queue_mixed_operations(void)
     // Add more elements
     for (int i = 3; i < 6; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -932,8 +909,7 @@ int test_queue_enqueue_memory_failure(void)
     ANVQueue* queue = anv_queue_create(&failing_alloc);
     ASSERT_NOT_NULL(queue);
 
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
 
     // Enqueue should fail due to node allocation failure
     ASSERT_EQ(anv_queue_enqueue(queue, data), -1);
@@ -953,13 +929,12 @@ int test_queue_copy_memory_failure(void)
     // Add some data
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_queue_enqueue(original, data), 0);
     }
 
     // Replace allocator with failing one
-    ANVAllocator failing_alloc = create_failing_int_allocator();
+    const ANVAllocator failing_alloc = create_failing_int_allocator();
     original->alloc = failing_alloc;
 
     // Set to fail on copy creation
@@ -985,8 +960,7 @@ int test_queue_deep_copy_failure(void)
     // Add some data
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_queue_enqueue(original, data), 0);
     }
 
@@ -1012,8 +986,7 @@ int test_queue_large_memory_usage(void)
     // Enqueue many elements
     for (int i = 0; i < num_elements; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -1047,8 +1020,7 @@ int test_queue_clear_memory(void)
         // Add elements
         for (int i = 0; i < 100; i++)
         {
-            int* data = malloc(sizeof(int));
-            *data = i;
+            MAKE_INT(data, i);
             ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
         }
 
@@ -1073,8 +1045,7 @@ int test_queue_iterator_memory_failure(void)
     ANVQueue* queue = anv_queue_create(&failing_alloc);
 
     // Add some data
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
     ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
 
     // Set to fail on iterator state allocation
@@ -1095,8 +1066,7 @@ int test_queue_front_back_consistency(void)
     ANVQueue* queue = anv_queue_create(&alloc);
 
     // Test single element case
-    int* single_data = malloc(sizeof(int));
-    *single_data = 999;
+    MAKE_INT(single_data, 999);
     ASSERT_EQ(anv_queue_enqueue(queue, single_data), 0);
 
     // Front and back should point to same element
@@ -1111,8 +1081,7 @@ int test_queue_front_back_consistency(void)
     // Add multiple elements and test front/back tracking
     for (int i = 0; i < 100; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
 
         // Front should always be first element, back should be last
@@ -1175,8 +1144,7 @@ int test_queue_size_consistency(void)
     // Size should increase with each enqueue
     for (int i = 1; i <= 50; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
         ASSERT_EQ(anv_queue_size(queue), (size_t)i);
         ASSERT(!anv_queue_is_empty(queue));
@@ -1208,18 +1176,15 @@ int test_queue_front_back_invariants(void)
     ANVAllocator alloc = create_int_allocator();
     ANVQueue* queue = anv_queue_create(&alloc);
 
-    int* data1 = malloc(sizeof(int));
-    int* data2 = malloc(sizeof(int));
-    int* data3 = malloc(sizeof(int));
-    *data1 = 10;
-    *data2 = 20;
-    *data3 = 30;
+    MAKE_INT(data1, 10);
+    MAKE_INT(data2, 20);
+    MAKE_INT(data3, 30);
 
     ASSERT_EQ(anv_queue_enqueue(queue, data1), 0);
     ASSERT_EQ(anv_queue_enqueue(queue, data2), 0);
     ASSERT_EQ(anv_queue_enqueue(queue, data3), 0);
 
-    size_t original_size = anv_queue_size(queue);
+    const size_t original_size = anv_queue_size(queue);
 
     // Multiple front/back accesses should return same values and not change size
     for (int i = 0; i < 10; i++)
@@ -1250,8 +1215,7 @@ int test_queue_copy_preserves_order(void)
     // Build original queue
     for (int i = 0; i < num_values; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = values[i];
+        MAKE_INT(data, values[i]);
         ASSERT_EQ(anv_queue_enqueue(original, data), 0);
     }
 
@@ -1305,8 +1269,7 @@ int test_queue_clear_preserves_structure(void)
     // Add elements
     for (int i = 0; i < 10; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -1322,8 +1285,7 @@ int test_queue_clear_preserves_structure(void)
     ASSERT_NULL(anv_queue_back(queue));
 
     // Should be able to use queue normally after clear
-    int* new_data = malloc(sizeof(int));
-    *new_data = 999;
+    MAKE_INT(new_data, 999);
     ASSERT_EQ(anv_queue_enqueue(queue, new_data), 0);
     ASSERT_EQ(anv_queue_size(queue), 1);
     ASSERT_EQ(*(int*)anv_queue_front(queue), 999);
@@ -1345,8 +1307,7 @@ int test_queue_for_each_preserves_contents(void)
     // Build queue
     for (int i = 0; i < num_values; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = original_values[i];
+        MAKE_INT(data, original_values[i]);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -1383,8 +1344,7 @@ int test_queue_mixed_operations_fifo(void)
     // Enqueue initial elements
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = sequence[i];
+        MAKE_INT(data, sequence[i]);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -1397,8 +1357,7 @@ int test_queue_mixed_operations_fifo(void)
     const int more_sequence[] = {400, 500};
     for (int i = 0; i < 2; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = more_sequence[i];
+        MAKE_INT(data, more_sequence[i]);
         ASSERT_EQ(anv_queue_enqueue(queue, data), 0);
     }
 
@@ -1419,61 +1378,127 @@ int test_queue_mixed_operations_fifo(void)
 }
 
 //==============================================================================
+// Fuzz Tests
+//==============================================================================
+
+int test_queue_fuzz(void)
+{
+    srand((unsigned int)42);
+    ANVAllocator alloc = create_int_allocator();
+    ANVQueue* queue = anv_queue_create(&alloc);
+    ASSERT_NOT_NULL(queue);
+
+    size_t expected_size = 0;
+
+    for (int i = 0; i < 50000; i++)
+    {
+        const unsigned op = rand() % 3;
+
+        switch (op)
+        {
+            case 0: // enqueue
+            {
+                MAKE_INT(val, rand());
+                if (anv_queue_enqueue(queue, val) == 0)
+                    expected_size++;
+                else
+                    free(val);
+                break;
+            }
+            case 1: // dequeue
+            {
+                if (expected_size > 0)
+                {
+                    if (anv_queue_dequeue(queue, true) == 0)
+                        expected_size--;
+                }
+                break;
+            }
+            case 2: // front/back
+            {
+                if (expected_size > 0)
+                {
+                    ASSERT_NOT_NULL(anv_queue_front(queue));
+                    ASSERT_NOT_NULL(anv_queue_back(queue));
+                }
+                else
+                {
+                    ASSERT_NULL(anv_queue_front(queue));
+                    ASSERT_NULL(anv_queue_back(queue));
+                }
+                break;
+            }
+            default:
+                break;
+        }
+
+        ASSERT_EQ(anv_queue_size(queue), expected_size);
+        ASSERT_EQ(anv_queue_is_empty(queue), expected_size == 0 ? 1 : 0);
+    }
+
+    anv_queue_destroy(queue, true);
+    return TEST_SUCCESS;
+}
+
+//==============================================================================
 // Main
 //==============================================================================
 
 int main(void)
 {
     const ANVTestCase tests[] = {
-        // CRUD Tests (7)
-        {test_queue_create_destroy, "test_queue_create_destroy"},
-        {test_queue_null_parameters, "test_queue_null_parameters"},
-        {test_queue_enqueue_dequeue, "test_queue_enqueue_dequeue"},
-        {test_queue_dequeue_data, "test_queue_dequeue_data"},
-        {test_queue_clear, "test_queue_clear"},
-        {test_queue_equals, "test_queue_equals"},
-        {test_queue_fifo_behavior, "test_queue_fifo_behavior"},
+        // CRUD Tests
+        TEST_REGISTER(test_queue_create_destroy),
+        TEST_REGISTER(test_queue_null_parameters),
+        TEST_REGISTER(test_queue_enqueue_dequeue),
+        TEST_REGISTER(test_queue_dequeue_data),
+        TEST_REGISTER(test_queue_clear),
+        TEST_REGISTER(test_queue_equals),
+        TEST_REGISTER(test_queue_fifo_behavior),
 
-        // Iterator Tests (13)
-        {test_queue_iterator, "test_queue_iterator"},
-        {test_queue_from_iterator, "test_queue_from_iterator"},
-        {test_queue_iterator_empty, "test_queue_iterator_empty"},
-        {test_queue_iterator_invalid, "test_queue_iterator_invalid"},
-        {test_queue_iterator_modification, "test_queue_iterator_modification"},
-        {test_queue_copy_isolation, "test_queue_copy_isolation"},
-        {test_queue_anv_copy_function_required, "test_queue_anv_copy_function_required"},
-        {test_queue_from_iterator_no_copy, "test_queue_from_iterator_no_copy"},
-        {test_iterator_exhaustion_after_queue_creation, "test_iterator_exhaustion_after_queue_creation"},
-        {test_queue_iterator_next_return_values, "test_queue_iterator_next_return_values"},
-        {test_queue_iterator_mixed_operations, "test_queue_iterator_mixed_operations"},
-        {test_queue_iterator_order, "test_queue_iterator_order"},
-        {test_queue_iterator_get, "test_queue_iterator_get"},
+        // Iterator Tests
+        TEST_REGISTER(test_queue_iterator),
+        TEST_REGISTER(test_queue_from_iterator),
+        TEST_REGISTER(test_queue_iterator_empty),
+        TEST_REGISTER(test_queue_iterator_invalid),
+        TEST_REGISTER(test_queue_iterator_modification),
+        TEST_REGISTER(test_queue_copy_isolation),
+        TEST_REGISTER(test_queue_anv_copy_function_required),
+        TEST_REGISTER(test_queue_from_iterator_no_copy),
+        TEST_REGISTER(test_iterator_exhaustion_after_queue_creation),
+        TEST_REGISTER(test_queue_iterator_next_return_values),
+        TEST_REGISTER(test_queue_iterator_mixed_operations),
+        TEST_REGISTER(test_queue_iterator_order),
+        TEST_REGISTER(test_queue_iterator_get),
 
-        // Algorithm Tests (5)
-        {test_queue_copy_shallow, "test_queue_copy_shallow"},
-        {test_queue_copy_deep, "test_queue_copy_deep"},
-        {test_queue_for_each, "test_queue_for_each"},
-        {test_queue_with_persons, "test_queue_with_persons"},
-        {test_queue_mixed_operations, "test_queue_mixed_operations"},
+        // Algorithm Tests
+        TEST_REGISTER(test_queue_copy_shallow),
+        TEST_REGISTER(test_queue_copy_deep),
+        TEST_REGISTER(test_queue_for_each),
+        TEST_REGISTER(test_queue_with_persons),
+        TEST_REGISTER(test_queue_mixed_operations),
 
-        // Memory Tests (8)
-        {test_queue_failing_allocator, "test_queue_failing_allocator"},
-        {test_queue_enqueue_memory_failure, "test_queue_enqueue_memory_failure"},
-        {test_queue_copy_memory_failure, "test_queue_copy_memory_failure"},
-        {test_queue_deep_copy_failure, "test_queue_deep_copy_failure"},
-        {test_queue_large_memory_usage, "test_queue_large_memory_usage"},
-        {test_queue_clear_memory, "test_queue_clear_memory"},
-        {test_queue_iterator_memory_failure, "test_queue_iterator_memory_failure"},
-        {test_queue_front_back_consistency, "test_queue_front_back_consistency"},
+        // Memory Tests
+        TEST_REGISTER(test_queue_failing_allocator),
+        TEST_REGISTER(test_queue_enqueue_memory_failure),
+        TEST_REGISTER(test_queue_copy_memory_failure),
+        TEST_REGISTER(test_queue_deep_copy_failure),
+        TEST_REGISTER(test_queue_large_memory_usage),
+        TEST_REGISTER(test_queue_clear_memory),
+        TEST_REGISTER(test_queue_iterator_memory_failure),
+        TEST_REGISTER(test_queue_front_back_consistency),
 
-        // Property Tests (7)
-        {test_queue_fifo_property, "test_queue_fifo_property"},
-        {test_queue_size_consistency, "test_queue_size_consistency"},
-        {test_queue_front_back_invariants, "test_queue_front_back_invariants"},
-        {test_queue_copy_preserves_order, "test_queue_copy_preserves_order"},
-        {test_queue_clear_preserves_structure, "test_queue_clear_preserves_structure"},
-        {test_queue_for_each_preserves_contents, "test_queue_for_each_preserves_contents"},
-        {test_queue_mixed_operations_fifo, "test_queue_mixed_operations_fifo"},
+        // Property Tests
+        TEST_REGISTER(test_queue_fifo_property),
+        TEST_REGISTER(test_queue_size_consistency),
+        TEST_REGISTER(test_queue_front_back_invariants),
+        TEST_REGISTER(test_queue_copy_preserves_order),
+        TEST_REGISTER(test_queue_clear_preserves_structure),
+        TEST_REGISTER(test_queue_for_each_preserves_contents),
+        TEST_REGISTER(test_queue_mixed_operations_fifo),
+
+        // Fuzz Tests
+        TEST_REGISTER(test_queue_fuzz),
     };
 
     return anv_run_tests("Queue", tests, sizeof(tests) / sizeof(tests[0]));

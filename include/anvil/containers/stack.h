@@ -21,8 +21,8 @@ extern "C" {
  */
 typedef struct ANVStackNode
 {
-        void* data;                // Pointer to user data
-        struct ANVStackNode* next; // Pointer to next node
+    void* data;                // Pointer to user data
+    struct ANVStackNode* next; // Pointer to next node
 } ANVStackNode;
 
 /**
@@ -30,9 +30,9 @@ typedef struct ANVStackNode
  */
 typedef struct ANVStack
 {
-        ANVStackNode* top;   // Pointer to top node
-        size_t size;         // Number of elements in stack
-        ANVAllocator alloc;  // Custom allocator
+    ANVStackNode* top;  // Pointer to top node
+    size_t size;        // Number of elements in stack
+    ANVAllocator alloc; // Custom allocator
 } ANVStack;
 
 //==============================================================================
@@ -45,7 +45,7 @@ typedef struct ANVStack
  * @param alloc Custom allocator (required)
  * @return Pointer to new Stack, or NULL on failure
  */
-ANV_API ANVStack* anv_stack_create(ANVAllocator* alloc);
+ANV_API ANVStack* anv_stack_create(ANVAllocator * alloc);
 
 /**
  * Destroy the stack and free all nodes.

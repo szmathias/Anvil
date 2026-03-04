@@ -25,9 +25,9 @@ extern "C" {
  */
 typedef struct ANVArena
 {
-    uint8_t *memory;        // Pointer to the arena's memory block
-    size_t size;            // Total size of the arena in bytes
-    size_t used;            // Number of bytes currently allocated
+    uint8_t* memory; // Pointer to the arena's memory block
+    size_t size;     // Total size of the arena in bytes
+    size_t used;     // Number of bytes currently allocated
 } ANVArena;
 
 //==============================================================================
@@ -55,7 +55,7 @@ ANV_API ANVArena anv_arena_create(size_t size);
  * @param arena The arena to destroy (must not be NULL, arena->memory must not be NULL)
  * @return ANV_RESULT_SUCCESS on success, ANV_RESULT_INVALID_ARGUMENT if arena or arena->memory is NULL
  */
-ANV_API ANVResult anv_arena_destroy(ANVArena *arena);
+ANV_API ANVResult anv_arena_destroy(ANVArena* arena);
 
 //==============================================================================
 // Memory allocation operations
@@ -72,7 +72,7 @@ ANV_API ANVResult anv_arena_destroy(ANVArena *arena);
  * @param size Number of bytes to allocate (must be greater than 0)
  * @return Pointer to allocated memory, or NULL if allocation fails
  */
-ANV_API void *anv_arena_allocate(ANVArena *arena, size_t size);
+ANV_API void* anv_arena_allocate(ANVArena* arena, size_t size);
 
 /**
  * Deallocate memory from the arena.
@@ -88,7 +88,7 @@ ANV_API void *anv_arena_allocate(ANVArena *arena, size_t size);
  * @param arena The arena to deallocate from (must not be NULL, arena->memory must not be NULL)
  * @param ptr Pointer to memory previously allocated from this arena
  */
-ANV_API void anv_arena_deallocate(ANVArena *arena, const void *ptr);
+ANV_API void anv_arena_deallocate(ANVArena* arena, const void* ptr);
 
 /**
  * Reset the arena to its initial empty state.
@@ -100,7 +100,7 @@ ANV_API void anv_arena_deallocate(ANVArena *arena, const void *ptr);
  * @param arena The arena to reset (must not be NULL, arena->memory must not be NULL)
  * @return ANV_RESULT_SUCCESS on success, ANV_RESULT_INVALID_ARGUMENT if arena or arena->memory is NULL
  */
-ANV_API ANVResult anv_arena_reset(ANVArena *arena);
+ANV_API ANVResult anv_arena_reset(ANVArena* arena);
 
 #ifdef __cplusplus
 }

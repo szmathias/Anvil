@@ -21,14 +21,14 @@ extern "C" {
 
 typedef struct ANVString
 {
-        size_t capacity;
-        size_t size;
+    size_t capacity;
+    size_t size;
 
-        union
-        {
-                char* data;
-                char small_data[STR_MIN_INIT_CAP];
-        };
+    union
+    {
+        char* data;
+        char small_data[STR_MIN_INIT_CAP];
+    };
 } ANVString;
 
 // Convenience macros to hopefully save some typing

@@ -753,13 +753,13 @@ ANV_API size_t anv_str_split_cstring(const char* str, const char* delim, ANVStri
         return 0;
     }
 
-    ANVString *parts = malloc(sizeof(ANVString));
+    ANVString* parts = malloc(sizeof(ANVString));
     if (!parts)
     {
         return 0;
     }
 
-    char *buffer = mem_calloc(str_size + 1);
+    char* buffer = mem_calloc(str_size + 1);
     if (!buffer)
     {
         free(parts);

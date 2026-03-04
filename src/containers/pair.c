@@ -358,7 +358,7 @@ ANV_API void* anv_pair_copy_string_string(const void* pair_data)
 
     if (original->first)
     {
-        const char* str1 =original->first;
+        const char* str1 = original->first;
         const size_t len1 = strlen(str1) + 1;
         char* str1_copy = anv_alloc_allocate(&original->alloc, len1);
         if (!str1_copy)

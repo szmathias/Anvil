@@ -34,8 +34,8 @@ extern "C" {
  */
 typedef struct ANVStackFrame
 {
-    uint8_t memory[ANV_STACK_FRAME_SIZE];  // Fixed-size memory buffer
-    size_t top;                            // Current stack top position (bytes used)
+    uint8_t memory[ANV_STACK_FRAME_SIZE]; // Fixed-size memory buffer
+    size_t top;                           // Current stack top position (bytes used)
 } ANVStackFrame;
 
 //==============================================================================
@@ -53,7 +53,7 @@ typedef struct ANVStackFrame
  * @param size Number of bytes to allocate (must be greater than 0)
  * @return Pointer to allocated memory, or NULL if allocation fails
  */
-ANV_API void *anv_stackframe_allocate(ANVStackFrame* frame, size_t size);
+ANV_API void* anv_stackframe_allocate(ANVStackFrame* frame, size_t size);
 
 /**
  * Deallocate memory from the stack frame (LIFO only).

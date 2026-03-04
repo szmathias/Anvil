@@ -1,10 +1,10 @@
-#include "TestAssert.h"
-#include "TestHelpers.h"
-#include "TestRunner.h"
-#include "containers/arraylist.h"
-#include "containers/stack.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <anvil/testing.h>
+#include "TestHelpers.h"
+#include "containers/arraylist.h"
+#include "containers/stack.h"
 
 //==============================================================================
 // CRUD Tests
@@ -52,12 +52,9 @@ int test_stack_push_pop(void)
     ANVAllocator alloc = create_int_allocator();
     ANVStack* stack = anv_stack_create(&alloc);
 
-    int* data1 = malloc(sizeof(int));
-    int* data2 = malloc(sizeof(int));
-    int* data3 = malloc(sizeof(int));
-    *data1 = 10;
-    *data2 = 20;
-    *data3 = 30;
+    MAKE_INT(data1, 10);
+    MAKE_INT(data2, 20);
+    MAKE_INT(data3, 30);
 
     // Test pushing elements
     ASSERT_EQ(anv_stack_push(stack, data1), 0);
@@ -94,16 +91,13 @@ int test_stack_push_pop(void)
     return TEST_SUCCESS;
 }
 
-// Test pop_data function
 int test_stack_pop_data(void)
 {
     ANVAllocator alloc = create_int_allocator();
     ANVStack* stack = anv_stack_create(&alloc);
 
-    int* data1 = malloc(sizeof(int));
-    int* data2 = malloc(sizeof(int));
-    *data1 = 42;
-    *data2 = 84;
+    MAKE_INT(data1, 42);
+    MAKE_INT(data2, 84);
 
     ASSERT_EQ(anv_stack_push(stack, data1), 0);
     ASSERT_EQ(anv_stack_push(stack, data2), 0);
@@ -138,8 +132,7 @@ int test_stack_clear(void)
     // Add some elements
     for (int i = 0; i < 5; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_stack_push(stack, data), 0);
     }
 
@@ -152,8 +145,7 @@ int test_stack_clear(void)
     ASSERT_NULL(anv_stack_peek(stack));
 
     // Stack should still be usable after clear
-    int* new_data = malloc(sizeof(int));
-    *new_data = 999;
+    MAKE_INT(new_data, 999);
     ASSERT_EQ(anv_stack_push(stack, new_data), 0);
     ASSERT_EQ(anv_stack_size(stack), 1);
     ASSERT_EQ(*(int*)anv_stack_peek(stack), 999);
@@ -188,8 +180,7 @@ int test_stack_equals(void)
     ASSERT_EQ(anv_stack_equals(stack1, stack2, int_cmp), 1);
 
     // Add different element to one stack
-    int* diff_data = malloc(sizeof(int));
-    *diff_data = 999;
+    MAKE_INT(diff_data, 999);
     ASSERT_EQ(anv_stack_push(stack1, diff_data), 0);
 
     ASSERT_EQ(anv_stack_equals(stack1, stack2, int_cmp), 0);
@@ -218,8 +209,7 @@ int test_stack_iterator(void)
     for (int i = 0; i < 5; i++)
     {
         const int values[] = {10, 20, 30, 40, 50};
-        int* data = malloc(sizeof(int));
-        *data = values[i];
+        MAKE_INT(data, values[i]);
         ASSERT_EQ(anv_stack_push(stack, data), 0);
     }
 
@@ -322,8 +312,7 @@ int test_stack_iterator_modification(void)
     // Add initial data
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_stack_push(stack, data), 0);
     }
 
@@ -336,8 +325,7 @@ int test_stack_iterator_modification(void)
     it.next(&it);
 
     // Modify stack while iterator exists (implementation detail: iterator may become invalid)
-    int* new_data = malloc(sizeof(int));
-    *new_data = 999;
+    MAKE_INT(new_data, 999);
     ASSERT_EQ(anv_stack_push(stack, new_data), 0);
 
     // Iterator should still be valid but may not reflect new state
@@ -499,8 +487,7 @@ int test_stack_iterator_next_return_values(void)
     ASSERT_NOT_NULL(stack);
 
     // Add single element
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
     ASSERT_EQ(anv_stack_push(stack, data), 0);
 
     ANVIterator it = anv_stack_iterator(stack);
@@ -533,8 +520,7 @@ int test_stack_iterator_mixed_operations(void)
     // Add test data (will be in LIFO order: 20, 10, 0)
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_stack_push(stack, data), 0);
     }
 
@@ -640,8 +626,7 @@ int test_stack_copy_deep(void)
 
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = original_values[i];
+        MAKE_INT(data, original_values[i]);
         ASSERT_EQ(anv_stack_push(original, data), 0);
     }
 
@@ -678,8 +663,7 @@ int test_stack_for_each(void)
     // Add some test data
     for (int i = 1; i <= 5; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_stack_push(stack, data), 0);
     }
 
@@ -776,8 +760,7 @@ int test_stack_push_memory_failure(void)
     ANVStack* stack = anv_stack_create(&failing_alloc);
     ASSERT_NOT_NULL(stack);
 
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
 
     // Push should fail due to node allocation failure
     ASSERT_EQ(anv_stack_push(stack, data), -1);
@@ -797,13 +780,12 @@ int test_stack_copy_memory_failure(void)
     // Add some data
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_stack_push(original, data), 0);
     }
 
     // Replace allocator with failing one
-    ANVAllocator failing_alloc = create_failing_int_allocator();
+    const ANVAllocator failing_alloc = create_failing_int_allocator();
     original->alloc = failing_alloc;
 
     // Set to fail on copy creation
@@ -828,8 +810,7 @@ int test_stack_deep_copy_failure(void)
     // Add some data
     for (int i = 0; i < 3; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i * 10;
+        MAKE_INT(data, i * 10);
         ASSERT_EQ(anv_stack_push(original, data), 0);
     }
 
@@ -854,8 +835,7 @@ int test_stack_large_memory_usage(void)
     // Push many elements
     for (int i = 0; i < num_elements; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_stack_push(stack, data), 0);
     }
 
@@ -888,8 +868,7 @@ int test_stack_clear_memory(void)
         // Add elements
         for (int i = 0; i < 100; i++)
         {
-            int* data = malloc(sizeof(int));
-            *data = i;
+            MAKE_INT(data, i);
             ASSERT_EQ(anv_stack_push(stack, data), 0);
         }
 
@@ -913,8 +892,7 @@ int test_stack_iterator_memory_failure(void)
     ANVStack* stack = anv_stack_create(&failing_alloc);
 
     // Add some data
-    int* data = malloc(sizeof(int));
-    *data = 42;
+    MAKE_INT(data, 42);
     ASSERT_EQ(anv_stack_push(stack, data), 0);
 
     // Set to fail on iterator state allocation
@@ -977,8 +955,7 @@ int test_stack_size_consistency(void)
     // Size should increase with each push
     for (int i = 1; i <= 50; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_stack_push(stack, data), 0);
         ASSERT_EQ(anv_stack_size(stack), (size_t)i);
         ASSERT(!anv_stack_is_empty(stack));
@@ -1010,18 +987,15 @@ int test_stack_peek_invariant(void)
     ANVAllocator alloc = create_int_allocator();
     ANVStack* stack = anv_stack_create(&alloc);
 
-    int* data1 = malloc(sizeof(int));
-    int* data2 = malloc(sizeof(int));
-    int* data3 = malloc(sizeof(int));
-    *data1 = 10;
-    *data2 = 20;
-    *data3 = 30;
+    MAKE_INT(data1, 10);
+    MAKE_INT(data2, 20);
+    MAKE_INT(data3, 30);
 
     ASSERT_EQ(anv_stack_push(stack, data1), 0);
     ASSERT_EQ(anv_stack_push(stack, data2), 0);
     ASSERT_EQ(anv_stack_push(stack, data3), 0);
 
-    size_t original_size = anv_stack_size(stack);
+    const size_t original_size = anv_stack_size(stack);
 
     // Multiple peeks should return same value and not change size
     for (int i = 0; i < 10; i++)
@@ -1052,8 +1026,7 @@ int test_stack_copy_preserves_order(void)
     // Build original stack
     for (int i = 0; i < num_values; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = values[i];
+        MAKE_INT(data, values[i]);
         ASSERT_EQ(anv_stack_push(original, data), 0);
     }
 
@@ -1107,8 +1080,7 @@ int test_stack_clear_preserves_structure(void)
     // Add elements
     for (int i = 0; i < 10; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = i;
+        MAKE_INT(data, i);
         ASSERT_EQ(anv_stack_push(stack, data), 0);
     }
 
@@ -1123,8 +1095,7 @@ int test_stack_clear_preserves_structure(void)
     ASSERT_NULL(anv_stack_peek(stack));
 
     // Should be able to use stack normally after clear
-    int* new_data = malloc(sizeof(int));
-    *new_data = 999;
+    MAKE_INT(new_data, 999);
     ASSERT_EQ(anv_stack_push(stack, new_data), 0);
     ASSERT_EQ(anv_stack_size(stack), 1);
     ASSERT_EQ(*(int*)anv_stack_peek(stack), 999);
@@ -1145,12 +1116,11 @@ int test_stack_for_each_preserves_contents(void)
     // Build stack
     for (int i = 0; i < num_values; i++)
     {
-        int* data = malloc(sizeof(int));
-        *data = original_values[i];
+        MAKE_INT(data, original_values[i]);
         ASSERT_EQ(anv_stack_push(stack, data), 0);
     }
 
-    size_t original_size = anv_stack_size(stack);
+    const size_t original_size = anv_stack_size(stack);
 
     // Apply for_each (increment each element)
     anv_stack_for_each(stack, increment);
@@ -1172,55 +1142,120 @@ int test_stack_for_each_preserves_contents(void)
 }
 
 //==============================================================================
+// Fuzz Tests
+//==============================================================================
+
+int test_stack_fuzz(void)
+{
+    srand((unsigned int)42);
+    ANVAllocator alloc = create_int_allocator();
+    ANVStack* stack = anv_stack_create(&alloc);
+    ASSERT_NOT_NULL(stack);
+
+    size_t expected_size = 0;
+
+    for (int i = 0; i < 50000; i++)
+    {
+        const unsigned op = rand() % 3;
+
+        switch (op)
+        {
+            case 0: // push
+            {
+                MAKE_INT(val, rand());
+                if (anv_stack_push(stack, val) == 0)
+                    expected_size++;
+                else
+                    free(val);
+                break;
+            }
+            case 1: // pop
+            {
+                if (expected_size > 0)
+                {
+                    if (anv_stack_pop(stack, true) == 0)
+                        expected_size--;
+                }
+                break;
+            }
+            case 2: // peek
+            {
+                if (expected_size > 0)
+                {
+                    void* top = anv_stack_peek(stack);
+                    ASSERT_NOT_NULL(top);
+                }
+                else
+                {
+                    ASSERT_NULL(anv_stack_peek(stack));
+                }
+                break;
+            }
+            default:
+                break;
+        }
+
+        ASSERT_EQ(anv_stack_size(stack), expected_size);
+        ASSERT_EQ(anv_stack_is_empty(stack), expected_size == 0 ? 1 : 0);
+    }
+
+    anv_stack_destroy(stack, true);
+    return TEST_SUCCESS;
+}
+
+//==============================================================================
 // Main
 //==============================================================================
 
 int main(void)
 {
     const ANVTestCase tests[] = {
-        // CRUD Tests (6)
-        {test_stack_create_destroy, "test_stack_create_destroy"},
-        {test_stack_null_parameters, "test_stack_null_parameters"},
-        {test_stack_push_pop, "test_stack_push_pop"},
-        {test_stack_pop_data, "test_stack_pop_data"},
-        {test_stack_clear, "test_stack_clear"},
-        {test_stack_equals, "test_stack_equals"},
+        // CRUD Tests
+        TEST_REGISTER(test_stack_create_destroy),
+        TEST_REGISTER(test_stack_null_parameters),
+        TEST_REGISTER(test_stack_push_pop),
+        TEST_REGISTER(test_stack_pop_data),
+        TEST_REGISTER(test_stack_clear),
+        TEST_REGISTER(test_stack_equals),
 
-        // Iterator Tests (11)
-        {test_stack_iterator, "test_stack_iterator"},
-        {test_stack_from_iterator, "test_stack_from_iterator"},
-        {test_stack_iterator_empty, "test_stack_iterator_empty"},
-        {test_stack_iterator_invalid, "test_stack_iterator_invalid"},
-        {test_stack_iterator_modification, "test_stack_iterator_modification"},
-        {test_stack_copy_isolation, "test_stack_copy_isolation"},
-        {test_stack_anv_copy_function_required, "test_stack_anv_copy_function_required"},
-        {test_stack_from_iterator_no_copy, "test_stack_from_iterator_no_copy"},
-        {test_iterator_exhaustion_after_stack_creation, "test_iterator_exhaustion_after_stack_creation"},
-        {test_stack_iterator_next_return_values, "test_stack_iterator_next_return_values"},
-        {test_stack_iterator_mixed_operations, "test_stack_iterator_mixed_operations"},
+        // Iterator Tests
+        TEST_REGISTER(test_stack_iterator),
+        TEST_REGISTER(test_stack_from_iterator),
+        TEST_REGISTER(test_stack_iterator_empty),
+        TEST_REGISTER(test_stack_iterator_invalid),
+        TEST_REGISTER(test_stack_iterator_modification),
+        TEST_REGISTER(test_stack_copy_isolation),
+        TEST_REGISTER(test_stack_anv_copy_function_required),
+        TEST_REGISTER(test_stack_from_iterator_no_copy),
+        TEST_REGISTER(test_iterator_exhaustion_after_stack_creation),
+        TEST_REGISTER(test_stack_iterator_next_return_values),
+        TEST_REGISTER(test_stack_iterator_mixed_operations),
 
-        // Algorithm Tests (4)
-        {test_stack_copy_shallow, "test_stack_copy_shallow"},
-        {test_stack_copy_deep, "test_stack_copy_deep"},
-        {test_stack_for_each, "test_stack_for_each"},
-        {test_stack_with_persons, "test_stack_with_persons"},
+        // Algorithm Tests
+        TEST_REGISTER(test_stack_copy_shallow),
+        TEST_REGISTER(test_stack_copy_deep),
+        TEST_REGISTER(test_stack_for_each),
+        TEST_REGISTER(test_stack_with_persons),
 
-        // Memory Tests (7)
-        {test_stack_failing_allocator, "test_stack_failing_allocator"},
-        {test_stack_push_memory_failure, "test_stack_push_memory_failure"},
-        {test_stack_copy_memory_failure, "test_stack_copy_memory_failure"},
-        {test_stack_deep_copy_failure, "test_stack_deep_copy_failure"},
-        {test_stack_large_memory_usage, "test_stack_large_memory_usage"},
-        {test_stack_clear_memory, "test_stack_clear_memory"},
-        {test_stack_iterator_memory_failure, "test_stack_iterator_memory_failure"},
+        // Memory Tests
+        TEST_REGISTER(test_stack_failing_allocator),
+        TEST_REGISTER(test_stack_push_memory_failure),
+        TEST_REGISTER(test_stack_copy_memory_failure),
+        TEST_REGISTER(test_stack_deep_copy_failure),
+        TEST_REGISTER(test_stack_large_memory_usage),
+        TEST_REGISTER(test_stack_clear_memory),
+        TEST_REGISTER(test_stack_iterator_memory_failure),
 
-        // Property Tests (6)
-        {test_stack_lifo_property, "test_stack_lifo_property"},
-        {test_stack_size_consistency, "test_stack_size_consistency"},
-        {test_stack_peek_invariant, "test_stack_peek_invariant"},
-        {test_stack_copy_preserves_order, "test_stack_copy_preserves_order"},
-        {test_stack_clear_preserves_structure, "test_stack_clear_preserves_structure"},
-        {test_stack_for_each_preserves_contents, "test_stack_for_each_preserves_contents"},
+        // Property Tests
+        TEST_REGISTER(test_stack_lifo_property),
+        TEST_REGISTER(test_stack_size_consistency),
+        TEST_REGISTER(test_stack_peek_invariant),
+        TEST_REGISTER(test_stack_copy_preserves_order),
+        TEST_REGISTER(test_stack_clear_preserves_structure),
+        TEST_REGISTER(test_stack_for_each_preserves_contents),
+
+        // Fuzz Tests
+        TEST_REGISTER(test_stack_fuzz),
     };
 
     return anv_run_tests("Stack", tests, sizeof(tests) / sizeof(tests[0]));

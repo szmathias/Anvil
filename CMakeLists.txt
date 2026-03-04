@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 project(Anvil
         LANGUAGES C
-        VERSION 0.1.2
+        VERSION 0.2.0
         DESCRIPTION "Personal Standard Library - Useful tools for building C applications"
 )
 
@@ -13,50 +13,50 @@ set(CMAKE_C_EXTENSIONS OFF)
 # Build Configuration
 # =============================================================================
 
-if(NOT CMAKE_BUILD_TYPE)
+if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose build type" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
-endif()
+endif ()
 
 # =============================================================================
 # Options
 # =============================================================================
 
 option(ANV_BUILD_SHARED "Build shared library instead of static" ON)
-option(ANV_BUILD_TESTS "Build test suite" OFF)
-option(ANV_BUILD_EXAMPLES "Build example programs" ON)
+option(ANV_BUILD_TESTS "Build test suite" ON)
+option(ANV_BUILD_EXAMPLES "Build example programs" OFF)
 option(ANV_BUILD_DOCS "Build documentation" OFF)
 option(ANV_ENABLE_SANITIZERS "Enable sanitizers in Debug builds" ON)
+option(ANV_ENABLE_COVERAGE "Enable code coverage instrumentation" OFF)
 
 # =============================================================================
 # Compiler Settings
 # =============================================================================
 
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     set(ANV_COMPILE_FLAGS -Wall -Wextra -Wpedantic -g)
-elseif(MSVC)
+elseif (MSVC)
     set(ANV_COMPILE_FLAGS /W4 /wd4996 /wd4100)
-endif()
+endif ()
 
 set(ANV_LINK_FLAGS)
-if(NOT MSVC)
+if (NOT MSVC)
     list(APPEND ANV_LINK_FLAGS -lm)
-endif()
+endif ()
 
 # Sanitizers for Debug builds
-if(NOT WIN32 AND ANV_ENABLE_SANITIZERS AND CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+if (NOT WIN32 AND ANV_ENABLE_SANITIZERS AND CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     message(STATUS "Enabling sanitizers for Debug build")
     list(APPEND ANV_COMPILE_FLAGS -fsanitize=address,undefined -fno-omit-frame-pointer)
     list(APPEND ANV_LINK_FLAGS -fsanitize=address,undefined)
-endif()
+endif ()
 
 # Code coverage for Coverage builds
-option(ANV_ENABLE_COVERAGE "Enable code coverage instrumentation" OFF)
-if(ANV_ENABLE_COVERAGE AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+if (ANV_ENABLE_COVERAGE AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     message(STATUS "Enabling code coverage instrumentation")
     list(APPEND ANV_COMPILE_FLAGS --coverage -fprofile-arcs -ftest-coverage)
     list(APPEND ANV_LINK_FLAGS --coverage)
-endif()
+endif ()
 
 # =============================================================================
 # Source File Collection
@@ -82,10 +82,10 @@ set(ANV_SOURCES
         src/system/mutex.c
         src/system/thread.c
         src/system/timing.c
-        src/testing/benchmark.c
         src/io/file.c
         src/memory/arena.c
         src/memory/stack_frame.c
+        src/testing/test.c
 )
 
 set(ANV_INCLUDE_DIRS
@@ -101,40 +101,40 @@ set(ANV_INCLUDE_DIRS
 )
 
 # Verify we have source files
-if(NOT ANV_SOURCES)
+if (NOT ANV_SOURCES)
     message(FATAL_ERROR "No source files found! Check that source directories exist and contain .c files")
-endif()
+endif ()
 
 # =============================================================================
 # Library Target Creation
 # =============================================================================
 
 # Create the main library target
-if(ANV_BUILD_SHARED)
+if (ANV_BUILD_SHARED)
     add_library(Anvil SHARED ${ANV_SOURCES})
     message(STATUS "Building shared library")
-else()
+else ()
     add_library(Anvil STATIC ${ANV_SOURCES})
     message(STATUS "Building static library")
-endif()
+endif ()
 
-if(WIN32 AND ANV_BUILD_TESTS)
+if (WIN32 AND ANV_BUILD_TESTS)
     add_custom_command(TARGET Anvil POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:Anvil>
-            ${CMAKE_BINARY_DIR}/tests/$<CONFIG>/
+            ${CMAKE_BINARY_DIR}/tests/
             COMMENT "Copying Anvil to tests directory for Windows"
     )
-endif()
+endif ()
 
-if(WIN32 AND ANV_BUILD_EXAMPLES)
+if (WIN32 AND ANV_BUILD_EXAMPLES)
     add_custom_command(TARGET Anvil POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:Anvil>
-            ${CMAKE_BINARY_DIR}/examples/$<CONFIG>/
+            ${CMAKE_BINARY_DIR}/examples/
             COMMENT "Copying Anvil to examples directory for Windows"
     )
-endif()
+endif ()
 
 add_library(Anvil::Anvil ALIAS Anvil)
 
@@ -148,24 +148,24 @@ target_include_directories(Anvil PRIVATE
 
 target_compile_options(Anvil PRIVATE ${ANV_COMPILE_FLAGS})
 
-if(ANV_LINK_FLAGS)
+if (ANV_LINK_FLAGS)
     target_link_libraries(Anvil PUBLIC ${ANV_LINK_FLAGS})
-endif()
+endif ()
 
 # Platform-specific definitions and libraries
-if(WIN32)
+if (WIN32)
     target_compile_definitions(Anvil PUBLIC ANV_PLATFORM_WINDOWS)
-    if(ANV_BUILD_SHARED)
+    if (ANV_BUILD_SHARED)
         target_compile_definitions(Anvil PRIVATE ANV_BUILDING_DLL)
         target_compile_definitions(Anvil INTERFACE ANV_USING_DLL)
-    endif()
-elseif(APPLE)
+    endif ()
+elseif (APPLE)
     target_compile_definitions(Anvil PUBLIC ANV_PLATFORM_MACOS)
-elseif(UNIX)
+elseif (UNIX)
     target_compile_definitions(Anvil PUBLIC ANV_PLATFORM_LINUX)
     find_package(Threads REQUIRED)
     target_link_libraries(Anvil PRIVATE Threads::Threads)
-endif()
+endif ()
 
 # Version information
 target_compile_definitions(Anvil PUBLIC
@@ -176,45 +176,45 @@ target_compile_definitions(Anvil PUBLIC
 )
 
 # Debug/Release definitions
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(Anvil PUBLIC ANV_DEBUG)
-else()
+else ()
     target_compile_definitions(Anvil PUBLIC ANV_RELEASE)
-endif()
+endif ()
 
 # =============================================================================
 # Testing
 # =============================================================================
 
-if(ANV_BUILD_TESTS)
+if (ANV_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
     message(STATUS "Building test suite")
-endif()
+endif ()
 
 # =============================================================================
 # Examples
 # =============================================================================
 
-if(ANV_BUILD_EXAMPLES)
+if (ANV_BUILD_EXAMPLES)
     enable_testing()
     add_subdirectory(examples)
     message(STATUS "Building examples")
-endif()
+endif ()
 
 # =============================================================================
 # Documentation
 # =============================================================================
 
-if(ANV_BUILD_DOCS)
+if (ANV_BUILD_DOCS)
     find_package(Doxygen QUIET)
-    if(DOXYGEN_FOUND)
+    if (DOXYGEN_FOUND)
         add_subdirectory(docs)
         message(STATUS "Building documentation")
-    else()
+    else ()
         message(WARNING "Doxygen not found, cannot build documentation")
-    endif()
-endif()
+    endif ()
+endif ()
 
 # =============================================================================
 # Installation
@@ -267,7 +267,7 @@ install(FILES
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Anvil
 )
 
-if(UNIX)
+if (UNIX)
     configure_file(
             "${CMAKE_CURRENT_SOURCE_DIR}/cmake/anvil.pc.in"
             "${CMAKE_CURRENT_BINARY_DIR}/anvil.pc"
@@ -277,7 +277,7 @@ if(UNIX)
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/anvil.pc"
             DESTINATION lib/pkgconfig
     )
-endif()
+endif ()
 
 # =============================================================================
 # Development Tools
@@ -295,11 +295,11 @@ message(STATUS "🔨 Anvil Library Configuration Summary")
 message(STATUS "==============================================================================")
 message(STATUS "Version:              ${PROJECT_VERSION}")
 message(STATUS "Build type:           ${CMAKE_BUILD_TYPE}")
-if(ANV_BUILD_SHARED)
+if (ANV_BUILD_SHARED)
     message(STATUS "Library type:         Shared (.so/.dll/.dylib)")
-else()
+else ()
     message(STATUS "Library type:         Static (.a/.lib)")
-endif()
+endif ()
 message(STATUS "C Standard:           C${CMAKE_C_STANDARD}")
 message(STATUS "Compiler:             ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
 

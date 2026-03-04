@@ -5,6 +5,7 @@
 #ifndef ANVIL_TESTHELPERS_H
 #define ANVIL_TESTHELPERS_H
 
+#include <stdlib.h>
 #include "common.h"
 
 // --- Types ---
@@ -14,6 +15,19 @@ typedef struct
     int age;
 } Person;
 
+// --- Integer Allocation Macros ---
+// Allocate a heap int and assign a value: MAKE_INT(x, 42) => int* x = ...
+#define MAKE_INT(name, value) \
+    int* name = malloc(sizeof(int)); \
+    *(name) = (value)
+
+// Allocate a heap int and return it (expression form)
+int* make_int(int value);
+
+// Allocate an array of heap ints from a C array of values
+// Caller is responsible for freeing each element and the array itself.
+int** make_int_array(const int* values, int count);
+
 // --- Comparison Functions ---
 int int_cmp(const void* a, const void* b);
 
@@ -22,6 +36,12 @@ int int_cmp_desc(const void* a, const void* b);
 
 // Person comparison function
 int person_cmp(const void* a, const void* b);
+
+// String comparison function (wrapper around strcmp)
+int string_cmp(const void* a, const void* b);
+
+// A copy function that always fails (returns NULL)
+void* failing_copy_func(const void* data);
 
 // --- Memory Management ---
 void int_free(void* a);
