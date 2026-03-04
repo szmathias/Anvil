@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include <anvil/testing.h>
 #include "TestHelpers.h"
@@ -41,7 +42,6 @@ void collect_desc(void* elem)
 {
     desc_results[desc_index++] = *(int*)elem;
 }
-
 
 //==============================================================================
 // CRUD Tests
@@ -1684,29 +1684,29 @@ int test_bst_fuzz(void)
         switch (op)
         {
             case 0: // insert
-            {
-                MAKE_INT(data, val);
-                const int rc = anv_bst_insert(bst, data);
-                if (rc == 0)
-                    expected_size++;
-                else
-                    free(data); // duplicate or error
-                break;
-            }
-            case 1: // remove
-            {
-                if (anv_bst_contains(bst, &val))
                 {
-                    ASSERT_EQ(anv_bst_remove(bst, &val, true), 0);
-                    expected_size--;
+                    MAKE_INT(data, val);
+                    const int rc = anv_bst_insert(bst, data);
+                    if (rc == 0)
+                        expected_size++;
+                    else
+                        free(data); // duplicate or error
+                    break;
                 }
-                break;
-            }
+            case 1: // remove
+                {
+                    if (anv_bst_contains(bst, &val))
+                    {
+                        ASSERT_EQ(anv_bst_remove(bst, &val, true), 0);
+                        expected_size--;
+                    }
+                    break;
+                }
             case 2: // contains
-            {
-                anv_bst_contains(bst, &val);
-                break;
-            }
+                {
+                    anv_bst_contains(bst, &val);
+                    break;
+                }
             default:
                 break;
         }

@@ -46,7 +46,7 @@ typedef struct ANVTestCase
     int (*func_ctx)(void* ctx);
     const char* name;
     void* (*setup)(void);
-    void  (*teardown)(void* ctx);
+    void (*teardown)(void* ctx);
     bool has_ctx;
 } ANVTestCase;
 
@@ -122,4 +122,3 @@ ANV_API void anv_test_set_between_hook(void (*hook)(void));
 #endif
 
 #endif // ANV_TESTING_TEST_H
-

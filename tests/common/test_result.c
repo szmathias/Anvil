@@ -99,4 +99,3 @@ int main(void)
 
     return anv_run_tests("Result", tests, sizeof(tests) / sizeof(tests[0]));
 }
-

@@ -20,7 +20,8 @@ static void __cdecl anv_test_auto_init(void)
 }
 __declspec(allocate(".CRT$XCU")) static void (__cdecl *anv_test_auto_init_ptr)(void) = anv_test_auto_init;
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
+__attribute__ ((constructor))
+
 static void anv_test_auto_init(void)
 {
     anv_test_set_between_hook(reset_alloc_fail_state);
@@ -46,14 +47,16 @@ int* make_int(const int value)
 int** make_int_array(const int* values, const int count)
 {
     int** arr = malloc(sizeof(int*) * count);
-    if (!arr) return NULL;
+    if (!arr)
+        return NULL;
     for (int i = 0; i < count; i++)
     {
         arr[i] = make_int(values[i]);
         if (!arr[i])
         {
             // Cleanup on failure
-            for (int j = 0; j < i; j++) free(arr[j]);
+            for (int j = 0; j < i; j++)
+                free(arr[j]);
             free(arr);
             return NULL;
         }

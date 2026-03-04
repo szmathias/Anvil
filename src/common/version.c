@@ -8,18 +8,12 @@ ANV_API ANVVersionInfo anv_version_get(void)
 {
     return (ANVVersionInfo)
     {
-        .
-        major = ANV_VERSION_MAJOR,
-        .
-        minor = ANV_VERSION_MINOR,
-        .
-        patch = ANV_VERSION_PATCH,
-        .
-        string = ANV_VERSION_STRING,
-        .
-        build_date = ANV_VERSION_BUILD_DATE,
-        .
-        build_time = ANV_VERSION_BUILD_TIME
+        .major = ANV_VERSION_MAJOR,
+        .minor = ANV_VERSION_MINOR,
+        .patch = ANV_VERSION_PATCH,
+        .string = ANV_VERSION_STRING,
+        .build_date = ANV_VERSION_BUILD_DATE,
+        .build_time = ANV_VERSION_BUILD_TIME
     };
 }
 

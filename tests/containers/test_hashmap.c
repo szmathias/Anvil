@@ -2176,41 +2176,41 @@ int test_hashmap_fuzz(void)
         switch (op)
         {
             case 0: // put (insert or update)
-            {
-                int* key = malloc(sizeof(int));
-                int* value = malloc(sizeof(int));
-                *key = key_val;
-                *value = rand();
+                {
+                    int* key = malloc(sizeof(int));
+                    int* value = malloc(sizeof(int));
+                    *key = key_val;
+                    *value = rand();
 
-                const int already_exists = anv_hashmap_contains_key(map, key);
-                const int rc = anv_hashmap_put(map, key, value);
-                if (rc == 0 && !already_exists)
-                    expected_size++;
-                break;
-            }
+                    const int already_exists = anv_hashmap_contains_key(map, key);
+                    const int rc = anv_hashmap_put(map, key, value);
+                    if (rc == 0 && !already_exists)
+                        expected_size++;
+                    break;
+                }
             case 1: // get
-            {
-                const void* val = anv_hashmap_get(map, &key_val);
-                if (anv_hashmap_contains_key(map, &key_val))
                 {
-                    ASSERT_NOT_NULL(val);
+                    const void* val = anv_hashmap_get(map, &key_val);
+                    if (anv_hashmap_contains_key(map, &key_val))
+                    {
+                        ASSERT_NOT_NULL(val);
+                    }
+                    break;
                 }
-                break;
-            }
             case 2: // remove
-            {
-                if (anv_hashmap_contains_key(map, &key_val))
                 {
-                    ASSERT_EQ(anv_hashmap_remove(map, &key_val, true, true), 0);
-                    expected_size--;
+                    if (anv_hashmap_contains_key(map, &key_val))
+                    {
+                        ASSERT_EQ(anv_hashmap_remove(map, &key_val, true, true), 0);
+                        expected_size--;
+                    }
+                    break;
                 }
-                break;
-            }
             case 3: // contains_key
-            {
-                anv_hashmap_contains_key(map, &key_val);
-                break;
-            }
+                {
+                    anv_hashmap_contains_key(map, &key_val);
+                    break;
+                }
             default:
                 break;
         }

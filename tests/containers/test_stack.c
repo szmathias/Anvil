@@ -1161,36 +1161,36 @@ int test_stack_fuzz(void)
         switch (op)
         {
             case 0: // push
-            {
-                MAKE_INT(val, rand());
-                if (anv_stack_push(stack, val) == 0)
-                    expected_size++;
-                else
-                    free(val);
-                break;
-            }
+                {
+                    MAKE_INT(val, rand());
+                    if (anv_stack_push(stack, val) == 0)
+                        expected_size++;
+                    else
+                        free(val);
+                    break;
+                }
             case 1: // pop
-            {
-                if (expected_size > 0)
                 {
-                    if (anv_stack_pop(stack, true) == 0)
-                        expected_size--;
+                    if (expected_size > 0)
+                    {
+                        if (anv_stack_pop(stack, true) == 0)
+                            expected_size--;
+                    }
+                    break;
                 }
-                break;
-            }
             case 2: // peek
-            {
-                if (expected_size > 0)
                 {
-                    void* top = anv_stack_peek(stack);
-                    ASSERT_NOT_NULL(top);
+                    if (expected_size > 0)
+                    {
+                        void* top = anv_stack_peek(stack);
+                        ASSERT_NOT_NULL(top);
+                    }
+                    else
+                    {
+                        ASSERT_NULL(anv_stack_peek(stack));
+                    }
+                    break;
                 }
-                else
-                {
-                    ASSERT_NULL(anv_stack_peek(stack));
-                }
-                break;
-            }
             default:
                 break;
         }

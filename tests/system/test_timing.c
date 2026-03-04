@@ -192,4 +192,3 @@ int main(void)
 
     return anv_run_tests("Timing", tests, sizeof(tests) / sizeof(tests[0]));
 }
-

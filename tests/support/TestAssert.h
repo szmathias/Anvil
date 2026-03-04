@@ -25,5 +25,4 @@
         } \
     } while (0)
 
-
 #endif //ANVIL_TESTASSERT_H

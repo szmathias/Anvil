@@ -1066,37 +1066,37 @@ int test_pair_fuzz(void)
         switch (op)
         {
             case 0: // shallow copy
-            {
-                ANVPair* copy = anv_pair_copy(pair);
-                ASSERT_NOT_NULL(copy);
-                ASSERT_EQ_PTR(copy->first, pair->first);
-                ASSERT_EQ_PTR(copy->second, pair->second);
-                anv_pair_destroy(copy, false, false);
-                break;
-            }
+                {
+                    ANVPair* copy = anv_pair_copy(pair);
+                    ASSERT_NOT_NULL(copy);
+                    ASSERT_EQ_PTR(copy->first, pair->first);
+                    ASSERT_EQ_PTR(copy->second, pair->second);
+                    anv_pair_destroy(copy, false, false);
+                    break;
+                }
             case 1: // deep copy
-            {
-                ANVPair* deep = anv_pair_copy_deep(pair, int_anv_copy_func, int_anv_copy_func, true);
-                ASSERT_NOT_NULL(deep);
-                ASSERT_NOT_EQ_PTR(deep->first, pair->first);
-                ASSERT_EQ(*(int*)deep->first, *(int*)pair->first);
-                anv_pair_destroy(deep, true, true);
-                break;
-            }
+                {
+                    ANVPair* deep = anv_pair_copy_deep(pair, int_anv_copy_func, int_anv_copy_func, true);
+                    ASSERT_NOT_NULL(deep);
+                    ASSERT_NOT_EQ_PTR(deep->first, pair->first);
+                    ASSERT_EQ(*(int*)deep->first, *(int*)pair->first);
+                    anv_pair_destroy(deep, true, true);
+                    break;
+                }
             case 2: // swap
-            {
-                int orig_first = *(int*)pair->first;
-                int orig_second = *(int*)pair->second;
-                anv_pair_swap(pair);
-                ASSERT_EQ(*(int*)pair->first, orig_second);
-                ASSERT_EQ(*(int*)pair->second, orig_first);
-                break;
-            }
+                {
+                    int orig_first = *(int*)pair->first;
+                    int orig_second = *(int*)pair->second;
+                    anv_pair_swap(pair);
+                    ASSERT_EQ(*(int*)pair->first, orig_second);
+                    ASSERT_EQ(*(int*)pair->second, orig_first);
+                    break;
+                }
             case 3: // compare with self
-            {
-                ASSERT_EQ(anv_pair_compare(pair, pair, int_cmp, int_cmp), 0);
-                break;
-            }
+                {
+                    ASSERT_EQ(anv_pair_compare(pair, pair, int_cmp, int_cmp), 0);
+                    break;
+                }
             default:
                 break;
         }
