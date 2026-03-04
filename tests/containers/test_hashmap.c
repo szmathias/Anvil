@@ -2183,9 +2183,12 @@ int test_hashmap_fuzz(void)
                     *value = rand();
 
                     const int already_exists = anv_hashmap_contains_key(map, key);
-                    const int rc = anv_hashmap_put(map, key, value);
+                    const int rc = anv_hashmap_put_with_free(map, key, value, true);
                     if (rc == 0 && !already_exists)
                         expected_size++;
+
+                    if (rc != 0)
+                        free(key);
                     break;
                 }
             case 1: // get
