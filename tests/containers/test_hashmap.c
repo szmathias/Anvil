@@ -2188,7 +2188,10 @@ int test_hashmap_fuzz(void)
                         expected_size++;
 
                     if (rc != 0)
+                    {
                         free(key);
+                        free(value);
+                    }
                     break;
                 }
             case 1: // get
