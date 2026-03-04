@@ -2192,6 +2192,10 @@ int test_hashmap_fuzz(void)
                         free(key);
                         free(value);
                     }
+                    else if (rc == 0 && already_exists)
+                    {
+                        free(key);
+                    }
                     break;
                 }
             case 1: // get
